@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SiKost – Manajemen Kost</title>
+  <meta name="description" content="Sistem informasi manajemen kost: data penghuni, kamar, pembayaran, dan laporan." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ========== SCREEN: SETUP PERTAMA ========== -->
+<div id="screen-setup" class="login-screen" style="display:none">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-logo">🏠</div>
+      <h1 class="login-title">Selamat Datang di SiKost</h1>
+      <p class="login-sub">Buat akun Manager pertama untuk memulai</p>
+    </div>
+    <form id="form-setup" autocomplete="off">
+      <div class="fg" style="margin-bottom:12px">
+        <label>Nama Lengkap</label>
+        <input type="text" id="setup-nama" class="fc" placeholder="Nama Anda" required autocomplete="off" />
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Email</label>
+        <input type="email" id="setup-email" class="fc" placeholder="email@anda.com" required autocomplete="off" />
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="setup-pw" class="fc" placeholder="Min. 6 karakter" required autocomplete="new-password" />
+          <button type="button" class="pw-eye" data-target="setup-pw">👁</button>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:20px">
+        <label>Nama Kost</label>
+        <input type="text" id="setup-kost" class="fc" placeholder="Kost Makmur Jaya" />
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:11px">
+        Buat Akun & Mulai
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ========== SCREEN: LOGIN ========== -->
+<div id="screen-login" class="login-screen" style="display:none">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-logo">🏠</div>
+      <h1 class="login-title" id="login-kost-title">SiKost</h1>
+      <p class="login-sub" id="login-kost-sub">Sistem Manajemen Kost</p>
+    </div>
+
+    <form id="form-login" autocomplete="off">
+      <div class="login-err" id="login-err" style="display:none">
+        ⚠️ <span id="login-err-msg">Email atau password salah.</span>
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Email</label>
+        <input type="email" id="login-email" class="fc" placeholder="email@anda.com" required autocomplete="email" />
+      </div>
+      <div class="fg" style="margin-bottom:20px">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="login-pw" class="fc" placeholder="Password Anda" required autocomplete="current-password" />
+          <button type="button" class="pw-eye" data-target="login-pw">👁</button>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:11px">
+        Masuk
+      </button>
+    </form>
+
+    <p class="login-footer" style="margin-top:16px">
+      Lupa password? Hubungi Manager kost Anda.
+    </p>
+  </div>
+</div>
+
+<!-- ========== APP SHELL ========== -->
+<div id="screen-app" class="app-shell" style="display:none">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="brand">
+        <span class="brand-mark">🏠</span>
+        <div class="brand-text">
+          <span class="brand-name" id="sb-kost-name">SiKost</span>
+          <span class="brand-role" id="sb-role-badge">Manager</span>
+        </div>
+      </div>
+      <button class="sidebar-collapse" id="sidebar-collapse" aria-label="Collapse sidebar" title="Sembunyikan sidebar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <nav class="nav" id="sidebar-nav"></nav>
+
+    <div class="sidebar-bottom">
+      <div class="user-chip" id="user-chip">
+        <div class="user-avatar-fallback" id="user-avatar-fallback">?</div>
+        <div class="user-info">
+          <span class="user-name" id="user-name">User</span>
+          <span class="user-email" id="user-email">–</span>
+        </div>
+        <button class="btn-logout" id="btn-logout" title="Keluar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main" id="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 4h14M2 9h14M2 14h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" id="theme-toggle" title="Ganti tema" aria-label="Toggle theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+        <button class="btn-primary" id="btn-tambah-penghuni" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Tambah Penghuni
+        </button>
+        <button class="icon-btn" id="btn-export-csv" style="display:none" title="Export CSV">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="content" id="content-area">
+
+      <!-- PAGE: DASHBOARD (Manager) -->
+      <section class="page" id="page-dashboard">
+        <div class="page-heading">
+          <h1 id="dash-greeting">Selamat datang 👋</h1>
+          <p class="text-muted" id="dash-date">–</p>
+        </div>
+        <div class="kpi-row" id="kpi-row"></div>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Penghuni Terbaru</span>
+              <button class="text-btn" data-page="penghuni">Lihat semua →</button>
+            </div>
+            <table class="tbl" id="tbl-terbaru">
+              <thead><tr><th>Nama</th><th>Kamar</th><th>Masuk</th><th>Status</th></tr></thead>
+              <tbody id="tbody-terbaru"></tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Ringkasan Bulan Ini</span></div>
+            <div class="chart-area"><canvas id="chart-bayar"></canvas></div>
+            <div class="legend-list" id="chart-legend"></div>
+          </div>
+        </div>
+        <div class="three-col">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Status Hunian</span></div>
+            <div class="chart-area chart-sm"><canvas id="chart-status"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Kendaraan</span></div>
+            <div class="chart-area chart-sm"><canvas id="chart-kendaraan"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Status Kamar</span></div>
+            <div id="quick-kamar"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: PENGHUNI (Manager) -->
+      <section class="page" id="page-penghuni">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="search-wrap">
+              <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <input class="search-input" id="cari-penghuni" type="search" placeholder="Cari nama, NIK, kamar…" />
+            </div>
+            <select class="sel" id="filter-status">
+              <option value="">Semua Status</option>
+              <option value="aktif">Aktif</option>
+              <option value="tidak aktif">Tidak Aktif</option>
+            </select>
+            <select class="sel" id="filter-kendaraan">
+              <option value="">Semua Kendaraan</option>
+              <option value="tidak ada">Tanpa Kendaraan</option>
+              <option value="motor">Motor</option>
+              <option value="mobil">Mobil</option>
+              <option value="motor & mobil">Motor & Mobil</option>
+            </select>
+          </div>
+          <div class="view-switch">
+            <button class="vs-btn active" id="btn-grid-view" title="Grid">
+              <svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor"/><rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor"/><rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor"/><rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor"/></svg>
+            </button>
+            <button class="vs-btn" id="btn-list-view" title="List">
+              <svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 3h12M1 7h12M1 11h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="penghuni-grid" id="penghuni-grid"></div>
+        <div class="panel" id="penghuni-list-wrap" style="display:none">
+          <div class="tbl-wrap">
+            <table class="tbl" id="tbl-penghuni">
+              <thead><tr><th>#</th><th>Penghuni</th><th>NIK</th><th>Kamar</th><th>No. HP</th><th>Kendaraan</th><th>Sewa/Bln</th><th>Status</th><th></th></tr></thead>
+              <tbody id="tbody-penghuni"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="empty-state" id="empty-penghuni" style="display:none">
+          <div class="empty-emoji">👥</div>
+          <p class="empty-title">Belum ada penghuni</p>
+          <p class="empty-sub">Klik "Tambah Penghuni" untuk menambahkan data.</p>
+        </div>
+      </section>
+
+      <!-- PAGE: KAMAR (Manager) -->
+      <section class="page" id="page-kamar">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <select class="sel" id="filter-kamar-status">
+              <option value="">Semua Kamar</option>
+              <option value="terisi">Terisi</option>
+              <option value="kosong">Kosong</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="btn-tambah-kamar">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Tambah Kamar
+          </button>
+        </div>
+        <div class="kamar-grid" id="kamar-grid"></div>
+      </section>
+
+      <!-- PAGE: PEMBAYARAN (Manager) -->
+      <section class="page" id="page-pembayaran">
+        <div class="kpi-row" id="kpi-bayar"></div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Status Pembayaran</span>
+            <select class="sel" id="filter-bulan-bayar"></select>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Penghuni</th><th>Kamar</th><th>Bulan</th><th>Tagihan</th><th>Status</th><th>Aksi</th></tr></thead>
+              <tbody id="tbody-pembayaran"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: PENGATURAN (Manager) -->
+      <section class="page" id="page-pengaturan">
+        <div class="settings-layout">
+          <div class="settings-sidebar">
+            <button class="settings-tab active" data-stab="profil">🏠 Profil Kost</button>
+            <button class="settings-tab" data-stab="akun">👤 Akun Penghuni</button>
+            <button class="settings-tab" data-stab="pw">🔑 Ganti Password</button>
+            <button class="settings-tab" data-stab="data">🗂️ Data</button>
+          </div>
+          <div class="settings-body">
+
+            <!-- Profil -->
+            <div class="stab-content active" id="stab-profil">
+              <h2 class="settings-title">Profil Kost</h2>
+              <form id="form-kost" class="settings-form">
+                <div class="fg"><label>Nama Kost</label><input type="text" id="set-nama-kost" class="fc" placeholder="Kost Makmur Jaya" /></div>
+                <div class="fg"><label>Pemilik / Pengelola</label><input type="text" id="set-pemilik" class="fc" placeholder="Nama pemilik" /></div>
+                <div class="fg"><label>Alamat</label><textarea id="set-alamat" class="fc" rows="2" placeholder="Alamat lengkap kost"></textarea></div>
+                <div class="fg"><label>No. HP Pemilik</label><input type="text" id="set-hp-pemilik" class="fc" placeholder="08xx-xxxx-xxxx" /></div>
+                <div class="fg"><label>Jumlah Total Kamar</label><input type="number" id="set-total-kamar" class="fc" min="1" placeholder="20" /></div>
+                <button type="submit" class="btn-primary">Simpan Perubahan</button>
+              </form>
+            </div>
+
+            <!-- Akun Penghuni -->
+            <div class="stab-content" id="stab-akun">
+              <h2 class="settings-title">Akun Login Penghuni</h2>
+              <p class="text-muted">Buat akun login untuk penghuni agar mereka bisa masuk dan melihat data mereka sendiri.</p>
+              <div class="panel" style="margin-top:16px">
+                <div class="panel-header"><span class="panel-title">Daftar Akun</span></div>
+                <div class="tbl-wrap">
+                  <table class="tbl" id="tbl-akun">
+                    <thead><tr><th>Nama</th><th>Email Login</th><th>Role</th><th>Terhubung ke</th><th></th></tr></thead>
+                    <tbody id="tbody-akun"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="akun-form" style="margin-top:16px">
+                <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:12px">Tambah Akun Penghuni Baru</h3>
+                <div class="fg-grid" style="grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end">
+                  <div class="fg" style="margin:0"><label>Nama</label><input type="text" id="akun-nama" class="fc" placeholder="Nama penghuni" /></div>
+                  <div class="fg" style="margin:0"><label>Email Login</label><input type="email" id="akun-email" class="fc" placeholder="email@gmail.com" /></div>
+                  <div class="fg" style="margin:0"><label>Password</label>
+                    <div class="pw-wrap"><input type="password" id="akun-pw" class="fc" placeholder="Min. 6 karakter" /><button type="button" class="pw-eye" data-target="akun-pw">👁</button></div>
+                  </div>
+                  <button class="btn-primary" onclick="tambahAkunPenghuni()" style="margin-bottom:0;white-space:nowrap">+ Tambah</button>
+                </div>
+                <div class="fg" style="margin-top:10px"><label>Hubungkan ke Data Penghuni (opsional)</label>
+                  <select id="akun-link-penghuni" class="fc"><option value="">-- Pilih penghuni --</option></select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ganti Password -->
+            <div class="stab-content" id="stab-pw">
+              <h2 class="settings-title">Ganti Password</h2>
+              <form id="form-ganti-pw" class="settings-form" style="max-width:380px">
+                <div class="fg"><label>Password Lama</label>
+                  <div class="pw-wrap"><input type="password" id="pw-lama" class="fc" placeholder="Password saat ini" /><button type="button" class="pw-eye" data-target="pw-lama">👁</button></div>
+                </div>
+                <div class="fg"><label>Password Baru</label>
+                  <div class="pw-wrap"><input type="password" id="pw-baru" class="fc" placeholder="Min. 6 karakter" /><button type="button" class="pw-eye" data-target="pw-baru">👁</button></div>
+                </div>
+                <div class="fg"><label>Konfirmasi Password Baru</label>
+                  <div class="pw-wrap"><input type="password" id="pw-confirm" class="fc" placeholder="Ulangi password baru" /><button type="button" class="pw-eye" data-target="pw-confirm">👁</button></div>
+                </div>
+                <button type="submit" class="btn-primary">Simpan Password Baru</button>
+              </form>
+            </div>
+
+            <!-- Data -->
+            <div class="stab-content" id="stab-data">
+              <h2 class="settings-title">Manajemen Data</h2>
+              <div class="action-list">
+                <div class="action-item">
+                  <div><p class="action-title">Backup Data</p><p class="text-muted">Unduh semua data sebagai file JSON.</p></div>
+                  <button class="btn-outline" id="btn-backup">Backup</button>
+                </div>
+                <div class="action-item">
+                  <div><p class="action-title">Restore Data</p><p class="text-muted">Pulihkan data dari file backup JSON.</p></div>
+                  <label class="btn-outline" for="input-restore" style="cursor:pointer">Restore</label>
+                  <input type="file" id="input-restore" accept=".json" style="display:none" />
+                </div>
+                <div class="action-item danger-zone">
+                  <div><p class="action-title">Hapus Semua Data Penghuni</p><p class="text-muted">Tindakan ini tidak dapat dibatalkan.</p></div>
+                  <button class="btn-danger" id="btn-hapus-semua">Hapus</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: TENANT VIEW (Penghuni) -->
+      <section class="page" id="page-tenant">
+        <div class="tenant-wrap" id="tenant-content"></div>
+        <div class="empty-state" id="tenant-not-found" style="display:none">
+          <div class="empty-emoji">🔍</div>
+          <p class="empty-title">Data belum terhubung</p>
+          <p class="empty-sub">Akun Anda belum dihubungkan ke data penghuni.<br>Hubungi Manager kost untuk menghubungkan data Anda.</p>
+        </div>
+      </section>
+
+      <!-- PAGE: PROFIL AKUN (semua role) -->
+      <section class="page" id="page-profil">
+        <div style="max-width:440px">
+          <h2 class="settings-title">Profil Akun Saya</h2>
+          <div class="panel">
+            <div style="padding:20px">
+              <div id="profil-info" style="margin-bottom:20px"></div>
+              <hr style="border:none;border-top:1px solid var(--border);margin-bottom:20px">
+              <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:12px">Ganti Password</h3>
+              <form id="form-profil-pw" class="settings-form">
+                <div class="fg"><label>Password Lama</label>
+                  <div class="pw-wrap"><input type="password" id="profil-pw-lama" class="fc" placeholder="Password saat ini" /><button type="button" class="pw-eye" data-target="profil-pw-lama">👁</button></div>
+                </div>
+                <div class="fg"><label>Password Baru</label>
+                  <div class="pw-wrap"><input type="password" id="profil-pw-baru" class="fc" placeholder="Min. 6 karakter" /><button type="button" class="pw-eye" data-target="profil-pw-baru">👁</button></div>
+                </div>
+                <div class="fg"><label>Konfirmasi</label>
+                  <div class="pw-wrap"><input type="password" id="profil-pw-confirm" class="fc" placeholder="Ulangi password baru" /><button type="button" class="pw-eye" data-target="profil-pw-confirm">👁</button></div>
+                </div>
+                <button type="submit" class="btn-primary">Simpan Password</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ====== MODAL: TAMBAH/EDIT PENGHUNI ====== -->
+<div class="modal-overlay" id="modal-penghuni">
+  <div class="modal" style="max-width:740px">
+    <div class="modal-head">
+      <h2 class="modal-title" id="modal-penghuni-title">Tambah Penghuni</h2>
+      <button class="modal-x" id="modal-penghuni-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-penghuni" novalidate>
+        <input type="hidden" id="field-id" />
+        <div class="form-tabs">
+          <button type="button" class="ftab active" data-tab="identitas">Identitas</button>
+          <button type="button" class="ftab" data-tab="hunian">Hunian</button>
+          <button type="button" class="ftab" data-tab="kendaraan">Kendaraan</button>
+          <button type="button" class="ftab" data-tab="keuangan">Keuangan</button>
+          <button type="button" class="ftab" data-tab="darurat">Darurat</button>
+        </div>
+        <!-- Identitas -->
+        <div class="ftab-content active" id="ftab-identitas">
+          <div class="photo-row">
+            <div class="photo-box" id="pb-foto">
+              <img id="prev-foto" src="" alt="" style="display:none"/>
+              <div class="photo-ph" id="ph-foto"><span>📷</span><small>Foto</small></div>
+              <label class="photo-lbl" for="field-foto">Ubah</label>
+              <input type="file" id="field-foto" accept="image/*" style="display:none" />
+            </div>
+            <div class="photo-box" id="pb-ktp">
+              <img id="prev-ktp" src="" alt="" style="display:none"/>
+              <div class="photo-ph" id="ph-ktp"><span>🪪</span><small>KTP</small></div>
+              <label class="photo-lbl" for="field-ktp">Ubah</label>
+              <input type="file" id="field-ktp" accept="image/*" style="display:none" />
+            </div>
+          </div>
+          <div class="fg-grid">
+            <div class="fg col2"><label>Nama Lengkap <em>*</em></label><input type="text" id="field-nama" class="fc" placeholder="Sesuai KTP" required /></div>
+            <div class="fg"><label>NIK KTP</label><input type="text" id="field-nik" class="fc" maxlength="16" placeholder="16 digit" /></div>
+            <div class="fg"><label>Jenis Kelamin</label><select id="field-gender" class="fc"><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select></div>
+            <div class="fg"><label>Tempat Lahir</label><input type="text" id="field-tempat-lahir" class="fc" placeholder="Jakarta" /></div>
+            <div class="fg"><label>Tanggal Lahir</label><input type="date" id="field-tgl-lahir" class="fc" /></div>
+            <div class="fg col2"><label>Alamat KTP</label><textarea id="field-alamat-ktp" class="fc" rows="2" placeholder="Sesuai KTP"></textarea></div>
+            <div class="fg"><label>No. HP / WA <em>*</em></label><input type="tel" id="field-hp" class="fc" placeholder="08xx-xxxx-xxxx" required /></div>
+            <div class="fg"><label>Email</label><input type="email" id="field-email" class="fc" placeholder="email@domain.com" /></div>
+            <div class="fg col2"><label>Pekerjaan / Kampus</label><input type="text" id="field-pekerjaan" class="fc" placeholder="Karyawan / Mahasiswa Univ. X" /></div>
+          </div>
+        </div>
+        <!-- Hunian -->
+        <div class="ftab-content" id="ftab-hunian">
+          <div class="fg-grid">
+            <div class="fg"><label>Nomor Kamar <em>*</em></label><input type="text" id="field-kamar" class="fc" placeholder="101" required /></div>
+            <div class="fg"><label>Lantai</label><input type="text" id="field-lantai" class="fc" placeholder="1" /></div>
+            <div class="fg"><label>Tanggal Masuk <em>*</em></label><input type="date" id="field-tgl-masuk" class="fc" required /></div>
+            <div class="fg"><label>Est. Tanggal Keluar</label><input type="date" id="field-tgl-keluar" class="fc" /></div>
+            <div class="fg"><label>Status</label><select id="field-status" class="fc"><option value="aktif">Aktif</option><option value="tidak aktif">Tidak Aktif / Sudah Keluar</option></select></div>
+            <div class="fg col2"><label>Catatan</label><textarea id="field-catatan" class="fc" rows="2" placeholder="Catatan tentang penghuni…"></textarea></div>
+          </div>
+        </div>
+        <!-- Kendaraan -->
+        <div class="ftab-content" id="ftab-kendaraan">
+          <div class="fg-grid">
+            <div class="fg col2"><label>Kepemilikan Kendaraan</label><select id="field-kendaraan" class="fc" onchange="toggleKendaraan(this.value)"><option value="tidak ada">Tidak Ada</option><option value="motor">Motor</option><option value="mobil">Mobil</option><option value="motor & mobil">Motor & Mobil</option></select></div>
+            <div class="fg" id="ken-row1a" style="display:none"><label>Merek/Tipe 1</label><input type="text" id="field-merk-1" class="fc" placeholder="Honda Beat" /></div>
+            <div class="fg" id="ken-row1b" style="display:none"><label>Nomor Plat 1</label><input type="text" id="field-plat-1" class="fc" placeholder="B 1234 XYZ" /></div>
+            <div class="fg" id="ken-row2a" style="display:none"><label>Merek/Tipe 2</label><input type="text" id="field-merk-2" class="fc" placeholder="Toyota Avanza" /></div>
+            <div class="fg" id="ken-row2b" style="display:none"><label>Nomor Plat 2</label><input type="text" id="field-plat-2" class="fc" placeholder="B 5678 ABC" /></div>
+          </div>
+        </div>
+        <!-- Keuangan -->
+        <div class="ftab-content" id="ftab-keuangan">
+          <div class="fg-grid">
+            <div class="fg"><label>Sewa / Bulan (Rp)</label><input type="number" id="field-sewa" class="fc" min="0" placeholder="1000000" /></div>
+            <div class="fg"><label>Jatuh Tempo (tgl)</label><input type="number" id="field-tempo" class="fc" min="1" max="28" placeholder="1" /></div>
+            <div class="fg col2"><label>Catatan Pembayaran</label><textarea id="field-catatan-bayar" class="fc" rows="2" placeholder="Contoh: sudah DP 500rb"></textarea></div>
+          </div>
+        </div>
+        <!-- Darurat -->
+        <div class="ftab-content" id="ftab-darurat">
+          <div class="fg-grid">
+            <div class="fg"><label>Nama Kontak Darurat</label><input type="text" id="field-darurat-nama" class="fc" placeholder="Nama orang tua / wali" /></div>
+            <div class="fg"><label>Hubungan</label><select id="field-darurat-hub" class="fc"><option value="">-- pilih --</option><option>Orang Tua</option><option>Saudara</option><option>Pasangan</option><option>Teman</option><option>Lainnya</option></select></div>
+            <div class="fg"><label>HP Kontak Darurat</label><input type="tel" id="field-darurat-hp" class="fc" placeholder="08xx-xxxx-xxxx" /></div>
+            <div class="fg"><label>Alamat Darurat</label><input type="text" id="field-darurat-alamat" class="fc" placeholder="Kota / Alamat singkat" /></div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn-ghost" id="btn-batal-penghuni">Batal</button>
+          <button type="submit" class="btn-primary">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: DETAIL PENGHUNI ====== -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-head">
+      <h2 class="modal-title" id="detail-title">Detail Penghuni</h2>
+      <button class="modal-x" id="detail-close">✕</button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-foot modal-foot-split">
+      <button class="btn-ghost" id="btn-print-detail">🖨️ Cetak Kartu</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn-outline" id="btn-edit-detail">Edit</button>
+        <button class="btn-danger" id="btn-hapus-detail">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: KAMAR ====== -->
+<div class="modal-overlay" id="modal-kamar">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 class="modal-title" id="modal-kamar-title">Tambah Kamar</h2>
+      <button class="modal-x" id="modal-kamar-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-kamar">
+        <input type="hidden" id="field-kamar-id" />
+        <div class="fg-grid">
+          <div class="fg"><label>Nomor Kamar <em>*</em></label><input type="text" id="field-no-kamar" class="fc" placeholder="101" required /></div>
+          <div class="fg"><label>Lantai</label><input type="text" id="field-lantai-kamar" class="fc" placeholder="1" /></div>
+          <div class="fg"><label>Tipe</label><select id="field-tipe-kamar" class="fc"><option>Standar</option><option>Deluxe</option><option>VIP</option><option>AC</option><option>Non-AC</option></select></div>
+          <div class="fg"><label>Harga Default (Rp)</label><input type="number" id="field-harga-kamar" class="fc" min="0" placeholder="1000000" /></div>
+          <div class="fg col2"><label>Fasilitas</label><textarea id="field-fasilitas" class="fc" rows="2" placeholder="Kasur, lemari, WiFi…"></textarea></div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn-ghost" id="btn-batal-kamar">Batal</button>
+          <button type="submit" class="btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ====== CONFIRM ====== -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-head"><h2 class="modal-title" id="confirm-title">Konfirmasi</h2></div>
+    <div class="modal-body"><p id="confirm-message" class="text-muted" style="line-height:1.6"></p></div>
+    <div class="modal-foot">
+      <button class="btn-ghost" id="confirm-cancel">Batal</button>
+      <button class="btn-danger" id="confirm-ok">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== TOAST ====== -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
