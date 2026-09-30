@@ -116,6 +116,196 @@ function updateCloudStatusUI(connected, url = '') {
   }
 }
 
+// ── DEMO SEED DATA GENERATOR ─────────────────────────────────
+function seedDemoData(force = false) {
+  if (!force && S.penghuni && S.penghuni.length > 0 && S.kamar && S.kamar.length > 0) return;
+
+  S.kost = {
+    nama: 'Kost Griya Harmoni',
+    pemilik: 'Budi Santoso',
+    alamat: 'Jl. Kaliurang KM 5, Gg. Megatruh No. 12, Sleman, DI Yogyakarta',
+    hp: '081234567890',
+    totalKamar: 8
+  };
+
+  S.kamar = [
+    { id: 'km_101', no: '101', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Kasur Springbed 160x200, Lemari 2 Pintu, Meja Belajar, Kamar Mandi Dalam' },
+    { id: 'km_102', no: '102', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Kasur Springbed, Lemari, Meja Belajar, Kamar Mandi Dalam' },
+    { id: 'km_103', no: '103', lantai: '1', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
+    { id: 'km_104', no: '104', lantai: '1', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
+    { id: 'km_201', no: '201', lantai: '2', tipe: 'VIP', harga: 1850000, fasilitas: 'AC, Smart TV 32", Water Heater, Meja Kerja Ergonomis, Balkon Pribadi' },
+    { id: 'km_202', no: '202', lantai: '2', tipe: 'VIP', harga: 1850000, fasilitas: 'AC, Smart TV 32", Water Heater, Meja Kerja Ergonomis, Balkon Pribadi' },
+    { id: 'km_203', no: '203', lantai: '2', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Springbed, Lemari 2 Pintu, Meja Kerja' },
+    { id: 'km_204', no: '204', lantai: '2', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur, Lemari, Meja' }
+  ];
+
+  S.penghuni = [
+    {
+      id: 'p_dimas',
+      nama: 'Dimas Prasetyo',
+      hp: '081288991122',
+      kamar: '101',
+      lantai: '1',
+      tglMasuk: '2025-08-01',
+      nik: '3201123456780001',
+      gender: 'Laki-laki',
+      tempatLahir: 'Jakarta',
+      tglLahir: '2001-05-14',
+      alamatKtp: 'Jl. Tebet Barat Dalam No. 45, Jakarta Selatan',
+      email: 'dimas@sikost.id',
+      pekerjaan: 'Mahasiswa Teknik Sipil UGM',
+      status: 'aktif',
+      kendaraan: 'motor',
+      merk1: 'Honda Vario 160',
+      plat1: 'B 3456 TXY',
+      sewa: 1500000,
+      tempo: 5,
+      daruratNama: 'Bambang Prasetyo',
+      daruratHub: 'Orang Tua',
+      daruratHp: '081122334455',
+      daruratAlamat: 'Jakarta Selatan'
+    },
+    {
+      id: 'p_anisa',
+      nama: 'Anisa Rahmawati',
+      hp: '085712345678',
+      kamar: '102',
+      lantai: '1',
+      tglMasuk: '2025-06-15',
+      nik: '3302198765430002',
+      gender: 'Perempuan',
+      tempatLahir: 'Semarang',
+      tglLahir: '1999-10-22',
+      alamatKtp: 'Jl. Pandanaran No. 18, Semarang',
+      email: 'anisa.rahma@techcorp.com',
+      pekerjaan: 'Software Engineer Tokopedia',
+      status: 'aktif',
+      kendaraan: 'mobil',
+      merk1: 'Honda Brio RS',
+      plat1: 'AB 1234 CD',
+      sewa: 1500000,
+      tempo: 1,
+      daruratNama: 'Sri Wahyuni',
+      daruratHub: 'Orang Tua',
+      daruratHp: '081399001122',
+      daruratAlamat: 'Semarang'
+    },
+    {
+      id: 'p_rizky',
+      nama: 'Rizky Fauzi',
+      hp: '081399887766',
+      kamar: '103',
+      lantai: '1',
+      tglMasuk: '2025-09-01',
+      nik: '3273112233440003',
+      gender: 'Laki-laki',
+      tempatLahir: 'Bandung',
+      tglLahir: '2000-03-08',
+      alamatKtp: 'Jl. Dago Asri No. 7, Bandung',
+      email: 'rizky.fauzi.design@gmail.com',
+      pekerjaan: 'Freelance UI/UX Designer',
+      status: 'aktif',
+      kendaraan: 'motor',
+      merk1: 'Yamaha NMAX',
+      plat1: 'D 4821 KLO',
+      sewa: 950000,
+      tempo: 10,
+      daruratNama: 'Hendrawan',
+      daruratHub: 'Saudara',
+      daruratHp: '081566778899',
+      daruratAlamat: 'Bandung'
+    },
+    {
+      id: 'p_kevin',
+      nama: 'Kevin Sanjaya',
+      hp: '082155443322',
+      kamar: '201',
+      lantai: '2',
+      tglMasuk: '2025-04-10',
+      nik: '3171056677880004',
+      gender: 'Laki-laki',
+      tempatLahir: 'Surabaya',
+      tglLahir: '1997-12-05',
+      alamatKtp: 'Jl. Dharmahusada Indah No. 20, Surabaya',
+      email: 'kevin.sanjaya@startup.io',
+      pekerjaan: 'Product Manager FinTech',
+      status: 'aktif',
+      kendaraan: 'mobil',
+      merk1: 'Toyota Yaris GR Sport',
+      plat1: 'L 9012 EFG',
+      sewa: 1850000,
+      tempo: 1,
+      daruratNama: 'Gunawan Sanjaya',
+      daruratHub: 'Orang Tua',
+      daruratHp: '081299887700',
+      daruratAlamat: 'Surabaya'
+    },
+    {
+      id: 'p_nadya',
+      nama: 'dr. Nadya Aurelia',
+      hp: '081877665544',
+      kamar: '202',
+      lantai: '2',
+      tglMasuk: '2025-07-01',
+      nik: '3578012345670005',
+      gender: 'Perempuan',
+      tempatLahir: 'Malang',
+      tglLahir: '1998-08-17',
+      alamatKtp: 'Jl. Ijen No. 14, Malang',
+      email: 'nadya.aurelia@med.ugm.ac.id',
+      pekerjaan: 'Dokter Residen RSUP Dr. Sardjito',
+      status: 'aktif',
+      kendaraan: 'tidak ada',
+      sewa: 1850000,
+      tempo: 7,
+      daruratNama: 'Dr. Hartono Sp.PD',
+      daruratHub: 'Orang Tua',
+      daruratHp: '081133445566',
+      daruratAlamat: 'Malang'
+    },
+    {
+      id: 'p_fikri',
+      nama: 'Fikri Maulana',
+      hp: '085233445566',
+      kamar: '203',
+      lantai: '2',
+      tglMasuk: '2025-09-10',
+      nik: '3204123344550006',
+      gender: 'Laki-laki',
+      tempatLahir: 'Bogor',
+      tglLahir: '2002-01-30',
+      alamatKtp: 'Jl. Pajajaran No. 88, Bogor',
+      email: 'fikri.maulana@shopee.com',
+      pekerjaan: 'Data Analyst Shopee',
+      status: 'aktif',
+      kendaraan: 'motor',
+      merk1: 'Honda Beat Street',
+      plat1: 'AB 5678 XY',
+      sewa: 1500000,
+      tempo: 15,
+      daruratNama: 'Dewi Sartika',
+      daruratHub: 'Orang Tua',
+      daruratHp: '081722334455',
+      daruratAlamat: 'Bogor'
+    }
+  ];
+
+  const bln = new Date().toISOString().slice(0, 7);
+  S.pembayaran = [
+    { id: 'pb_1', penghuniId: 'p_dimas', bulan: bln, jumlah: 1500000, status: 'lunas', tglBayar: new Date().toISOString() },
+    { id: 'pb_2', penghuniId: 'p_anisa', bulan: bln, jumlah: 1500000, status: 'lunas', tglBayar: new Date().toISOString() },
+    { id: 'pb_3', penghuniId: 'p_kevin', bulan: bln, jumlah: 1850000, status: 'lunas', tglBayar: new Date().toISOString() },
+    { id: 'pb_4', penghuniId: 'p_nadya', bulan: bln, jumlah: 1850000, status: 'lunas', tglBayar: new Date().toISOString() }
+  ];
+
+  S.akun = [
+    { id: 'akun_mgr', nama: 'Budi Santoso (Owner)', email: 'manager@sikost.id', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null },
+    { id: 'akun_tnt', nama: 'Dimas Prasetyo', email: 'dimas@sikost.id', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'penghuni', penghuniId: 'p_dimas' }
+  ];
+
+  LS.save();
+}
+
 // ── STORAGE ──────────────────────────────────────────────────
 const LS = {
   save() {
@@ -131,6 +321,10 @@ const LS = {
       const v = localStorage.getItem('sk3_' + k);
       if (v) try { S[k] = JSON.parse(v); } catch {}
     });
+    // Auto-seed data demo jika belum ada data sama sekali
+    if ((!S.penghuni || S.penghuni.length === 0) && (!S.kamar || S.kamar.length === 0)) {
+      seedDemoData(false);
+    }
   },
   saveSession(u) { localStorage.setItem('sk3_session', JSON.stringify(u)); },
   loadSession()  { const v = localStorage.getItem('sk3_session'); return v ? JSON.parse(v) : null; },
@@ -819,20 +1013,80 @@ function renderCharts() {
   const lunas=S.pembayaran.filter(pb=>pb.bulan===bln&&pb.status==='lunas').length;
   const belum=Math.max(0,S.penghuni.filter(p=>p.status==='aktif').length-lunas);
 
-  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  const tick=isDark?'#a3a3a3':'#6b7280';
-  const grid=isDark?'#262626':'#f3f4f6';
-  const donut={responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{color:tick,font:{size:11},padding:10,boxWidth:10,usePointStyle:true}}}};
+  const isDark=document.documentElement.getAttribute('data-theme')!=='light';
+  const tick=isDark?'#94a3b8':'#64748b';
+  const grid=isDark?'rgba(255, 255, 255, 0.06)':'rgba(0, 0, 0, 0.06)';
+  const donut={
+    responsive:true,
+    maintainAspectRatio:false,
+    cutout:'70%',
+    plugins:{
+      legend:{
+        position:'bottom',
+        labels:{
+          color:tick,
+          font:{family:'Plus Jakarta Sans',size:11,weight:'600'},
+          padding:12,
+          boxWidth:10,
+          usePointStyle:true
+        }
+      }
+    }
+  };
 
   if(CHARTS.bayar) CHARTS.bayar.destroy();
-  CHARTS.bayar=new Chart($('chart-bayar'),{type:'bar',data:{labels:['Lunas','Belum Bayar'],datasets:[{data:[lunas,belum],backgroundColor:['#16a34a','#dc2626'],borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tick,font:{size:11}},grid:{display:false}},y:{ticks:{color:tick,stepSize:1,font:{size:11}},grid:{color:grid}}}}});
-  $('chart-legend').innerHTML=`<div class="legend-item"><span class="legend-dot" style="background:#16a34a"></span>Lunas: ${lunas}</div><div class="legend-item"><span class="legend-dot" style="background:#dc2626"></span>Belum: ${belum}</div>`;
+  CHARTS.bayar=new Chart($('chart-bayar'),{
+    type:'bar',
+    data:{
+      labels:['Lunas','Belum Bayar'],
+      datasets:[{
+        data:[lunas,belum],
+        backgroundColor:['#10b981','#f43f5e'],
+        borderRadius:8,
+        borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:tick,font:{family:'Plus Jakarta Sans',size:11,weight:'600'}},grid:{display:false}},
+        y:{ticks:{color:tick,stepSize:1,font:{family:'Plus Jakarta Sans',size:11}},grid:{color:grid}}
+      }
+    }
+  });
+  $('chart-legend').innerHTML=`<div class="legend-item"><span class="legend-dot" style="background:#10b981"></span>Lunas: ${lunas}</div><div class="legend-item"><span class="legend-dot" style="background:#f43f5e"></span>Belum: ${belum}</div>`;
 
   if(CHARTS.status) CHARTS.status.destroy();
-  CHARTS.status=new Chart($('chart-status'),{type:'doughnut',data:{labels:['Aktif','Tidak Aktif'],datasets:[{data:[aktif,nonAktif],backgroundColor:['#16a34a','#dc2626'],borderColor:'transparent',hoverOffset:4}]},options:donut});
+  CHARTS.status=new Chart($('chart-status'),{
+    type:'doughnut',
+    data:{
+      labels:['Aktif','Tidak Aktif'],
+      datasets:[{
+        data:[aktif,nonAktif],
+        backgroundColor:['#10b981','#64748b'],
+        borderWidth:0,
+        hoverOffset:6
+      }]
+    },
+    options:donut
+  });
 
   if(CHARTS.kendaraan) CHARTS.kendaraan.destroy();
-  CHARTS.kendaraan=new Chart($('chart-kendaraan'),{type:'doughnut',data:{labels:['Motor','Mobil','Motor & Mobil','Tidak Ada'],datasets:[{data:[motor,mobil,both,noKen],backgroundColor:['#2563eb','#7c3aed','#ea580c','#9ca3af'],borderColor:'transparent',hoverOffset:4}]},options:donut});
+  CHARTS.kendaraan=new Chart($('chart-kendaraan'),{
+    type:'doughnut',
+    data:{
+      labels:['Motor','Mobil','Motor & Mobil','Tidak Ada'],
+      datasets:[{
+        data:[motor,mobil,both,noKen],
+        backgroundColor:['#6366f1','#a855f7','#f59e0b','#64748b'],
+        borderWidth:0,
+        hoverOffset:6
+      }]
+    },
+    options:donut
+  });
 }
 
 // ── PENGHUNI RENDER ───────────────────────────────────────────
@@ -1071,6 +1325,16 @@ function openDetail(id) {
     </div>
     ${p.fotoKtp?`<div class="d-ktp"><h4>📷 Foto KTP</h4><img src="${p.fotoKtp}" alt="KTP"/></div>`:''}
   `;
+  const btnWa = $('btn-wa-detail');
+  if (btnWa) {
+    if (p.hp) {
+      const cleanHp = p.hp.replace(/\D/g, '').replace(/^0/, '62');
+      btnWa.href = `https://wa.me/${cleanHp}`;
+      btnWa.style.display = 'inline-flex';
+    } else {
+      btnWa.style.display = 'none';
+    }
+  }
   openModal('modal-detail');
 }
 
@@ -1126,14 +1390,30 @@ function renderKamar() {
   S.penghuni.forEach(p=>{if(p.kamar&&!list.find(k=>k.no===p.kamar))list.push({id:'auto_'+p.kamar,no:p.kamar,lantai:p.lantai||'1',tipe:'Standar',harga:p.sewa||0,fasilitas:''});});
   const seen=new Set(); list=list.filter(k=>{if(seen.has(k.no))return false;seen.add(k.no);return true;});
   list.sort((a,b)=>a.no.localeCompare(b.no,undefined,{numeric:true}));
+
+  // KPI Ringkasan Okupansi Kamar
+  const kpiEl = $('kpi-kamar-row');
+  if (kpiEl) {
+    const total = list.length;
+    const terisi = Object.keys(occ).length;
+    const kosong = Math.max(0, total - terisi);
+    const persen = total > 0 ? Math.round((terisi / total) * 100) : 0;
+    kpiEl.innerHTML = `
+      <div class="kpi"><div class="kpi-label">Total Kamar</div><div class="kpi-value">${total}</div><div class="kpi-sub">kapasitas terdaftar</div></div>
+      <div class="kpi"><div class="kpi-label">Kamar Terisi</div><div class="kpi-value" style="color:var(--green)">${terisi}</div><div class="kpi-sub">sedang berpenghuni</div></div>
+      <div class="kpi"><div class="kpi-label">Kamar Kosong</div><div class="kpi-value" style="color:var(--orange)">${kosong}</div><div class="kpi-sub">siap disewakan</div></div>
+      <div class="kpi"><div class="kpi-label">Tingkat Okupansi</div><div class="kpi-value" style="color:var(--accent-light)">${persen}%</div><div class="kpi-sub">tingkat keterisian</div></div>
+    `;
+  }
+
   const filtered=list.filter(k=>{const t=!!occ[k.no];if(filter==='terisi')return t;if(filter==='kosong')return!t;return true;});
   $('kamar-grid').innerHTML=filtered.map(k=>{
     const isTerisi=!!occ[k.no], pen=occ[k.no]||[];
     return `<div class="km-card ${isTerisi?'terisi':'kosong'}">
       <div class="km-no">${k.no}</div>
       <div class="km-lbl">Lantai ${k.lantai||'1'} · ${k.tipe||'Standar'}</div>
-      <div style="margin:6px 0">${isTerisi?'<span class="badge badge-green">Terisi</span>':'<span class="badge badge-gray">Kosong</span>'}</div>
-      <div class="km-name">${pen.map(p=>p.nama).join(', ')||'–'}</div>
+      <div style="margin:8px 0">${isTerisi?'<span class="badge badge-green">Terisi</span>':'<span class="badge badge-gray">Kosong</span>'}</div>
+      <div class="km-name">${pen.map(p=>p.nama).join(', ')||'<span style="color:var(--text-4);font-weight:normal">Siap Huni</span>'}</div>
       ${k.harga?`<div class="km-info">${rp(k.harga)}/bln</div>`:''}
       ${k.fasilitas?`<div class="km-info">${k.fasilitas}</div>`:''}
       <div class="km-actions">
@@ -1189,8 +1469,8 @@ function renderPembayaran() {
   $('kpi-bayar').innerHTML=`
     <div class="kpi"><div class="kpi-label">Sudah Bayar</div><div class="kpi-value" style="color:var(--green)">${lunas.length}</div><div class="kpi-sub">penghuni</div></div>
     <div class="kpi"><div class="kpi-label">Belum Bayar</div><div class="kpi-value" style="color:var(--red)">${belum}</div><div class="kpi-sub">penghuni aktif</div></div>
-    <div class="kpi"><div class="kpi-label">Terkumpul</div><div class="kpi-value" style="font-size:1.05rem;color:var(--green)">${rp(terkumpul)}</div><div class="kpi-sub">bulan ini</div></div>
-    <div class="kpi"><div class="kpi-label">Total Tagihan</div><div class="kpi-value" style="font-size:1.05rem">${rp(aktif.reduce((s,p)=>s+(Number(p.sewa)||0),0))}</div><div class="kpi-sub">keseluruhan</div></div>
+    <div class="kpi"><div class="kpi-label">Terkumpul</div><div class="kpi-value" style="font-size:1.15rem;color:var(--green)">${rp(terkumpul)}</div><div class="kpi-sub">bulan ini</div></div>
+    <div class="kpi"><div class="kpi-label">Total Tagihan</div><div class="kpi-value" style="font-size:1.15rem">${rp(aktif.reduce((s,p)=>s+(Number(p.sewa)||0),0))}</div><div class="kpi-sub">keseluruhan</div></div>
   `;
   const[y,mo]=bln.split('-'); const blnLabel=new Date(y,mo-1,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'});
   $('tbody-pembayaran').innerHTML=aktif.map(p=>{
@@ -1200,11 +1480,25 @@ function renderPembayaran() {
       <td>Kamar ${p.kamar||'–'}</td>
       <td>${blnLabel}</td>
       <td>${rp(p.sewa)}</td>
-      <td>${ok?'<span class="badge badge-green">Lunas</span>':'<span class="badge badge-red">Belum</span>'}</td>
-      <td>${ok?`<button class="btn-ghost btn-sm" onclick="batalBayar('${p.id}','${bln}')">Batalkan</button>`:`<button class="btn-primary btn-sm" onclick="tandaiBayar('${p.id}','${bln}',${p.sewa||0})">✅ Tandai Lunas</button>`}</td>
+      <td>${ok?'<span class="badge badge-green">Lunas</span>':'<span class="badge badge-red">Belum Bayar</span>'}</td>
+      <td>${ok?`<button class="btn-ghost btn-sm" onclick="batalBayar('${p.id}','${bln}')">Batalkan</button>`:`<div style="display:flex;gap:6px;align-items:center"><button class="btn-primary btn-sm" onclick="tandaiBayar('${p.id}','${bln}',${p.sewa||0})">✅ Tandai Lunas</button><button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}')">📱 WA</button></div>`}</td>
     </tr>`;
-  }).join('')||`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3)">Tidak ada penghuni aktif.</td></tr>`;
+  }).join('')||`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada penghuni aktif.</td></tr>`;
 }
+
+window.kirimWaTagihan = function(pid, bln) {
+  const p = S.penghuni.find(x => x.id === pid);
+  if (!p) return;
+  if (!p.hp) {
+    toast('Nomor HP penghuni belum diisi!', 'err');
+    return;
+  }
+  const cleanHp = p.hp.replace(/\D/g, '').replace(/^0/, '62');
+  const [y, mo] = bln.split('-');
+  const blnLabel = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  const text = `Halo Kak ${p.nama}, mengingatkan tagihan sewa kamar ${p.kamar || ''} di ${S.kost.nama || 'Kost'} untuk bulan ${blnLabel} sebesar ${rp(p.sewa)} telah jatuh tempo. Mohon konfirmasi jika sudah melakukan pembayaran ya. Terima kasih! 🙏`;
+  window.open(`https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`, '_blank');
+};
 
 $('filter-bulan-bayar').addEventListener('change',renderPembayaran);
 
@@ -1399,6 +1693,17 @@ $('btn-hapus-semua').addEventListener('click',()=>{
     S.penghuni=[];S.kamar=[];S.pembayaran=[];LS.save();toast('Semua data dihapus.');renderPengaturan();
   },'Ya, Hapus Semua');
 });
+
+const btnSeed = $('btn-seed-demo');
+if (btnSeed) {
+  btnSeed.addEventListener('click', () => {
+    confirm_dlg('Muat Data Contoh / Demo', 'Ini akan memuat 8 kamar, 6 anak kost aktif dengan foto & data lengkap, serta catatan pembayaran contoh. Lanjutkan?', () => {
+      seedDemoData(true);
+      renderPengaturan();
+      toast('Data demo berhasil dimuat! 🎉');
+    }, 'Ya, Muat Data Demo');
+  });
+}
 
 // ── PENGATURAN SUPABASE (TAB & MODAL) ─────────────────────────
 function setupSupabaseUI() {
@@ -1620,10 +1925,42 @@ $('btn-export-csv').addEventListener('click',()=>{
   LS.load();
   setupSupabaseUI();
 
-  // Tema Dark / Light
-  const t=localStorage.getItem('sk3_theme')||'light';
-  document.documentElement.setAttribute('data-theme',t);
-  $('theme-icon').textContent=t==='dark'?'☀️':'🌙';
+  // Tema Dark / Light (Default ke Dark Mode Mewah!)
+  const t = localStorage.getItem('sk3_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  $('theme-icon').textContent = t === 'dark' ? '☀️' : '🌙';
+
+  // 1-Click Demo Buttons
+  const btnDemoMgr = $('btn-demo-mgr');
+  if (btnDemoMgr) {
+    btnDemoMgr.addEventListener('click', () => {
+      seedDemoData(false);
+      let mgr = S.akun.find(a => a.role === 'manager');
+      if (!mgr) {
+        mgr = { id: 'akun_mgr', nama: 'Budi Santoso (Owner)', email: 'manager@sikost.id', role: 'manager', penghuniId: null };
+        S.akun.push(mgr);
+        LS.save();
+      }
+      loginWithAkun(mgr);
+      toast('Selamat datang di Demo SiKost Manager! 👑');
+    });
+  }
+
+  const btnDemoTnt = $('btn-demo-tnt');
+  if (btnDemoTnt) {
+    btnDemoTnt.addEventListener('click', () => {
+      seedDemoData(false);
+      let tnt = S.akun.find(a => a.role === 'penghuni');
+      if (!tnt) {
+        const p = S.penghuni[0];
+        tnt = { id: 'akun_tnt', nama: p?.nama || 'Dimas Prasetyo', email: 'dimas@sikost.id', role: 'penghuni', penghuniId: p?.id || null };
+        S.akun.push(tnt);
+        LS.save();
+      }
+      loginWithAkun(tnt);
+      toast(`Selamat datang di Portal Anak Kost, ${tnt.nama}! 🪪`);
+    });
+  }
 
   // 1. Coba inisialisasi Supabase
   const hasSb = initSupabase();
