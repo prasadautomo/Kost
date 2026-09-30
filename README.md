@@ -1,58 +1,54 @@
-# SiKost – Aplikasi Manajemen Kost
+# SiKost – Aplikasi Manajemen Kost (Cloud & Vercel Ready)
 
-Aplikasi web manajemen kost berbasis HTML, CSS, dan JavaScript murni. **Tidak perlu server, tidak perlu install apapun** — cukup buka file `index.html` di browser.
+Aplikasi web manajemen kost modern dengan dukungan **Cloud Database & Cloud Authentication (Supabase)** dan siap dideploy langsung ke **Vercel**. Juga dilengkapi dengan **Offline Fallback** sehingga tetap dapat berjalan tanpa server.
 
-## ✨ Fitur
+---
 
-- 🔐 **Login lokal** – email + password, aman dengan SHA-256
-- 👥 **Data Penghuni** – lengkap: identitas, foto, KTP, kendaraan, kontak darurat
-- 🛏 **Manajemen Kamar** – status terisi/kosong real-time
-- 💳 **Pembayaran** – tracking lunas/belum per bulan
-- 📊 **Dashboard** – KPI, grafik Chart.js, ringkasan bulanan
-- 🌙 **Dark/Light Mode** – toggle tema
-- 🖨️ **Cetak Kartu** – kartu data penghuni siap cetak
-- 📥 **Export CSV** – ekspor data penghuni
-- 💾 **Backup & Restore** – backup JSON, restore data
-- 👤 **Role-Based** – Manager (akses penuh) dan Penghuni (lihat data sendiri)
+## ✨ Fitur Utama
 
-## 🚀 Cara Pakai
+- ⚡ **Cloud Supabase** – Database PostgreSQL cloud, realtime sync & auth aman
+- 🚀 **Vercel Ready** – Siap dideploy ke Vercel dalam 1 menit
+- 🔐 **Dual Mode Authentication** – Cloud Login (Supabase Auth) + Fallback Login Lokal (SHA-256)
+- 👥 **Data Penghuni Lengkap** – Identitas, foto, KTP, kendaraan, kontak darurat, dan pekerjaan
+- 🛏 **Manajemen Kamar** – Tracking kamar terisi, kosong, tipe, dan harga real-time
+- 💳 **Pembayaran & Tagihan** – Pencatatan lunas/belum bayar per bulan otomatis
+- 📊 **Dashboard Interaktif** – KPI ringkasan, grafik okupansi & pendapatan via Chart.js
+- 👤 **Role-Based Access** – Role **Manager** (akses penuh) & **Penghuni** (melihat data hunian pribadi)
+- 🖨️ **Cetak Kartu & Laporan** – Kartu data penghuni siap cetak & Export CSV
+- ☁️ **1-Click Cloud Migration** – Pindahkan seluruh data lokal ke cloud dengan satu klik tombol
 
-1. **Clone / download** repo ini
-2. Buka `index.html` langsung di browser (Chrome/Edge disarankan)
-3. **Pertama kali:** isi form "Buat Akun Manager" → nama, email, password, nama kost
-4. Mulai tambah data penghuni!
-
-### Menambah Akun Penghuni
-- Masuk sebagai Manager → **Pengaturan → Akun Penghuni**
-- Isi nama, email, password untuk penghuni
-- Hubungkan ke data penghuni yang sudah ada
-- Penghuni bisa login dan melihat data mereka sendiri
+---
 
 ## 📁 Struktur File
 
 ```
-├── index.html    # Struktur & template HTML
-├── style.css     # Design system & styling
-├── app.js        # Logika aplikasi & autentikasi
-└── README.md     # Dokumentasi ini
+├── index.html                       # Tampilan utama & modal aplikasi
+├── style.css                        # Design system & responsive UI
+├── app.js                           # Logika aplikasi, Supabase client & state sync
+├── config.js                        # Konfigurasi Supabase Project URL & Anon Key
+├── supabase_schema.sql              # Skrip SQL tabel, trigger, dan RLS untuk Supabase
+├── vercel.json                      # Konfigurasi deployment Vercel
+├── package.json                     # Konfigurasi package & scripts
+├── PANDUAN_CLOUD_VERCEL_SUPABASE.md # Panduan langkah demi langkah setup Supabase & Vercel
+└── README.md                        # Dokumentasi ini
 ```
-
-## 💾 Penyimpanan Data
-
-Semua data tersimpan di **localStorage** browser — tidak ada server/database eksternal. Gunakan fitur **Backup** (Pengaturan → Data) secara berkala untuk menyimpan salinan data Anda.
-
-## 🔐 Keamanan
-
-- Password di-hash dengan **SHA-256** (Web Crypto API) — tidak disimpan teks biasa
-- Data tersimpan lokal di perangkat Anda sendiri
-
-## 🛠️ Teknologi
-
-- HTML5 · CSS3 (Vanilla) · JavaScript (ES2020+)
-- [Chart.js](https://www.chartjs.org/) v4 – grafik/visualisasi
-- [Inter Font](https://fonts.google.com/specimen/Inter) – Google Fonts
-- Web Crypto API (built-in browser) – hashing password
 
 ---
 
-Made with ❤️ for kost management
+## 🚀 Memulai Cepat
+
+### 1. Menjalankan di Komputer Lokal
+Buka file `index.html` langsung di browser, atau jalankan server lokal:
+```powershell
+npx serve .
+```
+
+### 2. Menghubungkan ke Supabase Cloud
+1. Buat project gratis di [Supabase](https://supabase.com).
+2. Jalankan isi skrip `supabase_schema.sql` di Supabase SQL Editor.
+3. Masukkan **Project URL** dan **Anon Key** Anda langsung lewat tombol **"⚙️ Set Supabase"** di aplikasi atau melalui file `config.js`.
+
+> 📖 **Panduan Lengkap Setup:** Silakan baca file [PANDUAN_CLOUD_VERCEL_SUPABASE.md](PANDUAN_CLOUD_VERCEL_SUPABASE.md).
+
+### 3. Deploy ke Vercel
+Import repository project ini ke [Vercel](https://vercel.com) atau jalankan `npx vercel` dari terminal. Aplikasi Anda akan langsung aktif online!

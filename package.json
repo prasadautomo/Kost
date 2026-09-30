@@ -1,0 +1,20 @@
+{
+  "name": "sikost",
+  "version": "3.1.0",
+  "description": "SiKost - Aplikasi Manajemen Kost Cloud dengan Supabase & Vercel",
+  "scripts": {
+    "dev": "serve .",
+    "start": "serve ."
+  },
+  "keywords": [
+    "kost",
+    "management",
+    "supabase",
+    "vercel"
+  ],
+  "dependencies": {
+    "@supabase/server": "^1.8.1",
+    "@supabase/supabase-js": "^2.117.2",
+    "serve": "^14.2.4"
+  }
+}

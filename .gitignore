@@ -1,5 +1,13 @@
-# localStorage data
-*.json
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Backups
+SiKost_backup_*.json
 
 # OS files
 .DS_Store

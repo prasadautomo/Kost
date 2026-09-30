@@ -1,6 +1,6 @@
 /* ============================================================
-   SIKOST – app.js  v3.0
-   Local Auth · Role-Based · No External Dependencies
+   SIKOST – app.js  v3.1 (Cloud Supabase & Vercel Edition)
+   Supabase Auth · Cloud Database · Role-Based · Offline Fallback
    ============================================================ */
 'use strict';
 
@@ -14,12 +14,107 @@ let S = {
   kost: { nama:'SiKost', pemilik:'', alamat:'', hp:'', totalKamar:10 }
 };
 
-let currentUser = null; // akun object (tanpa pwHash)
-let editId   = null;
-let detailId = null;
+let currentUser = null; // akun object
+let editId      = null;
+let detailId    = null;
 let currentView = 'grid';
 let confirmCb   = null;
 const CHARTS    = {};
+
+// ── SUPABASE CLIENT & CLOUD STATE ────────────────────────────
+let sbClient         = null;
+let isCloudConnected = false;
+
+function getSupabaseConfig() {
+  // 1. Cek dari localStorage (yang diinput via UI aplikasi)
+  const saved = localStorage.getItem('sk3_supabase_config');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed.url && parsed.key) {
+        return { url: parsed.url.trim(), key: parsed.key.trim() };
+      }
+    } catch {}
+  }
+  // 2. Cek dari config.js (window.SIKOST_CONFIG)
+  if (window.SIKOST_CONFIG?.SUPABASE_URL && window.SIKOST_CONFIG?.SUPABASE_ANON_KEY) {
+    const url = window.SIKOST_CONFIG.SUPABASE_URL.trim();
+    const key = window.SIKOST_CONFIG.SUPABASE_ANON_KEY.trim();
+    if (url && key) return { url, key };
+  }
+  return null;
+}
+
+function initSupabase() {
+  const cfg = getSupabaseConfig();
+  if (cfg && cfg.url && cfg.key && window.supabase) {
+    try {
+      sbClient = window.supabase.createClient(cfg.url, cfg.key, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+      return true;
+    } catch (err) {
+      console.warn('Inisialisasi Supabase gagal:', err);
+      sbClient = null;
+      return false;
+    }
+  }
+  sbClient = null;
+  return false;
+}
+
+async function testSupabaseConnection(url, key) {
+  if (!url || !key) return { success: false, message: 'URL dan Key tidak boleh kosong.' };
+  try {
+    const testClient = window.supabase.createClient(url, key, { auth: { persistSession: false } });
+    const { error } = await testClient.from('kost_pengaturan').select('id').limit(1);
+    if (error && error.message && (error.message.includes('FetchError') || error.message.includes('Failed to fetch'))) {
+      return { success: false, message: 'Gagal terhubung ke host Supabase. Periksa URL Anda.' };
+    }
+    return { success: true };
+  } catch (err) {
+    return { success: false, message: err.message || 'Koneksi gagal.' };
+  }
+}
+
+function updateCloudStatusUI(connected, url = '') {
+  isCloudConnected = connected;
+  let domain = 'Supabase Cloud';
+  if (url) {
+    try { domain = new URL(url).hostname; } catch {}
+  }
+
+  // Pill di layar login
+  const loginPill = $('login-cloud-pill');
+  const loginText = $('login-cloud-text');
+  if (loginPill && loginText) {
+    loginPill.className = 'cloud-pill ' + (connected ? 'connected' : 'disconnected');
+    loginText.textContent = connected ? `🟢 Cloud Supabase (${domain})` : '☁️ Mode Lokal (Klik hubungkan Supabase)';
+  }
+
+  // Button di topbar
+  const topbarBtn = $('topbar-cloud-btn');
+  const topbarText = $('topbar-cloud-text');
+  if (topbarBtn && topbarText) {
+    topbarBtn.className = 'cloud-btn ' + (connected ? 'connected' : 'disconnected');
+    topbarText.textContent = connected ? 'Cloud Aktif' : 'Supabase (Offline)';
+  }
+
+  // Info di tab Pengaturan -> Cloud Supabase
+  const settingsStatus = $('settings-cloud-status-text');
+  const settingsEndpoint = $('settings-cloud-endpoint');
+  if (settingsStatus) {
+    settingsStatus.textContent = connected ? '🟢 Terhubung ke Supabase Cloud' : '🔴 Belum Terhubung (Mode Penyimpanan Lokal)';
+    settingsStatus.style.color = connected ? 'var(--green)' : 'var(--red)';
+  }
+  if (settingsEndpoint) {
+    settingsEndpoint.textContent = connected ? `Project URL: ${url}` : 'Data saat ini tersimpan di browser lokal Anda.';
+  }
+}
 
 // ── STORAGE ──────────────────────────────────────────────────
 const LS = {
@@ -42,8 +137,7 @@ const LS = {
   clearSession() { localStorage.removeItem('sk3_session'); }
 };
 
-// ── CRYPTO (simple hash untuk password) ──────────────────────
-// Menggunakan SHA-256 via SubtleCrypto (tersedia di semua browser modern)
+// ── CRYPTO (hash lokal untuk offline fallback) ───────────────
 async function hashPw(pw) {
   const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
@@ -88,8 +182,8 @@ function confirm_dlg(title, msg, cb, btnLabel='Ya, Lanjutkan') {
 }
 
 const $ = id => document.getElementById(id);
-const openModal  = id => $(id).classList.add('open');
-const closeModal = id => $(id).classList.remove('open');
+const openModal  = id => { const el=$(id); if(el) el.classList.add('open'); };
+const closeModal = id => { const el=$(id); if(el) el.classList.remove('open'); };
 
 // ── PASSWORD TOGGLE (show/hide) ───────────────────────────────
 document.addEventListener('click', e => {
@@ -106,10 +200,442 @@ function showScreen(name) {
   ['screen-setup','screen-login','screen-app'].forEach(id => {
     const el=$(id); if(el) el.style.display='none';
   });
-  const target=$(name); if(target) target.style.display=(name==='screen-app'?'flex':'flex');
+  const target=$(name); if(target) target.style.display='flex';
 }
 
-// ── SETUP SCREEN (pertama kali) ───────────────────────────────
+// ── MAPPERS (JS State <-> Supabase Database) ──────────────────
+function mapPenghuniToDb(p) {
+  return {
+    id: p.id,
+    nama: p.nama || '',
+    hp: p.hp || '',
+    kamar: p.kamar || '',
+    tgl_masuk: p.tglMasuk || '',
+    nik: p.nik || '',
+    gender: p.gender || '',
+    tempat_lahir: p.tempatLahir || '',
+    tgl_lahir: p.tglLahir || null,
+    alamat_ktp: p.alamatKtp || '',
+    email: p.email || '',
+    pekerjaan: p.pekerjaan || '',
+    lantai: p.lantai || '',
+    tgl_keluar: p.tglKeluar || null,
+    status: p.status || 'aktif',
+    catatan: p.catatan || '',
+    kendaraan: p.kendaraan || 'tidak ada',
+    merk1: p.merk1 || '',
+    plat1: p.plat1 || '',
+    merk2: p.merk2 || '',
+    plat2: p.plat2 || '',
+    sewa: Number(p.sewa) || 0,
+    tempo: p.tempo || '',
+    catatan_bayar: p.catatanBayar || '',
+    darurat_nama: p.daruratNama || '',
+    darurat_hub: p.daruratHub || '',
+    darurat_hp: p.daruratHp || '',
+    darurat_alamat: p.daruratAlamat || '',
+    foto: p.foto || null,
+    foto_ktp: p.fotoKtp || null,
+    updated_at: new Date().toISOString()
+  };
+}
+
+function mapPenghuniFromDb(r) {
+  return {
+    id: r.id,
+    nama: r.nama || '',
+    hp: r.hp || '',
+    kamar: r.kamar || '',
+    tglMasuk: r.tgl_masuk || '',
+    nik: r.nik || '',
+    gender: r.gender || '',
+    tempatLahir: r.tempat_lahir || '',
+    tglLahir: r.tgl_lahir || '',
+    alamatKtp: r.alamat_ktp || '',
+    email: r.email || '',
+    pekerjaan: r.pekerjaan || '',
+    lantai: r.lantai || '',
+    tglKeluar: r.tgl_keluar || '',
+    status: r.status || 'aktif',
+    catatan: r.catatan || '',
+    kendaraan: r.kendaraan || 'tidak ada',
+    merk1: r.merk1 || '',
+    plat1: r.plat1 || '',
+    merk2: r.merk2 || '',
+    plat2: r.plat2 || '',
+    sewa: Number(r.sewa) || 0,
+    tempo: r.tempo || '',
+    catatanBayar: r.catatan_bayar || '',
+    daruratNama: r.darurat_nama || '',
+    daruratHub: r.darurat_hub || '',
+    daruratHp: r.darurat_hp || '',
+    daruratAlamat: r.darurat_alamat || '',
+    foto: r.foto || null,
+    fotoKtp: r.foto_ktp || null,
+    createdAt: r.created_at || new Date().toISOString(),
+    updatedAt: r.updated_at || new Date().toISOString()
+  };
+}
+
+function mapBayarToDb(b) {
+  return {
+    id: b.id,
+    penghuni_id: b.penghuniId,
+    bulan: b.bulan,
+    jumlah: Number(b.jumlah) || 0,
+    status: b.status || 'lunas',
+    tgl_bayar: b.tglBayar || new Date().toISOString()
+  };
+}
+
+function mapBayarFromDb(r) {
+  return {
+    id: r.id,
+    penghuniId: r.penghuni_id,
+    bulan: r.bulan,
+    jumlah: Number(r.jumlah) || 0,
+    status: r.status || 'lunas',
+    tglBayar: r.tgl_bayar
+  };
+}
+
+// ── DB CLOUD SYNC LAYER ──────────────────────────────────────
+const DB = {
+  async fetchData() {
+    if (!sbClient) return;
+    try {
+      // 1. Penghuni
+      const { data: pList, error: pErr } = await sbClient.from('penghuni').select('*').order('created_at', { ascending: false });
+      if (!pErr && pList) S.penghuni = pList.map(mapPenghuniFromDb);
+
+      // 2. Kamar
+      const { data: kList, error: kErr } = await sbClient.from('kamar').select('*').order('no', { ascending: true });
+      if (!kErr && kList) S.kamar = kList;
+
+      // 3. Pembayaran
+      const { data: bList, error: bErr } = await sbClient.from('pembayaran').select('*');
+      if (!bErr && bList) S.pembayaran = bList.map(mapBayarFromDb);
+
+      // 4. Kost Pengaturan
+      const { data: kRow, error: koErr } = await sbClient.from('kost_pengaturan').select('*').limit(1).maybeSingle();
+      if (!koErr && kRow) {
+        S.kost = {
+          nama: kRow.nama || 'SiKost',
+          pemilik: kRow.pemilik || '',
+          alamat: kRow.alamat || '',
+          hp: kRow.hp || '',
+          totalKamar: kRow.total_kamar || 10
+        };
+      }
+
+      // 5. Akun Profil (jika Manager)
+      if (currentUser?.role === 'manager') {
+        const { data: prList, error: prErr } = await sbClient.from('profiles').select('*');
+        if (!prErr && prList) {
+          S.akun = prList.map(p => ({
+            id: p.id,
+            nama: p.nama,
+            email: p.email,
+            role: p.role,
+            penghuniId: p.penghuni_id
+          }));
+        }
+      }
+
+      // Simpan ke local cache untuk kecepatan & offline backup
+      LS.save();
+
+      // Refresh tampilan aktif
+      if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+      if ($('page-penghuni')?.classList.contains('active')) renderPenghuni();
+      if ($('page-kamar')?.classList.contains('active')) renderKamar();
+      if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
+      if ($('page-pengaturan')?.classList.contains('active')) renderPengaturan();
+      if ($('page-tenant')?.classList.contains('active')) renderTenant();
+      if ($('sb-kost-name')) $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
+    } catch (e) {
+      console.warn('Gagal sinkron data dari Supabase:', e);
+    }
+  },
+
+  async savePenghuni(d) {
+    if (sbClient) {
+      try {
+        await sbClient.from('penghuni').upsert(mapPenghuniToDb(d));
+      } catch (e) { console.warn('Sync penghuni gagal:', e); }
+    }
+  },
+
+  async deletePenghuni(id) {
+    if (sbClient) {
+      try {
+        await sbClient.from('penghuni').delete().eq('id', id);
+      } catch (e) { console.warn('Hapus penghuni di Supabase gagal:', e); }
+    }
+  },
+
+  async saveKamar(k) {
+    if (sbClient) {
+      try {
+        await sbClient.from('kamar').upsert({
+          id: k.id,
+          no: k.no,
+          lantai: k.lantai || '1',
+          tipe: k.tipe || 'Standar',
+          harga: Number(k.harga) || 0,
+          fasilitas: k.fasilitas || ''
+        });
+      } catch (e) { console.warn('Sync kamar gagal:', e); }
+    }
+  },
+
+  async deleteKamar(id) {
+    if (sbClient) {
+      try {
+        await sbClient.from('kamar').delete().eq('id', id);
+      } catch (e) { console.warn('Hapus kamar di Supabase gagal:', e); }
+    }
+  },
+
+  async savePembayaran(pb) {
+    if (sbClient) {
+      try {
+        await sbClient.from('pembayaran').upsert(mapBayarToDb(pb));
+      } catch (e) { console.warn('Sync pembayaran gagal:', e); }
+    }
+  },
+
+  async deletePembayaran(penghuniId, bulan) {
+    if (sbClient) {
+      try {
+        await sbClient.from('pembayaran').delete().match({ penghuni_id: penghuniId, bulan: bulan });
+      } catch (e) { console.warn('Hapus pembayaran di Supabase gagal:', e); }
+    }
+  },
+
+  async saveKost() {
+    if (sbClient) {
+      try {
+        await sbClient.from('kost_pengaturan').upsert({
+          id: 'default',
+          nama: S.kost.nama,
+          pemilik: S.kost.pemilik,
+          alamat: S.kost.alamat,
+          hp: S.kost.hp,
+          total_kamar: Number(S.kost.totalKamar) || 10,
+          updated_at: new Date().toISOString()
+        });
+      } catch (e) { console.warn('Sync kost gagal:', e); }
+    }
+  },
+
+  async uploadLocalToCloud() {
+    if (!sbClient) {
+      toast('Supabase belum terhubung! Atur URL dan Anon Key terlebih dahulu.', 'err');
+      return;
+    }
+    toast('Mengunggah data lokal ke Supabase Cloud... ⏳');
+    try {
+      // 1. Upload Kost
+      await this.saveKost();
+
+      // 2. Upload Kamar
+      if (S.kamar.length > 0) {
+        for (const k of S.kamar) {
+          await this.saveKamar(k);
+        }
+      }
+
+      // 3. Upload Penghuni
+      if (S.penghuni.length > 0) {
+        for (const p of S.penghuni) {
+          await this.savePenghuni(p);
+        }
+      }
+
+      // 4. Upload Pembayaran
+      if (S.pembayaran.length > 0) {
+        for (const pb of S.pembayaran) {
+          await this.savePembayaran(pb);
+        }
+      }
+
+      toast('Semua data lokal berhasil diunggah ke Supabase Cloud! 🎉');
+      await this.fetchData();
+    } catch (err) {
+      console.error(err);
+      toast('Gagal migrasi data: ' + err.message, 'err');
+    }
+  }
+};
+
+// ── PROFIL USER SUPABASE ──────────────────────────────────────
+async function fetchOrCreateProfile(user, fallbackNama = '', fallbackRole = 'manager') {
+  if (!sbClient || !user) return null;
+  try {
+    const { data: p, error } = await sbClient.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    if (p) {
+      return {
+        id: p.id,
+        nama: p.nama || user.email.split('@')[0],
+        email: p.email || user.email,
+        role: p.role || 'manager',
+        penghuniId: p.penghuni_id || null
+      };
+    }
+    // Jika belum ada di tabel profiles, buat record baru
+    const newP = {
+      id: user.id,
+      nama: fallbackNama || user.user_metadata?.nama || user.email.split('@')[0],
+      email: user.email,
+      role: fallbackRole || user.user_metadata?.role || 'manager',
+      penghuni_id: user.user_metadata?.penghuni_id || null
+    };
+    await sbClient.from('profiles').upsert(newP);
+    return newP;
+  } catch (err) {
+    console.warn('Ambil profil user gagal:', err);
+    return {
+      id: user.id,
+      nama: fallbackNama || user.email.split('@')[0],
+      email: user.email,
+      role: fallbackRole,
+      penghuniId: null
+    };
+  }
+}
+
+// ── LOGIN / REGISTER TABS ─────────────────────────────────────
+const tabBtnLogin = $('tab-btn-login');
+const tabBtnReg   = $('tab-btn-register');
+const formLogin   = $('form-login');
+const formReg     = $('form-register');
+
+if (tabBtnLogin && tabBtnReg) {
+  tabBtnLogin.addEventListener('click', () => {
+    tabBtnLogin.classList.add('active');
+    tabBtnReg.classList.remove('active');
+    formLogin.style.display = 'block';
+    formReg.style.display   = 'none';
+    $('login-err').style.display = 'none';
+  });
+  tabBtnReg.addEventListener('click', () => {
+    tabBtnReg.classList.add('active');
+    tabBtnLogin.classList.remove('active');
+    formLogin.style.display = 'none';
+    formReg.style.display   = 'block';
+    $('register-err').style.display = 'none';
+  });
+}
+
+// ── LOGIN SCREEN SUBMISSION ───────────────────────────────────
+formLogin.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const email = $('login-email').value.trim().toLowerCase();
+  const pw    = $('login-pw').value;
+  const btn   = $('btn-submit-login');
+
+  btn.disabled = true;
+  btn.textContent = 'Memverifikasi...';
+  $('login-err').style.display = 'none';
+
+  try {
+    if (sbClient) {
+      // 1. Login via Supabase Auth
+      const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pw });
+      if (error) throw error;
+      const profile = await fetchOrCreateProfile(data.user);
+      loginWithAkun(profile);
+      toast(`Selamat datang kembali, ${profile.nama}! 👋`);
+    } else {
+      // 2. Fallback Login Lokal (Offline)
+      const akun = S.akun.find(a => a.email === email);
+      if (!akun) throw new Error('Email tidak ditemukan di penyimpanan lokal.');
+      const hash = await hashPw(pw);
+      if (hash !== akun.pwHash) throw new Error('Password salah.');
+      loginWithAkun(akun);
+      toast(`Selamat datang, ${akun.nama}!`);
+    }
+  } catch (err) {
+    showLoginErr(err.message || 'Login gagal.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Masuk';
+  }
+});
+
+// ── REGISTER CLOUD SUBMISSION ─────────────────────────────────
+if (formReg) {
+  formReg.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const nama  = $('reg-nama').value.trim();
+    const email = $('reg-email').value.trim().toLowerCase();
+    const pw    = $('reg-pw').value;
+    const role  = $('reg-role').value;
+    const btn   = $('btn-submit-reg');
+
+    if (!nama)         { showRegErr('Nama wajib diisi!'); return; }
+    if (!email)        { showRegErr('Email wajib diisi!'); return; }
+    if (pw.length < 6) { showRegErr('Password minimal 6 karakter!'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Mendaftarkan...';
+    $('register-err').style.display = 'none';
+
+    try {
+      if (sbClient) {
+        // Register via Supabase Cloud Auth
+        const { data, error } = await sbClient.auth.signUp({
+          email,
+          password: pw,
+          options: {
+            data: { nama, role }
+          }
+        });
+        if (error) throw error;
+
+        if (data.session) {
+          const profile = await fetchOrCreateProfile(data.user, nama, role);
+          loginWithAkun(profile);
+          toast(`Akun Cloud ${nama} (${role}) berhasil dibuat! 🎉`);
+        } else if (data.user) {
+          toast('Pendaftaran berhasil! Jika konfirmasi email aktif, silakan periksa kotak masuk email Anda.', 'ok');
+          // Switch kembali ke tab login
+          tabBtnLogin.click();
+          $('login-email').value = email;
+        }
+      } else {
+        // Fallback Register Lokal
+        if (S.akun.find(a => a.email === email)) {
+          showRegErr('Email sudah terdaftar.');
+          return;
+        }
+        const pwHash = await hashPw(pw);
+        const akun = { id: uid(), nama, email, pwHash, role, penghuniId: null };
+        S.akun.push(akun);
+        LS.save();
+        loginWithAkun(akun);
+        toast(`Akun lokal ${nama} dibuat! Hubungkan Supabase kapan saja.`);
+      }
+    } catch (err) {
+      showRegErr(err.message || 'Pendaftaran gagal.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Daftar Akun Cloud';
+    }
+  });
+}
+
+function showLoginErr(msg) {
+  $('login-err').style.display = 'flex';
+  $('login-err-msg').textContent = msg;
+}
+function showRegErr(msg) {
+  $('register-err').style.display = 'flex';
+  $('register-err-msg').textContent = msg;
+}
+
+// ── SETUP SCREEN (Lokal Awal jika belum ada akun) ─────────────
 $('form-setup').addEventListener('submit', async function(e) {
   e.preventDefault();
   const nama  = $('setup-nama').value.trim();
@@ -130,54 +656,40 @@ $('form-setup').addEventListener('submit', async function(e) {
   loginWithAkun(akun);
 });
 
-// ── LOGIN SCREEN ──────────────────────────────────────────────
-$('form-login').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const email = $('login-email').value.trim().toLowerCase();
-  const pw    = $('login-pw').value;
-
-  const akun = S.akun.find(a => a.email === email);
-  if (!akun) { showLoginErr('Email tidak ditemukan.'); return; }
-
-  const hash = await hashPw(pw);
-  if (hash !== akun.pwHash) { showLoginErr('Password salah.'); return; }
-
-  $('login-err').style.display = 'none';
-  loginWithAkun(akun);
-});
-
-function showLoginErr(msg) {
-  $('login-err').style.display = 'flex';
-  $('login-err-msg').textContent = msg;
-}
-
 function loginWithAkun(akun) {
-  // Save session (tanpa pwHash)
-  const session = { id:akun.id, nama:akun.nama, email:akun.email, role:akun.role, penghuniId:akun.penghuniId };
+  const session = { id: akun.id, nama: akun.nama, email: akun.email, role: akun.role, penghuniId: akun.penghuniId };
   currentUser = session;
   LS.saveSession(session);
   enterApp();
 }
 
 // ── LOGOUT ────────────────────────────────────────────────────
-function logout() {
+async function logout() {
+  if (sbClient) {
+    try { await sbClient.auth.signOut(); } catch {}
+  }
   currentUser = null;
   LS.clearSession();
-  // Reset login form
-  $('form-login').reset();
-  $('login-err').style.display='none';
+  formLogin.reset();
+  if (formReg) formReg.reset();
+  $('login-err').style.display = 'none';
   showScreen('screen-login');
   toast('Berhasil keluar.');
 }
 $('btn-logout').addEventListener('click', logout);
 
 // ── APP ENTER ─────────────────────────────────────────────────
-function enterApp() {
+async function enterApp() {
   showScreen('screen-app');
   buildSidebar();
   renderUserChip();
   const firstPage = currentUser.role === 'manager' ? 'dashboard' : 'tenant';
   navigateTo(firstPage);
+
+  // Sync data dari cloud Supabase jika terhubung
+  if (sbClient) {
+    DB.fetchData();
+  }
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────────
@@ -243,7 +755,6 @@ function navigateTo(page) {
   if (page==='profil')     renderProfil();
 }
 
-// data-page inside content
 document.addEventListener('click', e => {
   const btn = e.target.closest('[data-page]');
   if (btn && !btn.classList.contains('nav-item')) { e.preventDefault(); navigateTo(btn.dataset.page); }
@@ -311,7 +822,6 @@ function renderCharts() {
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
   const tick=isDark?'#a3a3a3':'#6b7280';
   const grid=isDark?'#262626':'#f3f4f6';
-
   const donut={responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{color:tick,font:{size:11},padding:10,boxWidth:10,usePointStyle:true}}}};
 
   if(CHARTS.bayar) CHARTS.bayar.destroy();
@@ -448,7 +958,7 @@ function setupPhoto(inputId,prevId,phId) {
 setupPhoto('field-foto','prev-foto','ph-foto');
 setupPhoto('field-ktp','prev-ktp','ph-ktp');
 
-$('form-penghuni').addEventListener('submit',function(e){
+$('form-penghuni').addEventListener('submit',async function(e){
   e.preventDefault();
   const nama=$('field-nama').value.trim(), hp=$('field-hp').value.trim(), kamar=$('field-kamar').value.trim(), tglMasuk=$('field-tgl-masuk').value;
   if(!nama){toast('Nama wajib diisi!','err');switchFTab('identitas');return;}
@@ -473,22 +983,38 @@ $('form-penghuni').addEventListener('submit',function(e){
     createdAt:editId?(S.penghuni.find(p=>p.id===editId)?.createdAt||new Date().toISOString()):new Date().toISOString(),
     updatedAt:new Date().toISOString()
   };
-  if(editId){const i=S.penghuni.findIndex(p=>p.id===editId);if(i!==-1)S.penghuni[i]=d;toast('Data berhasil diperbarui! ✅');}
-  else{S.penghuni.unshift(d);toast('Penghuni berhasil ditambahkan! 🎉');}
-  LS.save(); closeModal('modal-penghuni'); renderPenghuni();
-  if($('page-dashboard').classList.contains('active'))renderDashboard();
+
+  if(editId){
+    const i=S.penghuni.findIndex(p=>p.id===editId);
+    if(i!==-1) S.penghuni[i]=d;
+    toast('Data berhasil diperbarui! ✅');
+  } else {
+    S.penghuni.unshift(d);
+    toast('Penghuni berhasil ditambahkan! 🎉');
+  }
+
+  LS.save();
+  closeModal('modal-penghuni');
+  renderPenghuni();
+  if($('page-dashboard').classList.contains('active')) renderDashboard();
+
+  // Sinkronisasi ke Supabase
+  await DB.savePenghuni(d);
 });
 
 function openEdit(id){const p=S.penghuni.find(x=>x.id===id);if(!p)return;openModalPenghuni(true,p);}
 function hapusPenghuni(id){
   const p=S.penghuni.find(x=>x.id===id);if(!p)return;
-  confirm_dlg('Hapus Penghuni',`Hapus data "${p.nama}"? Tindakan ini tidak dapat dibatalkan.`,()=>{
+  confirm_dlg('Hapus Penghuni',`Hapus data "${p.nama}"? Tindakan ini tidak dapat dibatalkan.`,async ()=>{
     S.penghuni=S.penghuni.filter(x=>x.id!==id);
     S.pembayaran=S.pembayaran.filter(pb=>pb.penghuniId!==id);
     LS.save(); renderPenghuni();
-    if($('page-dashboard').classList.contains('active'))renderDashboard();
+    if($('page-dashboard').classList.contains('active')) renderDashboard();
     toast(`"${p.nama}" dihapus.`);
-    if($('modal-detail').classList.contains('open'))closeModal('modal-detail');
+    if($('modal-detail').classList.contains('open')) closeModal('modal-detail');
+
+    // Sinkronisasi hapus ke Supabase
+    await DB.deletePenghuni(id);
   },'Hapus');
 }
 
@@ -624,7 +1150,7 @@ $('modal-kamar-close').addEventListener('click',()=>closeModal('modal-kamar'));
 $('btn-batal-kamar').addEventListener('click',()=>closeModal('modal-kamar'));
 $('modal-kamar').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal('modal-kamar');});
 
-$('form-kamar').addEventListener('submit',function(e){
+$('form-kamar').addEventListener('submit',async function(e){
   e.preventDefault();
   const no=$('field-no-kamar').value.trim(); if(!no){toast('Nomor kamar wajib!','err');return;}
   const id=$('field-kamar-id').value||uid();
@@ -632,10 +1158,20 @@ $('form-kamar').addEventListener('submit',function(e){
   const i=S.kamar.findIndex(k=>k.id===id);
   if(i!==-1){S.kamar[i]=d;toast('Kamar diperbarui!');} else {S.kamar.push(d);toast('Kamar ditambahkan!');}
   LS.save(); closeModal('modal-kamar'); renderKamar();
+
+  // Sinkronisasi ke Supabase
+  await DB.saveKamar(d);
 });
 
 function editKamar(id){const k=S.kamar.find(x=>x.id===id);if(!k)return;$('modal-kamar-title').textContent='Edit Kamar';$('field-kamar-id').value=k.id;$('field-no-kamar').value=k.no||'';$('field-lantai-kamar').value=k.lantai||'';$('field-tipe-kamar').value=k.tipe||'Standar';$('field-harga-kamar').value=k.harga||'';$('field-fasilitas').value=k.fasilitas||'';openModal('modal-kamar');}
-function hapusKamar(id){const k=S.kamar.find(x=>x.id===id);confirm_dlg('Hapus Kamar',`Hapus kamar ${k?.no||id}?`,()=>{S.kamar=S.kamar.filter(x=>x.id!==id);LS.save();renderKamar();toast('Kamar dihapus.');},'Hapus');}
+function hapusKamar(id){
+  const k=S.kamar.find(x=>x.id===id);
+  confirm_dlg('Hapus Kamar',`Hapus kamar ${k?.no||id}?`,async ()=>{
+    S.kamar=S.kamar.filter(x=>x.id!==id);
+    LS.save();renderKamar();toast('Kamar dihapus.');
+    await DB.deleteKamar(id);
+  },'Hapus');
+}
 
 // ── PEMBAYARAN ────────────────────────────────────────────────
 function renderPembayaran() {
@@ -671,8 +1207,24 @@ function renderPembayaran() {
 }
 
 $('filter-bulan-bayar').addEventListener('change',renderPembayaran);
-function tandaiBayar(pid,bln,jumlah){const ex=S.pembayaran.find(pb=>pb.penghuniId===pid&&pb.bulan===bln);if(ex){ex.status='lunas';ex.jumlah=jumlah;ex.tglBayar=new Date().toISOString();}else S.pembayaran.push({id:uid(),penghuniId:pid,bulan:bln,jumlah,status:'lunas',tglBayar:new Date().toISOString()});LS.save();renderPembayaran();toast('Pembayaran dicatat! 💰');}
-function batalBayar(pid,bln){S.pembayaran=S.pembayaran.filter(pb=>!(pb.penghuniId===pid&&pb.bulan===bln));LS.save();renderPembayaran();toast('Status direset.');}
+
+async function tandaiBayar(pid,bln,jumlah){
+  let pb=S.pembayaran.find(x=>x.penghuniId===pid&&x.bulan===bln);
+  if(pb){
+    pb.status='lunas';pb.jumlah=jumlah;pb.tglBayar=new Date().toISOString();
+  } else {
+    pb = { id:uid(),penghuniId:pid,bulan:bln,jumlah,status:'lunas',tglBayar:new Date().toISOString() };
+    S.pembayaran.push(pb);
+  }
+  LS.save();renderPembayaran();toast('Pembayaran dicatat! 💰');
+  await DB.savePembayaran(pb);
+}
+
+async function batalBayar(pid,bln){
+  S.pembayaran=S.pembayaran.filter(pb=>!(pb.penghuniId===pid&&pb.bulan===bln));
+  LS.save();renderPembayaran();toast('Status direset.');
+  await DB.deletePembayaran(pid, bln);
+}
 
 // ── PENGATURAN ────────────────────────────────────────────────
 function renderPengaturan() {
@@ -683,18 +1235,28 @@ function renderPengaturan() {
   $('set-total-kamar').value = S.kost.totalKamar||'';
   renderAkunList();
   fillAkunLinkSelect();
+
+  // Pengaturan Cloud Supabase
+  const cfg = getSupabaseConfig();
+  if (cfg) {
+    if ($('cloud-url-input')) $('cloud-url-input').value = cfg.url;
+    if ($('cloud-key-input')) $('cloud-key-input').value = cfg.key;
+  }
+  updateCloudStatusUI(isCloudConnected, cfg?.url || '');
 }
 
-$('form-kost').addEventListener('submit',function(e){
+$('form-kost').addEventListener('submit',async function(e){
   e.preventDefault();
   S.kost.nama      = $('set-nama-kost').value.trim();
   S.kost.pemilik   = $('set-pemilik').value.trim();
   S.kost.alamat    = $('set-alamat').value.trim();
   S.kost.hp        = $('set-hp-pemilik').value.trim();
   S.kost.totalKamar= $('set-total-kamar').value;
-  LS.save(); $('sb-kost-name').textContent=S.kost.nama||'SiKost';
-  $('login-kost-title') && ($('login-kost-title').textContent=S.kost.nama);
+  LS.save();
+  $('sb-kost-name').textContent=S.kost.nama||'SiKost';
+  if ($('login-kost-title')) $('login-kost-title').textContent=S.kost.nama;
   toast('Pengaturan disimpan! 🏠');
+  await DB.saveKost();
 });
 
 document.querySelectorAll('.settings-tab').forEach(btn=>{
@@ -710,7 +1272,7 @@ function renderAkunList() {
   const tbody=$('tbody-akun'); if(!tbody) return;
   tbody.innerHTML=S.akun.map(a=>{
     const p=a.penghuniId?S.penghuni.find(x=>x.id===a.penghuniId):null;
-    const isMe=a.id===currentUser.id;
+    const isMe=a.id===currentUser?.id;
     return `<tr>
       <td><strong>${a.nama}</strong> ${isMe?'<span class="badge badge-blue">Anda</span>':''}</td>
       <td>${a.email}</td>
@@ -733,6 +1295,40 @@ window.tambahAkunPenghuni = async function() {
   if(!email){toast('Email wajib diisi!','err');return;}
   if(pw.length<6){toast('Password minimal 6 karakter!','err');return;}
   if(S.akun.find(a=>a.email===email)){toast('Email sudah terdaftar!','err');return;}
+
+  if (sbClient) {
+    try {
+      // Buat akun di Supabase Auth via temporary client agar tidak log out manager
+      const cfg = getSupabaseConfig();
+      const tempClient = window.supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: false } });
+      const { data, error } = await tempClient.auth.signUp({
+        email,
+        password: pw,
+        options: { data: { nama, role: 'penghuni', penghuni_id: pid || null } }
+      });
+      if (error) throw error;
+
+      const newId = data.user?.id || uid();
+      await sbClient.from('profiles').upsert({
+        id: newId,
+        nama,
+        email,
+        role: 'penghuni',
+        penghuni_id: pid || null
+      });
+
+      S.akun.push({ id: newId, nama, email, role: 'penghuni', penghuniId: pid || null });
+      LS.save(); renderAkunList(); fillAkunLinkSelect();
+      $('akun-nama').value=''; $('akun-email').value=''; $('akun-pw').value=''; $('akun-link-penghuni').value='';
+      toast(`Akun Cloud untuk ${nama} berhasil dibuat! 🎉`);
+      return;
+    } catch (err) {
+      toast('Gagal buat akun Cloud: ' + err.message, 'err');
+      return;
+    }
+  }
+
+  // Fallback lokal
   const pwHash=await hashPw(pw);
   S.akun.push({id:uid(),nama,email,pwHash,role:'penghuni',penghuniId:pid||null});
   LS.save(); renderAkunList(); fillAkunLinkSelect();
@@ -741,11 +1337,17 @@ window.tambahAkunPenghuni = async function() {
 };
 
 window.hapusAkun=function(id){
-  const a=S.akun.find(x=>x.id===id); if(!a||a.id===currentUser.id) return;
-  confirm_dlg('Hapus Akun',`Hapus akun "${a.email}"?`,()=>{S.akun=S.akun.filter(x=>x.id!==id);LS.save();renderAkunList();toast('Akun dihapus.');},'Hapus');
+  const a=S.akun.find(x=>x.id===id); if(!a||a.id===currentUser?.id) return;
+  confirm_dlg('Hapus Akun',`Hapus akun "${a.email}"?`,async ()=>{
+    S.akun=S.akun.filter(x=>x.id!==id);
+    LS.save();renderAkunList();toast('Akun dihapus.');
+    if (sbClient) {
+      try { await sbClient.from('profiles').delete().eq('id', id); } catch {}
+    }
+  },'Hapus');
 };
 
-// Ganti password (dari pengaturan, untuk Manager)
+// Ganti password
 $('form-ganti-pw').addEventListener('submit',async function(e){
   e.preventDefault();
   await gantiPassword($('pw-lama').value,$('pw-baru').value,$('pw-confirm').value,this);
@@ -754,6 +1356,19 @@ $('form-ganti-pw').addEventListener('submit',async function(e){
 async function gantiPassword(lama,baru,confirm,formEl) {
   if(baru.length<6){toast('Password baru minimal 6 karakter!','err');return;}
   if(baru!==confirm){toast('Konfirmasi password tidak cocok!','err');return;}
+
+  if (sbClient) {
+    try {
+      const { error } = await sbClient.auth.updateUser({ password: baru });
+      if (error) throw error;
+      formEl.reset(); toast('Password Cloud berhasil diperbarui! 🔒');
+      return;
+    } catch (err) {
+      toast('Gagal ubah password di Supabase: ' + err.message, 'err');
+      return;
+    }
+  }
+
   const akunIdx=S.akun.findIndex(a=>a.id===currentUser.id);
   if(akunIdx===-1){toast('Akun tidak ditemukan.','err');return;}
   const lamaHash=await hashPw(lama);
@@ -772,7 +1387,7 @@ $('input-restore').addEventListener('change',function(){
   const r=new FileReader();
   r.onload=e=>{try{
     const d=JSON.parse(e.target.result); if(!d.penghuni)throw new Error();
-    confirm_dlg('Restore Data','Ini akan menggantikan semua data penghuni, kamar, dan pembayaran (akun login tidak terpengaruh). Lanjutkan?',()=>{
+    confirm_dlg('Restore Data','Ini akan menggantikan semua data penghuni, kamar, dan pembayaran lokal. Lanjutkan?',()=>{
       S.penghuni=d.penghuni||[];S.kamar=d.kamar||[];S.pembayaran=d.pembayaran||[];S.kost=d.kost||S.kost;
       LS.save();renderPengaturan();toast('Data di-restore!');
     },'Lanjutkan');
@@ -785,12 +1400,145 @@ $('btn-hapus-semua').addEventListener('click',()=>{
   },'Ya, Hapus Semua');
 });
 
+// ── PENGATURAN SUPABASE (TAB & MODAL) ─────────────────────────
+function setupSupabaseUI() {
+  // Modal Cloud Config triggers
+  const openCloudModal = () => {
+    const cfg = getSupabaseConfig();
+    if (cfg) {
+      $('modal-cloud-url').value = cfg.url;
+      $('modal-cloud-key').value = cfg.key;
+    }
+    openModal('modal-cloud-config');
+  };
+
+  const loginCloudPill = $('login-cloud-pill');
+  if (loginCloudPill) loginCloudPill.addEventListener('click', openCloudModal);
+
+  const topbarCloudBtn = $('topbar-cloud-btn');
+  if (topbarCloudBtn) topbarCloudBtn.addEventListener('click', openCloudModal);
+
+  const linkCloud = $('link-open-cloud-config');
+  if (linkCloud) linkCloud.addEventListener('click', e => { e.preventDefault(); openCloudModal(); });
+
+  const modalClose = $('modal-cloud-close');
+  if (modalClose) modalClose.addEventListener('click', () => closeModal('modal-cloud-config'));
+
+  const modalBatal = $('modal-cloud-batal');
+  if (modalBatal) modalBatal.addEventListener('click', () => closeModal('modal-cloud-config'));
+
+  // Form Modal Save
+  const formModal = $('form-modal-cloud');
+  if (formModal) {
+    formModal.addEventListener('submit', async e => {
+      e.preventDefault();
+      const url = $('modal-cloud-url').value.trim();
+      const key = $('modal-cloud-key').value.trim();
+      const saveBtn = $('modal-cloud-simpan');
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menghubungkan...';
+
+      const res = await testSupabaseConnection(url, key);
+      if (res.success) {
+        localStorage.setItem('sk3_supabase_config', JSON.stringify({ url, key }));
+        initSupabase();
+        updateCloudStatusUI(true, url);
+        closeModal('modal-cloud-config');
+        toast('Berhasil terhubung ke Supabase Cloud! ⚡');
+        if (currentUser) DB.fetchData();
+      } else {
+        toast('Gagal: ' + res.message, 'err');
+      }
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Hubungkan & Simpan';
+    });
+  }
+
+  // Form Settings Save
+  const formSettings = $('form-cloud-settings');
+  if (formSettings) {
+    formSettings.addEventListener('submit', async e => {
+      e.preventDefault();
+      const url = $('cloud-url-input').value.trim();
+      const key = $('cloud-key-input').value.trim();
+      const saveBtn = $('btn-save-cloud');
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menghubungkan...';
+
+      const res = await testSupabaseConnection(url, key);
+      if (res.success) {
+        localStorage.setItem('sk3_supabase_config', JSON.stringify({ url, key }));
+        initSupabase();
+        updateCloudStatusUI(true, url);
+        toast('Konfigurasi Supabase berhasil disimpan! ⚡');
+        if (currentUser) DB.fetchData();
+      } else {
+        toast('Gagal: ' + res.message, 'err');
+      }
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Simpan & Hubungkan';
+    });
+  }
+
+  // Tes Koneksi button di settings
+  const btnTest = $('btn-test-cloud');
+  if (btnTest) {
+    btnTest.addEventListener('click', async () => {
+      const url = $('cloud-url-input').value.trim();
+      const key = $('cloud-key-input').value.trim();
+      btnTest.disabled = true;
+      btnTest.textContent = 'Menguji...';
+      const res = await testSupabaseConnection(url, key);
+      if (res.success) toast('Koneksi ke Supabase berhasil! 🟢');
+      else toast('Koneksi gagal: ' + res.message, 'err');
+      btnTest.disabled = false;
+      btnTest.textContent = 'Tes Koneksi';
+    });
+  }
+
+  // Putuskan Koneksi button
+  const btnDisc = $('btn-disconnect-cloud');
+  if (btnDisc) {
+    btnDisc.addEventListener('click', () => {
+      confirm_dlg('Putuskan Supabase', 'Putuskan sambungan ke Supabase? Aplikasi akan beralih ke Mode Lokal.', () => {
+        localStorage.removeItem('sk3_supabase_config');
+        if (window.SIKOST_CONFIG) {
+          window.SIKOST_CONFIG.SUPABASE_URL = '';
+          window.SIKOST_CONFIG.SUPABASE_ANON_KEY = '';
+        }
+        sbClient = null;
+        updateCloudStatusUI(false);
+        if ($('cloud-url-input')) $('cloud-url-input').value = '';
+        if ($('cloud-key-input')) $('cloud-key-input').value = '';
+        toast('Koneksi Supabase diputuskan. Beralih ke Mode Lokal.');
+      }, 'Putuskan');
+    });
+  }
+
+  // Migrasi Lokal ke Cloud
+  const btnMigrate = $('btn-migrate-local-cloud');
+  if (btnMigrate) {
+    btnMigrate.addEventListener('click', () => {
+      confirm_dlg('Migrasi Data ke Cloud', 'Upload semua data kamar, penghuni, pembayaran, dan profil kost ke Supabase Cloud?', () => {
+        DB.uploadLocalToCloud();
+      }, 'Upload ke Cloud');
+    });
+  }
+}
+
 // ── TENANT VIEW ───────────────────────────────────────────────
 function renderTenant() {
-  const akun=S.akun.find(a=>a.id===currentUser.id);
-  const p=akun?.penghuniId?S.penghuni.find(x=>x.id===akun.penghuniId):null;
-  if(!p){$('tenant-content').style.display='none';$('tenant-not-found').style.display='block';return;}
-  $('tenant-not-found').style.display='none';$('tenant-content').style.display='block';
+  const p = currentUser?.penghuniId ? S.penghuni.find(x => x.id === currentUser.penghuniId) : null;
+  if (!p) {
+    $('tenant-content').style.display='none';
+    $('tenant-not-found').style.display='block';
+    return;
+  }
+  $('tenant-not-found').style.display='none';
+  $('tenant-content').style.display='block';
+
   const bln=thisMonth(), pb=S.pembayaran.find(x=>x.penghuniId===p.id&&x.bulan===bln), age=ageOf(p.tglLahir);
   const av=p.foto?`<img class="t-avatar" src="${p.foto}" alt="${p.nama}"/>`:`<div class="t-avatar-ph">${init(p.nama)}</div>`;
   $('tenant-content').innerHTML=`
@@ -868,33 +1616,64 @@ $('btn-export-csv').addEventListener('click',()=>{
 });
 
 // ── INIT ──────────────────────────────────────────────────────
-(function init() {
+(async function init() {
   LS.load();
+  setupSupabaseUI();
 
-  // Theme
+  // Tema Dark / Light
   const t=localStorage.getItem('sk3_theme')||'light';
   document.documentElement.setAttribute('data-theme',t);
   $('theme-icon').textContent=t==='dark'?'☀️':'🌙';
 
-  // Cek sesi tersimpan
-  const session=LS.loadSession();
-  if (session) {
-    // Pastikan akun masih ada di S.akun
-    const akun=S.akun.find(a=>a.id===session.id);
-    if (akun) {
-      currentUser={id:akun.id,nama:akun.nama,email:akun.email,role:akun.role,penghuniId:akun.penghuniId};
-      LS.saveSession(currentUser);
-      enterApp(); return;
+  // 1. Coba inisialisasi Supabase
+  const hasSb = initSupabase();
+  const cfg = getSupabaseConfig();
+  if (hasSb && cfg) {
+    // Tes koneksi secara asynchronous
+    testSupabaseConnection(cfg.url, cfg.key).then(res => {
+      updateCloudStatusUI(res.success, cfg.url);
+    });
+
+    // Cek apakah ada sesi aktif di Supabase
+    try {
+      const { data: { session } } = await sbClient.auth.getSession();
+      if (session?.user) {
+        const profile = await fetchOrCreateProfile(session.user);
+        currentUser = profile;
+        LS.saveSession(currentUser);
+        enterApp();
+        return;
+      }
+    } catch (e) {
+      console.warn('Gagal cek sesi Supabase:', e);
     }
-    LS.clearSession();
+
+    // Dengarkan perubahan state auth
+    sbClient.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user && !currentUser) {
+        const profile = await fetchOrCreateProfile(session.user);
+        currentUser = profile;
+        LS.saveSession(currentUser);
+        enterApp();
+      } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        LS.clearSession();
+        showScreen('screen-login');
+      }
+    });
+  } else {
+    updateCloudStatusUI(false);
   }
 
-  // Cek apakah belum ada akun sama sekali → setup screen
-  if (S.akun.length === 0) {
-    showScreen('screen-setup');
-  } else {
-    // Isi nama kost di login
-    if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama||'SiKost';
-    showScreen('screen-login');
+  // 2. Cek sesi lokal tersimpan jika Supabase belum login
+  const session = LS.loadSession();
+  if (session) {
+    currentUser = session;
+    enterApp();
+    return;
   }
+
+  // 3. Tampilkan layar masuk
+  if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama || 'SiKost';
+  showScreen('screen-login');
 })();

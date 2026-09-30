@@ -838,6 +838,119 @@ textarea.fc { resize: vertical; }
 /* ─── Misc ───────────────────────────────── */
 code { font-family: ui-monospace, monospace; font-size: 0.75em; background: var(--bg-3); padding: 1px 5px; border-radius: 3px; }
 
+/* ─── Cloud & Supabase Integration ──────── */
+.cloud-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: var(--t);
+  text-decoration: none;
+}
+.cloud-pill.connected {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid var(--green-b);
+}
+.cloud-pill.disconnected {
+  background: var(--bg-3);
+  color: var(--text-3);
+  border: 1px solid var(--border);
+}
+.cloud-pill:hover {
+  filter: brightness(0.95);
+  transform: translateY(-1px);
+}
+.cloud-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.cloud-pill.connected .cloud-dot {
+  background: var(--green);
+  box-shadow: 0 0 6px rgba(22, 163, 74, 0.6);
+}
+.cloud-pill.disconnected .cloud-dot {
+  background: var(--text-4);
+}
+
+.cloud-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 11px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: var(--t);
+}
+.cloud-btn:hover {
+  background: var(--bg-3);
+  border-color: var(--border-2);
+}
+.cloud-btn.connected {
+  border-color: var(--green-b);
+  background: var(--green-bg);
+  color: var(--green);
+}
+.cloud-btn.connected .cloud-dot {
+  background: var(--green);
+  box-shadow: 0 0 6px rgba(22, 163, 74, 0.6);
+}
+
+.login-tabs {
+  display: flex;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 3px;
+  margin-bottom: 18px;
+}
+.login-tab {
+  flex: 1;
+  text-align: center;
+  padding: 7px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--t);
+}
+.login-tab.active {
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.cloud-banner {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 0.78rem;
+  color: var(--text-2);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.cloud-banner-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 /* ─── Responsive ─────────────────────────── */
 @media (max-width: 1024px) {
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
@@ -865,3 +978,4 @@ code { font-family: ui-monospace, monospace; font-size: 0.75em; background: var(
   .d-tags { justify-content: center; }
   .add-akses-form .fg-row { flex-direction: column; }
 }
+

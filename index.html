@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -48,15 +50,29 @@
   </div>
 </div>
 
-<!-- ========== SCREEN: LOGIN ========== -->
+<!-- ========== SCREEN: LOGIN / REGISTER ========== -->
 <div id="screen-login" class="login-screen" style="display:none">
   <div class="login-card">
     <div class="login-brand">
       <div class="login-logo">🏠</div>
       <h1 class="login-title" id="login-kost-title">SiKost</h1>
-      <p class="login-sub" id="login-kost-sub">Sistem Manajemen Kost</p>
+      <p class="login-sub" id="login-kost-sub">Sistem Manajemen Kost Cloud</p>
     </div>
 
+    <!-- Status Koneksi Supabase -->
+    <div style="display:flex;justify-content:center;margin-bottom:14px">
+      <div id="login-cloud-pill" class="cloud-pill disconnected" title="Klik untuk konfigurasi Supabase">
+        <span class="cloud-dot"></span>
+        <span id="login-cloud-text">Mode Lokal (Klik hubungkan Supabase)</span>
+      </div>
+    </div>
+
+    <div class="login-tabs">
+      <button type="button" class="login-tab active" id="tab-btn-login">Masuk</button>
+      <button type="button" class="login-tab" id="tab-btn-register">Daftar Cloud</button>
+    </div>
+
+    <!-- Form Login -->
     <form id="form-login" autocomplete="off">
       <div class="login-err" id="login-err" style="display:none">
         ⚠️ <span id="login-err-msg">Email atau password salah.</span>
@@ -72,14 +88,47 @@
           <button type="button" class="pw-eye" data-target="login-pw">👁</button>
         </div>
       </div>
-      <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:11px">
+      <button type="submit" id="btn-submit-login" class="btn-primary" style="width:100%;justify-content:center;padding:11px">
         Masuk
       </button>
     </form>
 
-    <p class="login-footer" style="margin-top:16px">
-      Lupa password? Hubungi Manager kost Anda.
-    </p>
+    <!-- Form Register Cloud -->
+    <form id="form-register" autocomplete="off" style="display:none">
+      <div class="login-err" id="register-err" style="display:none">
+        ⚠️ <span id="register-err-msg">Terjadi kesalahan saat mendaftar.</span>
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Nama Lengkap</label>
+        <input type="text" id="reg-nama" class="fc" placeholder="Nama Anda" required />
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Email</label>
+        <input type="email" id="reg-email" class="fc" placeholder="email@anda.com" required autocomplete="email" />
+      </div>
+      <div class="fg" style="margin-bottom:12px">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="reg-pw" class="fc" placeholder="Min. 6 karakter" required autocomplete="new-password" />
+          <button type="button" class="pw-eye" data-target="reg-pw">👁</button>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:20px">
+        <label>Role Akun</label>
+        <select id="reg-role" class="fc">
+          <option value="manager">Manager (Akses Penuh)</option>
+          <option value="penghuni">Penghuni (Data Saya)</option>
+        </select>
+      </div>
+      <button type="submit" id="btn-submit-reg" class="btn-primary" style="width:100%;justify-content:center;padding:11px">
+        Daftar Akun Cloud
+      </button>
+    </form>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:0.75rem;color:var(--text-3)">
+      <a href="#" id="link-open-cloud-config" style="color:var(--accent);text-decoration:none">⚙️ Set Supabase</a>
+      <span id="login-footer-hint">SiKost v3.1 Cloud</span>
+    </div>
   </div>
 </div>
 
@@ -127,6 +176,10 @@
         <div class="topbar-title" id="topbar-title">Dashboard</div>
       </div>
       <div class="topbar-right">
+        <button class="cloud-btn disconnected" id="topbar-cloud-btn" title="Status Cloud Supabase">
+          <span class="cloud-dot"></span>
+          <span id="topbar-cloud-text">Supabase</span>
+        </button>
         <button class="icon-btn" id="theme-toggle" title="Ganti tema" aria-label="Toggle theme">
           <span id="theme-icon">🌙</span>
         </button>
@@ -269,6 +322,7 @@
           <div class="settings-sidebar">
             <button class="settings-tab active" data-stab="profil">🏠 Profil Kost</button>
             <button class="settings-tab" data-stab="akun">👤 Akun Penghuni</button>
+            <button class="settings-tab" data-stab="cloud">⚡ Cloud Supabase</button>
             <button class="settings-tab" data-stab="pw">🔑 Ganti Password</button>
             <button class="settings-tab" data-stab="data">🗂️ Data</button>
           </div>
@@ -314,6 +368,49 @@
                   <select id="akun-link-penghuni" class="fc"><option value="">-- Pilih penghuni --</option></select>
                 </div>
               </div>
+            </div>
+
+            <!-- Cloud Supabase -->
+            <div class="stab-content" id="stab-cloud">
+              <h2 class="settings-title">Integrasi Supabase Cloud &amp; Vercel</h2>
+              <p class="text-muted">Hubungkan database PostgreSQL dan autentikasi Cloud Supabase agar data tersimpan aman di cloud dan dapat diakses dari mana saja.</p>
+
+              <div class="cloud-banner" style="margin-top:14px">
+                <span class="cloud-banner-icon">⚡</span>
+                <div>
+                  <strong>Status Koneksi: </strong><span id="settings-cloud-status-text">Memeriksa koneksi...</span>
+                  <div style="font-size:0.75rem;margin-top:4px;color:var(--text-3)" id="settings-cloud-endpoint">–</div>
+                </div>
+              </div>
+
+              <form id="form-cloud-settings" class="settings-form" style="max-width:540px;margin-top:16px">
+                <div class="fg">
+                  <label>Supabase Project URL</label>
+                  <input type="url" id="cloud-url-input" class="fc" placeholder="https://xxxxxxxxxxxxxxxxxxxx.supabase.co" />
+                  <small style="color:var(--text-3);font-size:0.72rem">Ditemukan di: Supabase Dashboard &gt; Settings &gt; API &gt; Project URL</small>
+                </div>
+                <div class="fg">
+                  <label>Supabase Anon Key (Public Key)</label>
+                  <div class="pw-wrap">
+                    <input type="password" id="cloud-key-input" class="fc" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+                    <button type="button" class="pw-eye" data-target="cloud-key-input">👁</button>
+                  </div>
+                  <small style="color:var(--text-3);font-size:0.72rem">Ditemukan di: Supabase Dashboard &gt; Settings &gt; API &gt; Project API keys &gt; anon public</small>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button type="submit" class="btn-primary" id="btn-save-cloud">Simpan &amp; Hubungkan</button>
+                  <button type="button" class="btn-outline" id="btn-test-cloud">Tes Koneksi</button>
+                  <button type="button" class="btn-ghost" id="btn-disconnect-cloud">Putuskan Koneksi</button>
+                </div>
+              </form>
+
+              <hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
+
+              <h3 style="font-size:0.88rem;font-weight:700;margin-bottom:8px">Migrasi Data Lokal ke Supabase Cloud</h3>
+              <p class="text-muted" style="font-size:0.78rem;margin-bottom:14px">Upload seluruh data kamar, penghuni, pembayaran, dan profil kost yang ada di browser ini ke Supabase Cloud sekaligus.</p>
+              <button type="button" class="btn-primary" id="btn-migrate-local-cloud" style="background:var(--purple);border-color:var(--purple)">
+                ☁️ Upload Data Lokal ke Supabase Cloud
+              </button>
             </div>
 
             <!-- Ganti Password -->
@@ -540,6 +637,38 @@
     <div class="modal-foot">
       <button class="btn-ghost" id="confirm-cancel">Batal</button>
       <button class="btn-danger" id="confirm-ok">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: KONFIGURASI SUPABASE CLOUD ====== -->
+<div class="modal-overlay" id="modal-cloud-config">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <h2 class="modal-title">⚡ Hubungkan Supabase Cloud</h2>
+      <button class="modal-x" id="modal-cloud-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted" style="font-size:0.8rem;line-height:1.5;margin-bottom:14px">
+        Masukkan URL dan Public Anon Key dari project Supabase Anda. Anda dapat membuat project gratis di <a href="https://supabase.com" target="_blank" style="color:var(--accent);text-decoration:none">supabase.com</a>.
+      </p>
+      <form id="form-modal-cloud">
+        <div class="fg" style="margin-bottom:12px">
+          <label>Project URL</label>
+          <input type="url" id="modal-cloud-url" class="fc" placeholder="https://xxxxxxxx.supabase.co" required />
+        </div>
+        <div class="fg" style="margin-bottom:16px">
+          <label>Anon Key (Public)</label>
+          <div class="pw-wrap">
+            <input type="password" id="modal-cloud-key" class="fc" placeholder="eyJhbGciOi..." required />
+            <button type="button" class="pw-eye" data-target="modal-cloud-key">👁</button>
+          </div>
+        </div>
+        <div class="modal-foot" style="padding:0">
+          <button type="button" class="btn-ghost" id="modal-cloud-batal">Batal</button>
+          <button type="submit" class="btn-primary" id="modal-cloud-simpan">Hubungkan &amp; Simpan</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
