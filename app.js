@@ -13,6 +13,7 @@ let S = {
   akun: [],
   kost: { nama:'SiKost', pemilik:'', alamat:'', hp:'', totalKamar:10 }
 };
+window.S = S;
 
 let currentUser = null; // akun object
 let editId      = null;
@@ -357,6 +358,8 @@ const durasi = tgl => {
   return Math.floor(hari/365)+' tahun '+Math.floor((Math.floor(hari/30))%12)+' bulan';
 };
 const thisMonth = () => new Date().toISOString().slice(0,7);
+window.thisMonth = thisMonth;
+window.rp = rp;
 
 function toast(msg, type='ok') {
   const w=document.getElementById('toast-wrap');
@@ -1256,8 +1259,8 @@ $('form-penghuni').addEventListener('submit',async function(e){
   await DB.savePenghuni(d);
 });
 
-function openEdit(id){const p=S.penghuni.find(x=>x.id===id);if(!p)return;openModalPenghuni(true,p);}
-function hapusPenghuni(id){
+window.openEdit = function(id){const p=S.penghuni.find(x=>x.id===id);if(!p)return;openModalPenghuni(true,p);};
+window.hapusPenghuni = function(id){
   const p=S.penghuni.find(x=>x.id===id);if(!p)return;
   confirm_dlg('Hapus Penghuni',`Hapus data "${p.nama}"? Tindakan ini tidak dapat dibatalkan.`,async ()=>{
     S.penghuni=S.penghuni.filter(x=>x.id!==id);
@@ -1270,10 +1273,10 @@ function hapusPenghuni(id){
     // Sinkronisasi hapus ke Supabase
     await DB.deletePenghuni(id);
   },'Hapus');
-}
+};
 
 // ── DETAIL ────────────────────────────────────────────────────
-function openDetail(id) {
+window.openDetail = function(id) {
   const p=S.penghuni.find(x=>x.id===id); if(!p)return;
   detailId=id;
   $('detail-title').textContent=p.nama;
@@ -1345,7 +1348,7 @@ $('btn-hapus-detail').addEventListener('click',()=>{closeModal('modal-detail');h
 $('btn-print-detail').addEventListener('click',()=>{const p=S.penghuni.find(x=>x.id===detailId);if(p)printKartu(p);});
 
 // ── PRINT ─────────────────────────────────────────────────────
-function printKartu(p) {
+window.printKartu = function(p) {
   const age=ageOf(p.tglLahir);
   const html=`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Kartu – ${p.nama}</title>
 <style>body{font-family:Arial,sans-serif;color:#111;padding:30px;max-width:640px;margin:0 auto}h1{font-size:17px;font-weight:800;margin-bottom:2px}.sub{color:#666;font-size:11px;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #000}.hero{display:flex;gap:16px;align-items:flex-start;margin-bottom:18px}img.av{width:80px;height:80px;object-fit:cover;border:1px solid #ccc;border-radius:4px}.av-ph{width:80px;height:80px;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#555;border-radius:4px}h2{font-size:15px;margin:0 0 4px}.badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px}.badge{border:1px solid #333;border-radius:20px;padding:1px 7px;font-size:9px;font-weight:700}table{width:100%;border-collapse:collapse;font-size:11px}td{padding:5px 7px;border:1px solid #ddd;vertical-align:top}td:first-child{font-weight:700;width:150px;background:#f5f5f5}.sh{background:#111;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 7px}.footer{margin-top:14px;font-size:9px;color:#aaa;text-align:right;border-top:1px solid #eee;padding-top:6px}@media print{body{padding:10px}}</style></head><body>
@@ -1443,15 +1446,15 @@ $('form-kamar').addEventListener('submit',async function(e){
   await DB.saveKamar(d);
 });
 
-function editKamar(id){const k=S.kamar.find(x=>x.id===id);if(!k)return;$('modal-kamar-title').textContent='Edit Kamar';$('field-kamar-id').value=k.id;$('field-no-kamar').value=k.no||'';$('field-lantai-kamar').value=k.lantai||'';$('field-tipe-kamar').value=k.tipe||'Standar';$('field-harga-kamar').value=k.harga||'';$('field-fasilitas').value=k.fasilitas||'';openModal('modal-kamar');}
-function hapusKamar(id){
+window.editKamar = function(id){const k=S.kamar.find(x=>x.id===id);if(!k)return;$('modal-kamar-title').textContent='Edit Kamar';$('field-kamar-id').value=k.id;$('field-no-kamar').value=k.no||'';$('field-lantai-kamar').value=k.lantai||'';$('field-tipe-kamar').value=k.tipe||'Standar';$('field-harga-kamar').value=k.harga||'';$('field-fasilitas').value=k.fasilitas||'';openModal('modal-kamar');};
+window.hapusKamar = function(id){
   const k=S.kamar.find(x=>x.id===id);
   confirm_dlg('Hapus Kamar',`Hapus kamar ${k?.no||id}?`,async ()=>{
     S.kamar=S.kamar.filter(x=>x.id!==id);
     LS.save();renderKamar();toast('Kamar dihapus.');
     await DB.deleteKamar(id);
   },'Hapus');
-}
+};
 
 // ── PEMBAYARAN ────────────────────────────────────────────────
 function renderPembayaran() {
@@ -1502,7 +1505,7 @@ window.kirimWaTagihan = function(pid, bln) {
 
 $('filter-bulan-bayar').addEventListener('change',renderPembayaran);
 
-async function tandaiBayar(pid,bln,jumlah){
+window.tandaiBayar = async function(pid,bln,jumlah){
   let pb=S.pembayaran.find(x=>x.penghuniId===pid&&x.bulan===bln);
   if(pb){
     pb.status='lunas';pb.jumlah=jumlah;pb.tglBayar=new Date().toISOString();
@@ -1512,13 +1515,13 @@ async function tandaiBayar(pid,bln,jumlah){
   }
   LS.save();renderPembayaran();toast('Pembayaran dicatat! 💰');
   await DB.savePembayaran(pb);
-}
+};
 
-async function batalBayar(pid,bln){
+window.batalBayar = async function(pid,bln){
   S.pembayaran=S.pembayaran.filter(pb=>!(pb.penghuniId===pid&&pb.bulan===bln));
   LS.save();renderPembayaran();toast('Status direset.');
   await DB.deletePembayaran(pid, bln);
-}
+};
 
 // ── PENGATURAN ────────────────────────────────────────────────
 function renderPengaturan() {

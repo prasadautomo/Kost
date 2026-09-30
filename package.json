@@ -4,7 +4,8 @@
   "description": "SiKost - Aplikasi Manajemen Kost Cloud dengan Supabase & Vercel",
   "scripts": {
     "dev": "serve .",
-    "start": "serve ."
+    "start": "serve .",
+    "test": "node test_organic.js"
   },
   "keywords": [
     "kost",
