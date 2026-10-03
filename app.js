@@ -1213,49 +1213,82 @@ function decodeJwt(token) {
   }
 }
 
-async function handleGoogleCredentialResponse(response) {
-  const payload = decodeJwt(response.credential);
-  if (!payload || !payload.email) {
+async function handleGoogleUserProfile(profile) {
+  if (!profile || !profile.email) {
     toast('Gagal memproses data akun Google', 'err');
     return;
   }
-  const email = payload.email.toLowerCase();
-  const nama = payload.name || email.split('@')[0];
-  const avatar = payload.picture || '';
+  const email = profile.email.toLowerCase();
+  const nama = profile.name || email.split('@')[0];
+  const avatar = profile.picture || '';
 
   // STRICT SECURITY RULE: HANYA gavinutomo4@gmail.com YANG MENJADI MANAGER!
   const isMgr = (email === 'gavinutomo4@gmail.com');
   const role = isMgr ? 'manager' : 'penghuni';
 
-  if (sbClient) {
-    try {
-      if (sbClient.auth.signInWithIdToken) {
-        await sbClient.auth.signInWithIdToken({
-          provider: 'google',
-          token: response.credential
-        });
-      }
-    } catch (e) {
-      console.warn('signInWithIdToken Supabase warning:', e);
-    }
+  // Cek apakah email cocok dengan penghuni yang terdaftar
+  const matchedP = S.penghuni.find(p => p.email && p.email.toLowerCase() === email);
+
+  let akun = S.akun.find(a => a.email && a.email.toLowerCase() === email);
+  if (!akun) {
+    akun = {
+      id: 'google_' + (profile.sub || uid()),
+      email,
+      nama: isMgr ? 'Gavin Utomo (Owner)' : nama,
+      avatar,
+      role,
+      penghuniId: matchedP ? matchedP.id : null,
+      googleAuth: true
+    };
+    S.akun.push(akun);
+    LS.save();
+  } else {
+    akun.nama = isMgr ? 'Gavin Utomo (Owner)' : (akun.nama || nama);
+    akun.avatar = avatar || akun.avatar;
+    akun.role = role;
+    if (matchedP && !akun.penghuniId) akun.penghuniId = matchedP.id;
+    LS.save();
   }
 
-  const akun = {
-    id: 'google_' + (payload.sub || uid()),
-    email,
-    nama,
-    avatar,
-    role,
-    googleAuth: true
-  };
+  // Jika Supabase terhubung, buat profil
+  if (sbClient) {
+    try {
+      await fetchOrCreateProfile({ id: akun.id, email: akun.email, user_metadata: { full_name: nama, avatar_url: avatar } });
+    } catch (e) {
+      console.warn('Sync profile Supabase warning:', e);
+    }
+  }
 
   loginWithAkun(akun);
   toast(`Berhasil masuk via Google: ${nama} (${isMgr ? 'Manager 👑' : 'Penghuni 👤'})! 🚀`);
 }
 
+async function handleGoogleCredentialResponse(response) {
+  const payload = decodeJwt(response.credential);
+  if (payload) {
+    await handleGoogleUserProfile(payload);
+  } else {
+    toast('Gagal membaca kredensial akun Google', 'err');
+  }
+}
+
 function initGoogleIdentityServices() {
   const clientId = window.SIKOST_CONFIG?.GOOGLE_CLIENT_ID || localStorage.getItem('sk3_google_client_id');
-  if (!clientId || !window.google?.accounts?.id) return;
+  if (!clientId) return;
+
+  if (!window.google?.accounts?.id) {
+    let retries = 0;
+    const interval = setInterval(() => {
+      retries++;
+      if (window.google?.accounts?.id) {
+        clearInterval(interval);
+        initGoogleIdentityServices();
+      } else if (retries > 30) {
+        clearInterval(interval);
+      }
+    }, 250);
+    return;
+  }
 
   try {
     window.google.accounts.id.initialize({
@@ -1267,6 +1300,7 @@ function initGoogleIdentityServices() {
 
     const container = document.getElementById('g_id_signin');
     if (container) {
+      container.innerHTML = '';
       window.google.accounts.id.renderButton(container, {
         theme: 'filled_blue',
         size: 'large',
@@ -1290,16 +1324,46 @@ async function triggerRealGoogleLogin() {
     return;
   }
 
-  // 2. Jika ada Google Identity Services One-Tap:
   const clientId = window.SIKOST_CONFIG?.GOOGLE_CLIENT_ID || localStorage.getItem('sk3_google_client_id');
-  if (clientId && window.google?.accounts?.id) {
+
+  // 2. Buka Google OAuth 2.0 Real Pop-up jika ada Google Identity Services Token Client:
+  if (clientId && window.google?.accounts?.oauth2) {
     try {
-      window.google.accounts.id.prompt();
+      const tokenClient = window.google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: 'email profile openid',
+        prompt: 'select_account',
+        callback: async (tokenResponse) => {
+          if (tokenResponse && tokenResponse.access_token) {
+            try {
+              const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+              });
+              const profile = await res.json();
+              if (profile && profile.email) {
+                await handleGoogleUserProfile(profile);
+              }
+            } catch (err) {
+              console.error('Fetch Google userinfo error:', err);
+              toast('Gagal mengambil data profil Google', 'err');
+            }
+          }
+        },
+        error_callback: (err) => {
+          console.warn('Google OAuth popup error:', err);
+          if (err && err.type !== 'popup_closed') {
+            openModalGoogle();
+          }
+        }
+      });
+      tokenClient.requestAccessToken({ prompt: 'select_account' });
       return;
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Google OAuth popup initiation error:', e);
+    }
   }
 
-  // 3. Eksekusi Supabase Live Google OAuth
+  // 3. Jika Supabase Live OAuth aktif:
   if (sbClient) {
     const btn = $('btn-login-google');
     const originalText = btn ? btn.innerHTML : '';
@@ -1341,19 +1405,15 @@ async function triggerRealGoogleLogin() {
       }
     }
   } else {
-    toast('Supabase Cloud belum terhubung. Membuka pemilih akun 1-Klik...', 'info');
     openModalGoogle();
   }
 }
 
 function handleGoogleLoginClick() {
-  // Jika Client ID sudah diisi dan ada Google One-Tap, coba One Tap
   const clientId = window.SIKOST_CONFIG?.GOOGLE_CLIENT_ID || localStorage.getItem('sk3_google_client_id');
-  if (clientId && window.google?.accounts?.id) {
-    try {
-      window.google.accounts.id.prompt();
-      return;
-    } catch (e) {}
+  if (clientId && (window.google?.accounts?.oauth2 || window.google?.accounts?.id)) {
+    triggerRealGoogleLogin();
+    return;
   }
   // Buka pemilih akun Google resmi SiKost (1-Klik Tahu Beres)
   openModalGoogle();
