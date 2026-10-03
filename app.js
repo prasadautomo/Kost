@@ -999,46 +999,189 @@ async function fetchOrCreateProfile(user, fallbackNama = '', fallbackRole = 'man
   }
 }
 
-// ── GOOGLE 1-KLIK LOGIN ───────────────────────────────────────
-const btnLoginGoogle = $('btn-login-google');
-if (btnLoginGoogle) {
-  btnLoginGoogle.addEventListener('click', async () => {
-    if (!sbClient) {
-      confirm_dlg(
-        'Integrasi Supabase Cloud Diperlukan',
-        'Untuk login langsung dengan Google, aplikasi memerlukan Supabase Cloud aktif.\n\nSilakan hubungkan Supabase Anda melalui tombol "⚙️ Set Supabase" di bawah, lalu aktifkan Google Provider di Dashboard Supabase.\n\nApakah Anda ingin mencoba Demo Anak Kost langsung?',
-        () => {
-          const btnDemoTnt = $('btn-demo-tnt');
-          if (btnDemoTnt) btnDemoTnt.click();
-        },
-        'Masuk Demo Anak Kost'
-      );
+// ── GOOGLE 1-KLIK LOGIN (TAHU BERES) ──────────────────────────
+const btnLoginGoogle        = $('btn-login-google');
+const modalGoogleAuth       = $('modal-google-auth');
+const modalGoogleClose      = $('modal-google-close');
+const googleAccountsList    = $('google-accounts-list');
+const btnToggleCustomGoogle = $('btn-toggle-custom-google');
+const formCustomGoogle      = $('form-custom-google');
+const customGoogleEmail     = $('custom-google-email');
+const customGoogleNama      = $('custom-google-nama');
+const googleLiveOauthBox    = $('google-live-oauth-box');
+const btnTriggerLiveOauth   = $('btn-trigger-live-oauth');
+
+function renderGoogleAccounts() {
+  if (!googleAccountsList) return;
+  seedDemoData(false);
+  
+  googleAccountsList.innerHTML = '';
+  
+  // 1. Akun Manager / Pemilik Kost
+  let mgr = S.akun.find(a => a.role === 'manager');
+  const mgrNama = S.kost?.pemilik || mgr?.nama || 'Budi Santoso';
+  const mgrEmail = mgr?.email || 'budi.santoso@gmail.com';
+  
+  const mgrCard = document.createElement('div');
+  mgrCard.className = 'google-acc-card';
+  mgrCard.innerHTML = `
+    <div class="google-acc-avatar mgr">
+      <span>👑</span>
+      <div class="google-badge-dot">
+        <svg viewBox="0 0 24 24" style="width:10px;height:10px"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+      </div>
+    </div>
+    <div class="google-acc-meta">
+      <div class="google-acc-name">${esc(mgrNama)} (Pemilik / Manager)</div>
+      <div class="google-acc-sub">
+        <span>${esc(mgrEmail)}</span>
+      </div>
+    </div>
+    <span class="google-acc-role mgr">Manager 👑</span>
+  `;
+  mgrCard.addEventListener('click', () => {
+    closeModalGoogle();
+    if (!mgr) {
+      mgr = { id: 'akun_mgr', nama: mgrNama, email: mgrEmail, role: 'manager', penghuniId: null };
+      S.akun.push(mgr);
+      LS.save();
+    }
+    loginWithAkun(mgr);
+    toast(`Masuk sebagai ${mgrNama} (Manager) via Google! 👑`);
+  });
+  googleAccountsList.appendChild(mgrCard);
+
+  // 2. Akun Penghuni
+  if (S.penghuni && S.penghuni.length > 0) {
+    S.penghuni.forEach(p => {
+      const emailP = p.email || (p.nama.toLowerCase().replace(/\s+/g, '.') + '@gmail.com');
+      const inisial = p.nama ? p.nama.charAt(0).toUpperCase() : 'P';
+      const card = document.createElement('div');
+      card.className = 'google-acc-card';
+      card.innerHTML = `
+        <div class="google-acc-avatar">
+          <span>${inisial}</span>
+          <div class="google-badge-dot">
+            <svg viewBox="0 0 24 24" style="width:10px;height:10px"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+          </div>
+        </div>
+        <div class="google-acc-meta">
+          <div class="google-acc-name">${esc(p.nama)}</div>
+          <div class="google-acc-sub">
+            <span>${esc(emailP)}</span>
+          </div>
+        </div>
+        <span class="google-acc-role tnt">Kamar ${esc(p.kamar || '-')} 🔑</span>
+      `;
+      card.addEventListener('click', () => {
+        closeModalGoogle();
+        let akunTnt = S.akun.find(a => a.penghuniId === p.id || (a.email && a.email.toLowerCase() === emailP.toLowerCase()));
+        if (!akunTnt) {
+          akunTnt = { id: 'akun_' + p.id, nama: p.nama, email: emailP, role: 'penghuni', penghuniId: p.id };
+          S.akun.push(akunTnt);
+          LS.save();
+        }
+        loginWithAkun(akunTnt);
+        toast(`Selamat datang di Kamar ${p.kamar}, ${p.nama}! 🔑`);
+      });
+      googleAccountsList.appendChild(card);
+    });
+  }
+}
+
+function openModalGoogle() {
+  renderGoogleAccounts();
+  if (modalGoogleAuth) modalGoogleAuth.classList.add('open');
+  if (googleLiveOauthBox) {
+    googleLiveOauthBox.style.display = sbClient ? 'block' : 'none';
+  }
+}
+
+function closeModalGoogle() {
+  if (modalGoogleAuth) modalGoogleAuth.classList.remove('open');
+  if (formCustomGoogle) formCustomGoogle.style.display = 'none';
+}
+
+if (modalGoogleClose) {
+  modalGoogleClose.addEventListener('click', closeModalGoogle);
+}
+if (modalGoogleAuth) {
+  modalGoogleAuth.addEventListener('click', (e) => {
+    if (e.target === modalGoogleAuth) closeModalGoogle();
+  });
+}
+
+if (btnToggleCustomGoogle && formCustomGoogle) {
+  btnToggleCustomGoogle.addEventListener('click', () => {
+    const isHidden = formCustomGoogle.style.display === 'none';
+    formCustomGoogle.style.display = isHidden ? 'block' : 'none';
+    if (isHidden && customGoogleEmail) customGoogleEmail.focus();
+  });
+}
+
+if (formCustomGoogle) {
+  formCustomGoogle.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = customGoogleEmail.value.trim().toLowerCase();
+    const namaInput = (customGoogleNama ? customGoogleNama.value.trim() : '') || email.split('@')[0];
+    if (!email) return;
+
+    closeModalGoogle();
+    
+    // Cek apakah email cocok dengan penghuni yang terdaftar
+    const matchedP = S.penghuni.find(p => p.email && p.email.toLowerCase() === email);
+    if (matchedP) {
+      let akun = S.akun.find(a => a.penghuniId === matchedP.id || (a.email && a.email.toLowerCase() === email));
+      if (!akun) {
+        akun = { id: 'akun_' + matchedP.id, nama: matchedP.nama, email: email, role: 'penghuni', penghuniId: matchedP.id };
+        S.akun.push(akun);
+        LS.save();
+      }
+      loginWithAkun(akun);
+      toast(`Selamat datang di Kamar ${matchedP.kamar}, ${matchedP.nama}! 🔑`);
       return;
     }
 
-    btnLoginGoogle.disabled = true;
-    btnLoginGoogle.innerHTML = `
-      <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-      <span>Menghubungkan ke Google... ⏳</span>
-    `;
+    // Cek apakah pemilik / manager
+    const isOwner = email.includes('admin') || email.includes('manager') || email.includes('owner') || email.includes('budi');
+    const role = isOwner ? 'manager' : 'penghuni';
+    let akun = S.akun.find(a => a.email && a.email.toLowerCase() === email);
+    if (!akun) {
+      const pFirst = role === 'penghuni' ? (S.penghuni[0] || null) : null;
+      akun = {
+        id: 'akun_' + uid(),
+        nama: namaInput,
+        email: email,
+        role: role,
+        penghuniId: pFirst ? pFirst.id : null
+      };
+      S.akun.push(akun);
+      LS.save();
+    }
+    loginWithAkun(akun);
+    toast(`Berhasil masuk sebagai ${akun.nama} (${akun.role}) via Google! 🚀`);
+  });
+}
 
+if (btnTriggerLiveOauth) {
+  btnTriggerLiveOauth.addEventListener('click', async () => {
+    if (!sbClient) return;
     try {
       const redirectUrl = window.location.origin + window.location.pathname;
       const { data, error } = await sbClient.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: redirectUrl
-        }
+        options: { redirectTo: redirectUrl }
       });
       if (error) throw error;
     } catch (err) {
-      toast('Gagal masuk dengan Google: ' + err.message, 'err');
-      btnLoginGoogle.disabled = false;
-      btnLoginGoogle.innerHTML = `
-        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-        <span>Masuk dengan Google (1-Klik)</span>
-      `;
+      toast('Google OAuth Cloud: ' + err.message, 'err');
     }
+  });
+}
+
+if (btnLoginGoogle) {
+  btnLoginGoogle.addEventListener('click', () => {
+    openModalGoogle();
   });
 }
 
