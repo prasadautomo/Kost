@@ -1325,15 +1325,40 @@ async function triggerRealGoogleLogin() {
   }
 
   const clientId = window.SIKOST_CONFIG?.GOOGLE_CLIENT_ID || localStorage.getItem('sk3_google_client_id');
+  if (!clientId) {
+    toast('Google Client ID belum diatur. Membuka pemilih akun 1-Klik...', 'info');
+    openModalGoogle();
+    return;
+  }
 
-  // 2. Buka Google OAuth 2.0 Real Pop-up jika ada Google Identity Services Token Client:
-  if (clientId && window.google?.accounts?.oauth2) {
+  const btn = $('btn-login-google');
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px"></span> Membuka Google...`;
+  }
+
+  // 2. Tunggu Google Identity Services SDK siap (maksimal 3 detik)
+  if (!window.google?.accounts?.oauth2) {
+    let waited = 0;
+    while (!window.google?.accounts?.oauth2 && waited < 15) {
+      await new Promise(r => setTimeout(r, 200));
+      waited++;
+    }
+  }
+
+  // 3. Buka Google OAuth 2.0 Real Pop-up (accounts.google.com)
+  if (window.google?.accounts?.oauth2) {
     try {
       const tokenClient = window.google.accounts.oauth2.initTokenClient({
         client_id: clientId,
         scope: 'email profile openid',
         prompt: 'select_account',
         callback: async (tokenResponse) => {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+          }
           if (tokenResponse && tokenResponse.access_token) {
             try {
               const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -1345,78 +1370,58 @@ async function triggerRealGoogleLogin() {
               }
             } catch (err) {
               console.error('Fetch Google userinfo error:', err);
-              toast('Gagal mengambil data profil Google', 'err');
+              toast('Gagal mengambil profil akun Google', 'err');
             }
           }
         },
         error_callback: (err) => {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+          }
           console.warn('Google OAuth popup error:', err);
-          if (err && err.type !== 'popup_closed') {
+          if (err && err.type === 'popup_closed') {
+            toast('Login Google dibatalkan.', 'info');
+          } else {
+            toast('Pop-up Google: ' + (err?.message || 'Pastikan http://localhost:3000 terdaftar di Authorized origins'), 'err');
             openModalGoogle();
           }
         }
       });
+
       tokenClient.requestAccessToken({ prompt: 'select_account' });
       return;
     } catch (e) {
       console.warn('Google OAuth popup initiation error:', e);
-    }
-  }
-
-  // 3. Jika Supabase Live OAuth aktif:
-  if (sbClient) {
-    const btn = $('btn-login-google');
-    const originalText = btn ? btn.innerHTML : '';
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = `<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px"></span> Menghubungkan ke Google...`;
-    }
-
-    try {
-      const redirectUrl = window.location.origin + window.location.pathname;
-      const { data, error } = await sbClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'select_account'
-          }
-        }
-      });
-
-      if (error) throw error;
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (err) {
-      console.error('Google OAuth live error:', err);
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = originalText;
       }
-
-      const msg = (err.message || '').toLowerCase();
-      if (msg.includes('not enabled') || msg.includes('validation_failed') || msg.includes('unsupported provider')) {
-        toast('Google Live OAuth belum aktif di Supabase. Silakan gunakan 1-Klik Akun Google di bawah ini! 🚀', 'info');
-        openModalGoogle();
-      } else {
-        toast('Google Login: ' + err.message, 'err');
-      }
     }
-  } else {
-    openModalGoogle();
   }
+
+  // 4. Jika One-Tap tersedia, coba prompt
+  if (window.google?.accounts?.id) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+    try {
+      window.google.accounts.id.prompt();
+      return;
+    } catch (e) {}
+  }
+
+  // 5. Fallback ke pemilih akun SiKost
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+  openModalGoogle();
 }
 
 function handleGoogleLoginClick() {
-  const clientId = window.SIKOST_CONFIG?.GOOGLE_CLIENT_ID || localStorage.getItem('sk3_google_client_id');
-  if (clientId && (window.google?.accounts?.oauth2 || window.google?.accounts?.id)) {
-    triggerRealGoogleLogin();
-    return;
-  }
-  // Buka pemilih akun Google resmi SiKost (1-Klik Tahu Beres)
-  openModalGoogle();
+  triggerRealGoogleLogin();
 }
 
 if (btnTriggerLiveOauth) {
