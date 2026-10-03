@@ -2174,10 +2174,211 @@ textarea.fc {
   .topbar { padding: 0 16px; }
 }
 
-/* ─── PRINT SHEET ──────────────────────────────────────────── */
+/* ─── NEW MODULES: BADGES & MASKING ───────────────────────── */
+.badge-yellow { background: rgba(234, 179, 8, 0.14); color: #eab308; border-color: rgba(234, 179, 8, 0.32); }
+.badge-cyan   { background: var(--cyan-bg); color: var(--cyan); border-color: var(--cyan-b); }
+
+.nik-masked {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+.nik-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.76rem;
+  color: var(--accent-light);
+  margin-left: 6px;
+  transition: all var(--t);
+}
+.nik-toggle-btn:hover {
+  background: var(--accent-bg);
+}
+
+/* ─── DASHBOARD ALERTS & ANNOUNCEMENTS BANNER ─────────────── */
+.dash-alert-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+  animation: toastIn 0.3s ease-out;
+}
+.dash-alert-item.warning {
+  border-color: var(--orange-b);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, var(--bg-2) 100%);
+}
+.dash-alert-item.danger {
+  border-color: var(--red-b);
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.12) 0%, var(--bg-2) 100%);
+}
+.dash-alert-item.info {
+  border-color: var(--accent-border);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, var(--bg-2) 100%);
+}
+
+.pengumuman-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.16) 0%, rgba(168, 85, 247, 0.1) 100%);
+  border: 1px solid var(--accent-border);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.15);
+}
+.pengumuman-banner-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* ─── KELUHAN & PERBAIKAN GRID ────────────────────────────── */
+.keluhan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+.keluhan-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all var(--t);
+  position: relative;
+  overflow: hidden;
+}
+.keluhan-card:hover {
+  border-color: var(--border-glow);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+.keluhan-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.keluhan-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.keluhan-meta {
+  font-size: 0.74rem;
+  color: var(--text-3);
+}
+.keluhan-desc {
+  font-size: 0.82rem;
+  color: var(--text-2);
+  line-height: 1.55;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+.keluhan-img {
+  width: 100%;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.keluhan-response-box {
+  background: var(--accent-bg);
+  border-left: 3px solid var(--accent);
+  padding: 10px 12px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  color: var(--text-2);
+}
+
+/* ─── PENGUMUMAN LIST ──────────────────────────────────────── */
+.pengumuman-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pengumuman-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  transition: all var(--t);
+}
+.pengumuman-card:hover {
+  border-color: var(--border-2);
+  box-shadow: var(--shadow-md);
+}
+.pengumuman-card.priority-urgent {
+  border-left: 4px solid var(--red);
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.06) 0%, var(--glass-bg) 100%);
+}
+.pengumuman-card.priority-penting {
+  border-left: 4px solid var(--orange);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06) 0%, var(--glass-bg) 100%);
+}
+.pengumuman-card.priority-info {
+  border-left: 4px solid var(--accent);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, var(--glass-bg) 100%);
+}
+
+/* ─── KWITANSI DIGITAL & STAMP ─────────────────────────────── */
+.kwitansi-sheet {
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: var(--radius);
+  padding: 28px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.kwitansi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #0f172a;
+  margin-bottom: 20px;
+}
+.stamp-lunas {
+  display: inline-block;
+  padding: 6px 14px;
+  text-transform: uppercase;
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  color: #10b981;
+  border: 3px solid #10b981;
+  border-radius: 8px;
+  transform: rotate(-10deg);
+  opacity: 0.88;
+  mask-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8));
+}
+
+/* ─── PRINT SHEET (Kwitansi & Kontrak Sewa) ─────────────────── */
 @media print {
   body { background: #fff !important; color: #000 !important; }
-  .sidebar, .topbar, .modal-foot, .modal-x, .btn-wa { display: none !important; }
+  .sidebar, .topbar, .modal-foot, .modal-x, .btn-wa, .action-list, .toolbar, .toast-wrap { display: none !important; }
   .modal-overlay { position: static; background: none; display: block !important; padding: 0; }
-  .modal { box-shadow: none !important; border: 1px solid #ccc !important; max-width: 100% !important; }
+  .modal { box-shadow: none !important; border: none !important; max-width: 100% !important; background: transparent !important; }
+  .kwitansi-sheet { border: none !important; box-shadow: none !important; padding: 0 !important; }
 }
+

@@ -3,8 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SiKost – Manajemen Kost Modern</title>
-  <meta name="description" content="Sistem informasi manajemen kost: data penghuni, kamar, pembayaran, dan laporan keuangan cloud modern." />
+  <title>SiKost – Manajemen Kost Modern Cloud</title>
+  <meta name="description" content="Sistem informasi manajemen kost modern cloud: data penghuni, kamar, pembayaran, pengeluaran & laba rugi, tiket perbaikan, kwitansi, dan kontrak sewa." />
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SiKost" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -136,21 +144,21 @@
         <span class="demo-icon">👑</span>
         <div>
           <span class="demo-label">Masuk Demo Manager</span>
-          <span class="demo-sub">Akses penuh kelola kost, kamar, penghuni &amp; keuangan</span>
+          <span class="demo-sub">Akses penuh kelola kost, kamar, keuangan &amp; tiket</span>
         </div>
       </button>
       <button type="button" class="btn-demo-tenant" id="btn-demo-tnt">
         <span class="demo-icon">👤</span>
         <div>
           <span class="demo-label">Masuk Demo Anak Kost</span>
-          <span class="demo-sub">Portal penghuni: cek kamar, jatuh tempo &amp; sewa</span>
+          <span class="demo-sub">Portal penghuni: cek sewa, bayar &amp; lapor perbaikan</span>
         </div>
       </button>
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;font-size:0.78rem;color:var(--text-3)">
       <a href="#" id="link-open-cloud-config" style="color:var(--accent-light);text-decoration:none">⚙️ Set Supabase</a>
-      <span id="login-footer-hint">SiKost v4.0 Dark Cloud</span>
+      <span id="login-footer-hint">SiKost v4.1 Enterprise Cloud</span>
     </div>
   </div>
 </div>
@@ -210,7 +218,7 @@
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           Tambah Penghuni
         </button>
-        <button class="icon-btn" id="btn-export-csv" style="display:none" title="Export CSV">
+        <button class="icon-btn" id="btn-export-csv" style="display:none" title="Export CSV Data Penghuni">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -220,11 +228,20 @@
 
       <!-- PAGE: DASHBOARD (Manager) -->
       <section class="page" id="page-dashboard">
+        <!-- Banner Pengumuman Terkini (Jika ada) -->
+        <div id="dash-pengumuman-banner" style="display:none;margin-bottom:18px"></div>
+
         <div class="page-heading">
           <h1 id="dash-greeting">Selamat datang 👋</h1>
           <p class="text-muted" id="dash-date">–</p>
         </div>
+
+        <!-- KPI Keuangan Lengkap: Okupansi, Pemasukan, Pengeluaran, Laba Bersih -->
         <div class="kpi-row" id="kpi-row"></div>
+
+        <!-- Notifikasi Cepat: Keluhan Pending & Konfirmasi Bayar Pending -->
+        <div id="dash-alerts-row" style="margin-bottom:20px;display:none"></div>
+
         <div class="two-col">
           <div class="panel">
             <div class="panel-header">
@@ -237,12 +254,13 @@
             </table>
           </div>
           <div class="panel">
-            <div class="panel-header"><span class="panel-title">Ringkasan Bulan Ini</span></div>
-            <div class="chart-area"><canvas id="chart-bayar"></canvas></div>
-            <div class="legend-list" id="chart-legend"></div>
+            <div class="panel-header"><span class="panel-title">Arus Kas (Pemasukan vs Pengeluaran)</span></div>
+            <div class="chart-area"><canvas id="chart-cashflow"></canvas></div>
+            <div class="legend-list" id="cashflow-legend"></div>
           </div>
         </div>
-        <div class="three-col">
+
+        <div class="three-col" style="margin-top:20px">
           <div class="panel">
             <div class="panel-header"><span class="panel-title">Status Hunian</span></div>
             <div class="chart-area chart-sm"><canvas id="chart-status"></canvas></div>
@@ -292,7 +310,7 @@
         <div class="panel" id="penghuni-list-wrap" style="display:none">
           <div class="tbl-wrap">
             <table class="tbl" id="tbl-penghuni">
-              <thead><tr><th>#</th><th>Penghuni</th><th>NIK</th><th>Kamar</th><th>No. HP</th><th>Kendaraan</th><th>Sewa/Bln</th><th>Status</th><th></th></tr></thead>
+              <thead><tr><th>#</th><th>Penghuni</th><th>NIK (Terlindungi)</th><th>Kamar</th><th>No. HP</th><th>Kendaraan</th><th>Sewa/Bln</th><th>Deposit</th><th>Status</th><th></th></tr></thead>
               <tbody id="tbody-penghuni"></tbody>
             </table>
           </div>
@@ -326,18 +344,100 @@
       <!-- PAGE: PEMBAYARAN (Manager) -->
       <section class="page" id="page-pembayaran">
         <div class="kpi-row" id="kpi-bayar"></div>
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title">Status Pembayaran</span>
-            <select class="sel" id="filter-bulan-bayar"></select>
+
+        <!-- Box Verifikasi Bukti Transfer Menunggu Review -->
+        <div class="panel" id="panel-verifikasi-bayar" style="display:none;margin-bottom:20px;border-color:var(--orange-b)">
+          <div class="panel-header" style="background:var(--orange-bg)">
+            <span class="panel-title" style="color:var(--orange)">⚠️ Konfirmasi Pembayaran Menunggu Verifikasi</span>
+            <span class="badge badge-orange" id="badge-count-pending-bayar">0 Menunggu</span>
           </div>
           <div class="tbl-wrap">
             <table class="tbl">
-              <thead><tr><th>Penghuni</th><th>Kamar</th><th>Bulan</th><th>Tagihan</th><th>Status</th><th>Aksi</th></tr></thead>
+              <thead><tr><th>Penghuni</th><th>Kamar</th><th>Bulan</th><th>Nominal</th><th>Tgl Transfer</th><th>Bukti Transfer</th><th>Aksi</th></tr></thead>
+              <tbody id="tbody-pending-bayar"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Daftar Tagihan &amp; Pembayaran</span>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <select class="sel" id="filter-status-bayar">
+                <option value="">Semua Status</option>
+                <option value="belum">Belum Bayar</option>
+                <option value="lunas">Sudah Lunas</option>
+              </select>
+              <select class="sel" id="filter-bulan-bayar"></select>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Penghuni</th><th>Kamar</th><th>Bulan</th><th>Jatuh Tempo</th><th>Tagihan</th><th>Status</th><th>Aksi</th></tr></thead>
               <tbody id="tbody-pembayaran"></tbody>
             </table>
           </div>
         </div>
+      </section>
+
+      <!-- PAGE: PENGELUARAN (Manager - FITUR BARU) -->
+      <section class="page" id="page-pengeluaran">
+        <div class="kpi-row" id="kpi-pengeluaran"></div>
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <select class="sel" id="filter-bulan-pengeluaran"></select>
+            <select class="sel" id="filter-kategori-pengeluaran">
+              <option value="">Semua Kategori</option>
+              <option value="Listrik/PLN">⚡ Listrik / PLN</option>
+              <option value="Air/PDAM">💧 Air / PDAM</option>
+              <option value="WiFi/Internet">📶 WiFi &amp; Internet</option>
+              <option value="Kebersihan/Sampah">🧹 Kebersihan &amp; Sampah</option>
+              <option value="Perbaikan/Maintenance">🛠️ Maintenance &amp; Perbaikan</option>
+              <option value="Gaji/Operasional">👥 Gaji / Petugas</option>
+              <option value="Lainnya">📦 Lain-lain</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="btn-tambah-pengeluaran">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Catat Pengeluaran
+          </button>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Riwayat Pengeluaran Operasional</span></div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Tanggal</th><th>Kategori</th><th>Keterangan</th><th>Nominal</th><th>Nota / Bukti</th><th>Aksi</th></tr></thead>
+              <tbody id="tbody-pengeluaran"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: KELUHAN & PERBAIKAN (Manager - FITUR BARU) -->
+      <section class="page" id="page-keluhan">
+        <div class="kpi-row" id="kpi-keluhan-row"></div>
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <select class="sel" id="filter-status-keluhan">
+              <option value="">Semua Status Keluhan</option>
+              <option value="menunggu">Menunggu Ditanggapi</option>
+              <option value="diproses">Sedang Dikerjakan</option>
+              <option value="selesai">Sudah Selesai</option>
+            </select>
+          </div>
+        </div>
+        <div class="keluhan-grid" id="keluhan-grid"></div>
+      </section>
+
+      <!-- PAGE: PENGUMUMAN (Manager - FITUR BARU) -->
+      <section class="page" id="page-pengumuman">
+        <div class="toolbar" style="justify-content:flex-end">
+          <button class="btn-primary" id="btn-tambah-pengumuman">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Buat Pengumuman Baru
+          </button>
+        </div>
+        <div class="pengumuman-list" id="pengumuman-list"></div>
       </section>
 
       <!-- PAGE: PENGATURAN (Manager) -->
@@ -345,6 +445,7 @@
         <div class="settings-layout">
           <div class="settings-sidebar">
             <button class="settings-tab active" data-stab="profil">🏠 Profil Kost</button>
+            <button class="settings-tab" data-stab="bank">💳 Rekening &amp; QRIS</button>
             <button class="settings-tab" data-stab="akun">👤 Akun Penghuni</button>
             <button class="settings-tab" data-stab="cloud">⚡ Cloud Supabase</button>
             <button class="settings-tab" data-stab="pw">🔑 Ganti Password</button>
@@ -352,23 +453,36 @@
           </div>
           <div class="settings-body">
 
-            <!-- Profil -->
+            <!-- Profil Kost -->
             <div class="stab-content active" id="stab-profil">
               <h2 class="settings-title">Profil Kost</h2>
               <form id="form-kost" class="settings-form">
                 <div class="fg"><label>Nama Kost</label><input type="text" id="set-nama-kost" class="fc" placeholder="Kost Makmur Jaya" /></div>
                 <div class="fg"><label>Pemilik / Pengelola</label><input type="text" id="set-pemilik" class="fc" placeholder="Nama pemilik" /></div>
-                <div class="fg"><label>Alamat</label><textarea id="set-alamat" class="fc" rows="2" placeholder="Alamat lengkap kost"></textarea></div>
-                <div class="fg"><label>No. HP Pemilik</label><input type="text" id="set-hp-pemilik" class="fc" placeholder="08xx-xxxx-xxxx" /></div>
-                <div class="fg"><label>Jumlah Total Kamar</label><input type="number" id="set-total-kamar" class="fc" min="1" placeholder="20" /></div>
-                <button type="submit" class="btn-primary">Simpan Perubahan</button>
+                <div class="fg"><label>Alamat Lengkap</label><textarea id="set-alamat" class="fc" rows="2" placeholder="Alamat lengkap kost"></textarea></div>
+                <div class="fg"><label>No. HP Pemilik / WA Resmi</label><input type="text" id="set-hp-pemilik" class="fc" placeholder="08xx-xxxx-xxxx" /></div>
+                <div class="fg"><label>Jumlah Total Kamar</label><input type="number" id="set-total-kamar" class="fc" min="1" placeholder="10" /></div>
+                <button type="submit" class="btn-primary">Simpan Profil Kost</button>
+              </form>
+            </div>
+
+            <!-- Rekening & QRIS (FITUR BARU) -->
+            <div class="stab-content" id="stab-bank">
+              <h2 class="settings-title">Rekening Pembayaran &amp; QRIS</h2>
+              <p class="text-muted" style="margin-bottom:16px">Informasi rekening ini akan otomatis tampil di portal anak kost dan pesan penagihan WhatsApp.</p>
+              <form id="form-bank" class="settings-form">
+                <div class="fg"><label>Nama Bank / E-Wallet</label><input type="text" id="set-bank-nama" class="fc" placeholder="Contoh: BCA, Mandiri, BRI, GoPay" /></div>
+                <div class="fg"><label>Nomor Rekening / No. Akun</label><input type="text" id="set-bank-rekening" class="fc" placeholder="Contoh: 1234567890" /></div>
+                <div class="fg"><label>Atas Nama (A/N)</label><input type="text" id="set-bank-atas-nama" class="fc" placeholder="Nama pemilik rekening" /></div>
+                <div class="fg"><label>Link / URL Gambar QRIS (opsional)</label><input type="url" id="set-qris-url" class="fc" placeholder="https://..." /></div>
+                <button type="submit" class="btn-primary">Simpan Informasi Pembayaran</button>
               </form>
             </div>
 
             <!-- Akun Penghuni -->
             <div class="stab-content" id="stab-akun">
               <h2 class="settings-title">Akun Login Penghuni</h2>
-              <p class="text-muted">Buat akun login untuk penghuni agar mereka bisa masuk dan melihat data mereka sendiri.</p>
+              <p class="text-muted">Buat akun login untuk penghuni agar mereka bisa masuk ke portal untuk melihat sewa, konfirmasi bayar, dan melapor keluhan.</p>
               <div class="panel" style="margin-top:16px">
                 <div class="panel-header"><span class="panel-title">Daftar Akun</span></div>
                 <div class="tbl-wrap">
@@ -431,9 +545,9 @@
               <hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
 
               <h3 style="font-size:0.88rem;font-weight:700;margin-bottom:8px">Migrasi Data Lokal ke Supabase Cloud</h3>
-              <p class="text-muted" style="font-size:0.78rem;margin-bottom:14px">Upload seluruh data kamar, penghuni, pembayaran, dan profil kost yang ada di browser ini ke Supabase Cloud sekaligus.</p>
+              <p class="text-muted" style="font-size:0.78rem;margin-bottom:14px">Upload seluruh data kamar, penghuni, pembayaran, pengeluaran, keluhan, dan profil kost yang ada di browser ini ke Supabase Cloud sekaligus.</p>
               <button type="button" class="btn-primary" id="btn-migrate-local-cloud" style="background:var(--purple);border-color:var(--purple)">
-                ☁️ Upload Data Lokal ke Supabase Cloud
+                ☁️ Upload Seluruh Data ke Supabase Cloud
               </button>
             </div>
 
@@ -459,20 +573,20 @@
               <h2 class="settings-title">Manajemen Data</h2>
               <div class="action-list">
                 <div class="action-item">
-                  <div><p class="action-title">⚡ Muat Data Contoh / Demo</p><p class="text-muted">Isi otomatis dengan 8 kamar, 6 anak kost aktif dengan foto &amp; kontak lengkap, serta riwayat pembayaran.</p></div>
+                  <div><p class="action-title">⚡ Muat Data Contoh / Demo Lengkap</p><p class="text-muted">Isi otomatis dengan 8 kamar, penghuni aktif, pengeluaran operasional, tiket keluhan, dan riwayat pembayaran.</p></div>
                   <button class="btn-primary btn-sm" id="btn-seed-demo">Muat Data Demo</button>
                 </div>
                 <div class="action-item">
-                  <div><p class="action-title">Backup Data</p><p class="text-muted">Unduh semua data sebagai file JSON.</p></div>
-                  <button class="btn-outline" id="btn-backup">Backup</button>
+                  <div><p class="action-title">Backup Seluruh Data</p><p class="text-muted">Unduh semua data (kamar, penghuni, pengeluaran, keluhan, transaksi) sebagai file JSON.</p></div>
+                  <button class="btn-outline" id="btn-backup">Backup JSON</button>
                 </div>
                 <div class="action-item">
                   <div><p class="action-title">Restore Data</p><p class="text-muted">Pulihkan data dari file backup JSON.</p></div>
-                  <label class="btn-outline" for="input-restore" style="cursor:pointer">Restore</label>
+                  <label class="btn-outline" for="input-restore" style="cursor:pointer">Restore JSON</label>
                   <input type="file" id="input-restore" accept=".json" style="display:none" />
                 </div>
                 <div class="action-item danger-zone">
-                  <div><p class="action-title">Hapus Semua Data Penghuni</p><p class="text-muted">Tindakan ini tidak dapat dibatalkan.</p></div>
+                  <div><p class="action-title">Hapus Semua Data Operasional</p><p class="text-muted">Tindakan ini tidak dapat dibatalkan.</p></div>
                   <button class="btn-danger" id="btn-hapus-semua">Hapus</button>
                 </div>
               </div>
@@ -544,13 +658,13 @@
             <div class="photo-box" id="pb-foto">
               <img id="prev-foto" src="" alt="" style="display:none"/>
               <div class="photo-ph" id="ph-foto"><span>📷</span><small>Foto</small></div>
-              <label class="photo-lbl" for="field-foto">Ubah</label>
+              <label class="photo-lbl" for="field-foto">Pilih Foto</label>
               <input type="file" id="field-foto" accept="image/*" style="display:none" />
             </div>
             <div class="photo-box" id="pb-ktp">
               <img id="prev-ktp" src="" alt="" style="display:none"/>
               <div class="photo-ph" id="ph-ktp"><span>🪪</span><small>KTP</small></div>
-              <label class="photo-lbl" for="field-ktp">Ubah</label>
+              <label class="photo-lbl" for="field-ktp">Pilih KTP</label>
               <input type="file" id="field-ktp" accept="image/*" style="display:none" />
             </div>
           </div>
@@ -574,25 +688,27 @@
             <div class="fg"><label>Tanggal Masuk <em>*</em></label><input type="date" id="field-tgl-masuk" class="fc" required /></div>
             <div class="fg"><label>Est. Tanggal Keluar</label><input type="date" id="field-tgl-keluar" class="fc" /></div>
             <div class="fg"><label>Status</label><select id="field-status" class="fc"><option value="aktif">Aktif</option><option value="tidak aktif">Tidak Aktif / Sudah Keluar</option></select></div>
-            <div class="fg col2"><label>Catatan</label><textarea id="field-catatan" class="fc" rows="2" placeholder="Catatan tentang penghuni…"></textarea></div>
+            <div class="fg col2"><label>Catatan Hunian</label><textarea id="field-catatan" class="fc" rows="2" placeholder="Catatan tentang penghuni…"></textarea></div>
           </div>
         </div>
         <!-- Kendaraan -->
         <div class="ftab-content" id="ftab-kendaraan">
           <div class="fg-grid">
             <div class="fg col2"><label>Kepemilikan Kendaraan</label><select id="field-kendaraan" class="fc" onchange="toggleKendaraan(this.value)"><option value="tidak ada">Tidak Ada</option><option value="motor">Motor</option><option value="mobil">Mobil</option><option value="motor & mobil">Motor & Mobil</option></select></div>
-            <div class="fg" id="ken-row1a" style="display:none"><label>Merek/Tipe 1</label><input type="text" id="field-merk-1" class="fc" placeholder="Honda Beat" /></div>
+            <div class="fg" id="ken-row1a" style="display:none"><label>Merek/Tipe 1</label><input type="text" id="field-merk-1" class="fc" placeholder="Honda Vario 160" /></div>
             <div class="fg" id="ken-row1b" style="display:none"><label>Nomor Plat 1</label><input type="text" id="field-plat-1" class="fc" placeholder="B 1234 XYZ" /></div>
-            <div class="fg" id="ken-row2a" style="display:none"><label>Merek/Tipe 2</label><input type="text" id="field-merk-2" class="fc" placeholder="Toyota Avanza" /></div>
+            <div class="fg" id="ken-row2a" style="display:none"><label>Merek/Tipe 2</label><input type="text" id="field-merk-2" class="fc" placeholder="Toyota Yaris" /></div>
             <div class="fg" id="ken-row2b" style="display:none"><label>Nomor Plat 2</label><input type="text" id="field-plat-2" class="fc" placeholder="B 5678 ABC" /></div>
           </div>
         </div>
-        <!-- Keuangan -->
+        <!-- Keuangan (Sewa & Deposit) -->
         <div class="ftab-content" id="ftab-keuangan">
           <div class="fg-grid">
-            <div class="fg"><label>Sewa / Bulan (Rp)</label><input type="number" id="field-sewa" class="fc" min="0" placeholder="1000000" /></div>
+            <div class="fg"><label>Sewa / Bulan (Rp) <em>*</em></label><input type="number" id="field-sewa" class="fc" min="0" placeholder="1000000" /></div>
             <div class="fg"><label>Jatuh Tempo (tgl)</label><input type="number" id="field-tempo" class="fc" min="1" max="28" placeholder="1" /></div>
-            <div class="fg col2"><label>Catatan Pembayaran</label><textarea id="field-catatan-bayar" class="fc" rows="2" placeholder="Contoh: sudah DP 500rb"></textarea></div>
+            <div class="fg"><label>Uang Jaminan / Deposit (Rp)</label><input type="number" id="field-deposit" class="fc" min="0" placeholder="500000" /></div>
+            <div class="fg"><label>Status Uang Deposit</label><input type="text" id="field-catatan-deposit" class="fc" placeholder="Disimpan / Sudah Dikembalikan" /></div>
+            <div class="fg col2"><label>Catatan Pembayaran Tambahan</label><textarea id="field-catatan-bayar" class="fc" rows="2" placeholder="Contoh: Termasuk biaya listrik token"></textarea></div>
           </div>
         </div>
         <!-- Darurat -->
@@ -615,15 +731,16 @@
 
 <!-- ====== MODAL: DETAIL PENGHUNI ====== -->
 <div class="modal-overlay" id="modal-detail">
-  <div class="modal" style="max-width:680px">
+  <div class="modal" style="max-width:700px">
     <div class="modal-head">
       <h2 class="modal-title" id="detail-title">Detail Penghuni</h2>
       <button class="modal-x" id="detail-close">✕</button>
     </div>
     <div class="modal-body" id="detail-body"></div>
     <div class="modal-foot modal-foot-split">
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="btn-ghost" id="btn-print-detail">🖨️ Cetak Kartu</button>
+        <button class="btn-outline" id="btn-print-spk">📄 Surat Kontrak Sewa</button>
         <a href="#" target="_blank" class="btn-wa" id="btn-wa-detail" style="display:none">💬 Chat WA</a>
       </div>
       <div style="display:flex;gap:8px">
@@ -653,7 +770,196 @@
         </div>
         <div class="modal-foot">
           <button type="button" class="btn-ghost" id="btn-batal-kamar">Batal</button>
-          <button type="submit" class="btn-primary">Simpan</button>
+          <button type="submit" class="btn-primary">Simpan Kamar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: CATAT PENGELUARAN (FITUR BARU) ====== -->
+<div class="modal-overlay" id="modal-pengeluaran">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-head">
+      <h2 class="modal-title" id="modal-pengeluaran-title">Catat Pengeluaran Operasional</h2>
+      <button class="modal-x" id="modal-pengeluaran-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-pengeluaran">
+        <input type="hidden" id="field-pengeluaran-id" />
+        <div class="fg-grid">
+          <div class="fg"><label>Tanggal Pengeluaran <em>*</em></label><input type="date" id="field-pengeluaran-tgl" class="fc" required /></div>
+          <div class="fg"><label>Kategori <em>*</em></label>
+            <select id="field-pengeluaran-kategori" class="fc" required>
+              <option value="Listrik/PLN">⚡ Listrik / PLN</option>
+              <option value="Air/PDAM">💧 Air / PDAM</option>
+              <option value="WiFi/Internet">📶 WiFi &amp; Internet</option>
+              <option value="Kebersihan/Sampah">🧹 Kebersihan &amp; Sampah</option>
+              <option value="Perbaikan/Maintenance">🛠️ Maintenance &amp; Perbaikan</option>
+              <option value="Gaji/Operasional">👥 Gaji / Petugas</option>
+              <option value="Lainnya">📦 Lain-lain</option>
+            </select>
+          </div>
+          <div class="fg col2"><label>Nominal Pengeluaran (Rp) <em>*</em></label><input type="number" id="field-pengeluaran-jumlah" class="fc" min="0" placeholder="500000" required /></div>
+          <div class="fg col2"><label>Keterangan / Rincian</label><input type="text" id="field-pengeluaran-ket" class="fc" placeholder="Contoh: Beli token listrik tandon air lantai 2" /></div>
+          <div class="fg col2">
+            <label>Foto Nota / Kwitansi (Opsional)</label>
+            <div style="display:flex;gap:12px;align-items:center">
+              <label class="btn-outline btn-sm" for="field-pengeluaran-nota" style="cursor:pointer">📷 Unggah Nota</label>
+              <input type="file" id="field-pengeluaran-nota" accept="image/*" style="display:none" />
+              <img id="prev-pengeluaran-nota" src="" alt="Nota" style="display:none;width:50px;height:50px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" />
+              <button type="button" id="btn-hapus-nota" class="text-btn" style="display:none;color:var(--red);font-size:0.75rem">Hapus</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn-ghost" id="btn-batal-pengeluaran">Batal</button>
+          <button type="submit" class="btn-primary">Simpan Pengeluaran</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: TANGGAPI KELUHAN (FITUR BARU) ====== -->
+<div class="modal-overlay" id="modal-keluhan-manager">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-head">
+      <h2 class="modal-title">Tindak Lanjut Keluhan Penghuni</h2>
+      <button class="modal-x" id="modal-keluhan-manager-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-keluhan-manager-body"></div>
+  </div>
+</div>
+
+<!-- ====== MODAL: BUAT PENGUMUMAN (FITUR BARU) ====== -->
+<div class="modal-overlay" id="modal-pengumuman">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <h2 class="modal-title">📢 Buat Pengumuman Kost</h2>
+      <button class="modal-x" id="modal-pengumuman-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-pengumuman">
+        <div class="fg" style="margin-bottom:12px">
+          <label>Judul Pengumuman <em>*</em></label>
+          <input type="text" id="field-pengumuman-judul" class="fc" placeholder="Contoh: Pembersihan Tandon Air Bersama" required />
+        </div>
+        <div class="fg" style="margin-bottom:12px">
+          <label>Tingkat Prioritas</label>
+          <select id="field-pengumuman-prioritas" class="fc">
+            <option value="info">🔵 Informasi Biasa</option>
+            <option value="penting">🟡 Penting</option>
+            <option value="urgent">🔴 Mendesak / Urgent</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:16px">
+          <label>Isi Pesan Pengumuman <em>*</em></label>
+          <textarea id="field-pengumuman-isi" class="fc" rows="4" placeholder="Tuliskan detail pengumuman yang dapat dibaca seluruh anak kost..." required></textarea>
+        </div>
+        <div class="modal-foot" style="padding:0">
+          <button type="button" class="btn-ghost" id="btn-batal-pengumuman">Batal</button>
+          <button type="submit" class="btn-primary">Publikasikan Pengumuman</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: KWITANSI PEMBAYARAN DIGITAL ====== -->
+<div class="modal-overlay" id="modal-kwitansi">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head">
+      <h2 class="modal-title">🧾 Kwitansi Pembayaran Resmi</h2>
+      <button class="modal-x" id="modal-kwitansi-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-kwitansi-body"></div>
+    <div class="modal-foot modal-foot-split">
+      <button type="button" class="btn-ghost" id="btn-print-kwitansi">🖨️ Cetak / Unduh PDF</button>
+      <button type="button" class="btn-wa" id="btn-wa-kwitansi">📱 Kirim Kwitansi via WA</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: KONFIRMASI BAYAR PENJAGA / ANAK KOST ====== -->
+<div class="modal-overlay" id="modal-konfirmasi-bayar">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <h2 class="modal-title">💳 Konfirmasi Pembayaran Sewa</h2>
+      <button class="modal-x" id="modal-konfirmasi-bayar-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-konfirmasi-bayar">
+        <div class="fg" style="margin-bottom:12px">
+          <label>Pilih Bulan Tagihan <em>*</em></label>
+          <select id="field-konfirmasi-bulan" class="fc" required></select>
+        </div>
+        <div class="fg" style="margin-bottom:12px">
+          <label>Jumlah Nominal Ditransfer (Rp) <em>*</em></label>
+          <input type="number" id="field-konfirmasi-jumlah" class="fc" required />
+        </div>
+        <div class="fg" style="margin-bottom:12px">
+          <label>Catatan Pengirim / Bank Pengirim</label>
+          <input type="text" id="field-konfirmasi-catatan" class="fc" placeholder="Contoh: Transfer via BCA a.n Dimas" />
+        </div>
+        <div class="fg" style="margin-bottom:16px">
+          <label>Unggah Bukti Struk Transfer (Foto) <em>*</em></label>
+          <div style="display:flex;gap:12px;align-items:center;margin-top:6px">
+            <label class="btn-outline btn-sm" for="field-konfirmasi-bukti" style="cursor:pointer">📷 Pilih Foto Bukti</label>
+            <input type="file" id="field-konfirmasi-bukti" accept="image/*" style="display:none" required />
+            <img id="prev-konfirmasi-bukti" src="" alt="Bukti" style="display:none;width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" />
+          </div>
+          <small class="text-muted" style="font-size:0.72rem;display:block;margin-top:4px">Otomatis dikompresi agar hemat kuota dan cepat diunggah.</small>
+        </div>
+        <div class="modal-foot" style="padding:0">
+          <button type="button" class="btn-ghost" id="btn-batal-konfirmasi-bayar">Batal</button>
+          <button type="submit" class="btn-primary">Kirim Konfirmasi Bayar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: BUAT LAPORAN KELUHAN (ANAK KOST) ====== -->
+<div class="modal-overlay" id="modal-buat-keluhan">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-head">
+      <h2 class="modal-title">🛠️ Lapor Kerusakan / Keluhan Kamar</h2>
+      <button class="modal-x" id="modal-buat-keluhan-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-buat-keluhan">
+        <div class="fg" style="margin-bottom:12px">
+          <label>Kategori Masalah <em>*</em></label>
+          <select id="field-keluhan-kategori" class="fc" required>
+            <option value="AC">❄️ AC Tidak Dingin / Bocor</option>
+            <option value="Air/Plumbing">🚰 Kran Air / Toilet / Wastafel Bocor</option>
+            <option value="Listrik">⚡ Lampu / Stopkontak / Listrik</option>
+            <option value="WiFi">📶 WiFi Lambat / Terputus</option>
+            <option value="Pintu/Kunci">🔑 Pintu / Jendela / Kunci Rusak</option>
+            <option value="Kebersihan">🧹 Fasilitas Umum / Sampah</option>
+            <option value="Lainnya">📦 Masalah Lainnya</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:12px">
+          <label>Judul Masalah <em>*</em></label>
+          <input type="text" id="field-keluhan-judul" class="fc" placeholder="Contoh: Kran wastafel bocor menetes terus" required />
+        </div>
+        <div class="fg" style="margin-bottom:12px">
+          <label>Deskripsi Detail Masalah <em>*</em></label>
+          <textarea id="field-keluhan-deskripsi" class="fc" rows="3" placeholder="Jelaskan secara rinci kendala yang dialami..." required></textarea>
+        </div>
+        <div class="fg" style="margin-bottom:16px">
+          <label>Foto Kerusakan (Opsional)</label>
+          <div style="display:flex;gap:12px;align-items:center;margin-top:6px">
+            <label class="btn-outline btn-sm" for="field-keluhan-foto" style="cursor:pointer">📷 Foto Kendala</label>
+            <input type="file" id="field-keluhan-foto" accept="image/*" style="display:none" />
+            <img id="prev-keluhan-foto" src="" alt="Kendala" style="display:none;width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" />
+          </div>
+        </div>
+        <div class="modal-foot" style="padding:0">
+          <button type="button" class="btn-ghost" id="btn-batal-buat-keluhan">Batal</button>
+          <button type="submit" class="btn-primary">Kirim Laporan</button>
         </div>
       </form>
     </div>
