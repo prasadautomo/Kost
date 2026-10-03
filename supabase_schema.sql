@@ -158,7 +158,7 @@ VALUES ('default', 'SiKost Makmur', 'Budi Santoso', 'Jl. Utama Kost No. 1', '081
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
--- TRIGGER OTOMATIS: BUAT PROFIL SAAT USER MENDAFTAR DI SUPABASE
+-- TRIGGER OTOMATIS: BUAT PROFIL SAAT USER MENDAFTAR (GOOGLE / EMAIL)
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
@@ -166,18 +166,35 @@ DECLARE
   user_count INTEGER;
   assigned_role TEXT;
   assigned_nama TEXT;
+  matched_penghuni_id TEXT;
 BEGIN
-  -- Hitung jumlah profil saat ini
+  -- 1. Cek apakah email pengguna cocok dengan data penghuni yang didaftarkan manager
+  SELECT id INTO matched_penghuni_id 
+  FROM public.penghuni 
+  WHERE LOWER(email) = LOWER(new.email) 
+  LIMIT 1;
+
+  -- 2. Hitung jumlah profil saat ini
   SELECT COUNT(*) INTO user_count FROM public.profiles;
   
-  -- Akun pertama yang mendaftar otomatis menjadi Manager
-  IF user_count = 0 THEN
+  -- 3. Tentukan role secara cerdas:
+  -- Jika email cocok dengan data anak kost, otomatis berikan role 'penghuni'
+  IF matched_penghuni_id IS NOT NULL THEN
+    assigned_role := 'penghuni';
+  ELSIF user_count = 0 THEN
+    -- Akun pertama yang mendaftar menjadi Manager
     assigned_role := 'manager';
   ELSE
     assigned_role := COALESCE(new.raw_user_meta_data->>'role', 'penghuni');
   END IF;
 
-  assigned_nama := COALESCE(new.raw_user_meta_data->>'nama', split_part(new.email, '@', 1));
+  -- 4. Ambil nama dari Google OAuth (full_name / name) atau metadata, fallback ke split_part email
+  assigned_nama := COALESCE(
+    new.raw_user_meta_data->>'full_name',
+    new.raw_user_meta_data->>'name',
+    new.raw_user_meta_data->>'nama',
+    split_part(new.email, '@', 1)
+  );
 
   INSERT INTO public.profiles (id, nama, email, role, penghuni_id)
   VALUES (
@@ -185,13 +202,13 @@ BEGIN
     assigned_nama,
     new.email,
     assigned_role,
-    new.raw_user_meta_data->>'penghuni_id'
+    COALESCE(matched_penghuni_id, new.raw_user_meta_data->>'penghuni_id')
   )
   ON CONFLICT (id) DO UPDATE SET
     nama = EXCLUDED.nama,
     email = EXCLUDED.email,
-    role = EXCLUDED.role,
-    penghuni_id = COALESCE(EXCLUDED.penghuni_id, profiles.penghuni_id),
+    role = CASE WHEN profiles.role = 'manager' THEN 'manager' ELSE EXCLUDED.role END,
+    penghuni_id = COALESCE(matched_penghuni_id, EXCLUDED.penghuni_id, profiles.penghuni_id),
     updated_at = NOW();
 
   RETURN NEW;

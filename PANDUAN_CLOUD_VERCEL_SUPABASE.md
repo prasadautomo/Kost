@@ -114,5 +114,39 @@ Jika Anda sebelumnya sudah pernah memasukkan data kamar, penghuni, atau pembayar
   - Akun pertama yang mendaftar di Cloud otomatis memiliki hak akses **Manager**.
   - Memiliki akses penuh ke Dashboard, Data Penghuni, Kamar, Pembayaran, dan Pengaturan.
 - **Penghuni**:
-  - Manager dapat mendaftarkan akun penghuni melalui menu **Pengaturan -> Akun Login Penghuni**.
-  - Penghuni dapat login di perangkat masing-masing untuk melihat rincian kamar, sewa, dan status pembayaran mereka sendiri.
+- **Penghuni**:
+  - Manager cukup mendaftarkan **Email Google** milik penghuni di menu Data Penghuni.
+  - Penghuni cukup klik **"Masuk dengan Google (1-Klik)"** di HP atau laptop mereka tanpa perlu repot mengetik password! Sistem otomatis mendeteksi dan menghubungkan mereka ke kamar masing-masing.
+
+---
+
+## 6. Mengaktifkan Login 1-Klik dengan Google (Google OAuth)
+
+Supabase mendukung login Google instan untuk memudahkan penghuni kost masuk tanpa perlu membuat password baru.
+
+### Langkah Singkat Setup Google Auth:
+1. **Buka Google Cloud Console**:
+   - Kunjungi [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
+   - Buat Project baru (misal: `Kost-Auth`).
+   - Buka menu **OAuth consent screen**: pilih **External**, isi nama aplikasi ("SiKost") dan email Anda, lalu klik Simpan.
+   - Buka menu **Credentials** -> Klik **+ CREATE CREDENTIALS** -> Pilih **OAuth client ID**.
+   - Application type: **Web application**.
+   - Pada bagian **Authorized redirect URIs**, tambahkan Callback URL dari Supabase Anda:
+     `https://<ID-PROJECT-SUPABASE-ANDA>.supabase.co/auth/v1/callback`
+   - Klik **Create**. Anda akan mendapatkan **Client ID** dan **Client Secret**.
+
+2. **Aktifkan di Dashboard Supabase**:
+   - Buka Dashboard Supabase project Anda -> Menu **Authentication** -> **Providers** -> Klik **Google**.
+   - Aktifkan toggle **Enable Google provider**.
+   - Masukkan **Client ID** dan **Client Secret** yang Anda peroleh dari Google Cloud Console.
+   - Klik **Save**.
+
+3. **Atur Redirect URL di Supabase**:
+   - Di Supabase -> Menu **Authentication** -> **URL Configuration**.
+   - Di bagian **Redirect URLs**, masukkan URL tempat web Anda dibuka, contoh:
+     - `http://localhost:5500` (atau port live server lokal Anda)
+     - `https://sikost-xxxx.vercel.app` (URL Vercel Anda)
+   - Klik **Save Changes**.
+
+4. **Selesai!**
+   - Saat penghuni mengklik tombol **"Masuk dengan Google (1-Klik)"**, browser akan membuka akun Google mereka dan langsung otomatis masuk ke portal penghuni sesuai kamar mereka.
