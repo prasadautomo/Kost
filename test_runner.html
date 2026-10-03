@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>SiKost - Organic Test Runner Suite</title>
+  <style>
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 24px;
+    }
+    h1 { color: #818cf8; margin-bottom: 6px; }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .badge-pass { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .badge-fail { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+    .test-box {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+    }
+    .test-title { font-weight: 700; font-size: 1rem; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .log-item { font-family: monospace; font-size: 0.85rem; margin: 4px 0; color: #94a3b8; }
+    .log-item.pass { color: #4ade80; }
+    .log-item.fail { color: #f87171; font-weight: bold; }
+    #summary-card {
+      background: linear-gradient(135deg, #1e1b4b, #0f172a);
+      border: 2px solid #6366f1;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #iframe-app {
+      width: 100%;
+      height: 480px;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      background: #fff;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🧪 SiKost Organic Test Suite (v4.1)</h1>
+  <p style="color:#94a3b8;margin-top:0">End-to-End Automated Testing: Google-First Auth, Strict Manager Role, Rooms, Billing, Expenses, and Tenant Portal</p>
+
+  <div id="summary-card">
+    <div>
+      <div style="font-size:1.4rem;font-weight:800" id="summary-title">⏳ Menjalankan Pengujian Organik...</div>
+      <div style="color:#cbd5e1;font-size:0.9rem;margin-top:4px" id="summary-sub">Menguji seluruh user flow secara otomatis</div>
+    </div>
+    <div id="summary-badge" class="badge" style="font-size:1.1rem;padding:8px 16px">Running...</div>
+  </div>
+
+  <div id="test-results"></div>
+
+  <!-- Iframe hosting index.html for pure organic execution -->
+  <iframe id="iframe-app" src="index.html"></iframe>
+
+  <script>
+    const iframe = document.getElementById('iframe-app');
+    const resultsContainer = document.getElementById('test-results');
+
+    let totalAssertions = 0;
+    let passedAssertions = 0;
+    let failedAssertions = 0;
+
+    function renderTestSection(title) {
+      const box = document.createElement('div');
+      box.className = 'test-box';
+      box.innerHTML = `<div class="test-title">${title} <span class="badge badge-pass" id="badge-${title.replace(/[^a-zA-Z0-9]/g, '')}">PASS</span></div><div class="test-logs"></div>`;
+      resultsContainer.appendChild(box);
+      return box;
+    }
+
+    function logAssertion(box, condition, message) {
+      totalAssertions++;
+      const logs = box.querySelector('.test-logs');
+      const item = document.createElement('div');
+      item.className = 'log-item ' + (condition ? 'pass' : 'fail');
+      item.textContent = (condition ? '  ✓ PASS: ' : '  ✗ FAIL: ') + message;
+      logs.appendChild(item);
+
+      if (condition) {
+        passedAssertions++;
+      } else {
+        failedAssertions++;
+        const badge = box.querySelector('.badge');
+        badge.className = 'badge badge-fail';
+        badge.textContent = 'FAIL';
+      }
+    }
+
+    iframe.onload = async () => {
+      const win = iframe.contentWindow;
+      const doc = iframe.contentDocument;
+
+      // Tunggu inisialisasi app.js
+      await new Promise(r => setTimeout(r, 600));
+
+      // -------------------------------------------------------------
+      // TEST 1: Load and Inisialisasi
+      // -------------------------------------------------------------
+      const b1 = renderTestSection('Test 1: Inisialisasi & Layar Login Google');
+      logAssertion(b1, doc.documentElement.getAttribute('data-theme') === 'dark', 'Tema default adalah Dark Mode ("dark")');
+      logAssertion(b1, doc.getElementById('screen-login').style.display !== 'none', 'Layar awal yang ditampilkan adalah Layar Login');
+      logAssertion(b1, doc.getElementById('screen-app').style.display === 'none', 'App Shell disembunyikan sebelum login');
+      logAssertion(b1, doc.getElementById('btn-login-google') !== null, 'Tombol "Masuk dengan Google" tersedia');
+      logAssertion(b1, doc.getElementById('form-login') === null, 'Form email & password manual telah dihapus bersih');
+      logAssertion(b1, doc.getElementById('btn-demo-mgr') === null, 'Tombol demo lama telah dihapus');
+
+      // -------------------------------------------------------------
+      // TEST 2: Login Akun Google sebagai Manager (Gavin Utomo)
+      // -------------------------------------------------------------
+      const b2 = renderTestSection('Test 2: Login Google sebagai Manager Gavin Utomo');
+      const inlineList = doc.getElementById('inline-google-accounts-list');
+      logAssertion(b2, inlineList !== null && inlineList.children.length > 0, 'Daftar akun Google 1-klik terpasang di login card');
+      
+      const gavinCard = Array.from(inlineList.children).find(c => c.innerHTML.includes('gavinutomo4@gmail.com'));
+      logAssertion(b2, gavinCard !== null, 'Akun Gavin Utomo (gavinutomo4@gmail.com) tersedia di daftar');
+      logAssertion(b2, gavinCard.innerHTML.includes('Manager 👑'), 'Akun Gavin Utomo memiliki hak akses Manager 👑');
+
+      // Click Gavin Card
+      gavinCard.click();
+      await new Promise(r => setTimeout(r, 350));
+
+      logAssertion(b2, doc.getElementById('screen-app').style.display !== 'none', 'Berhasil beralih ke App Shell');
+      logAssertion(b2, doc.getElementById('screen-login').style.display === 'none', 'Layar login telah disembunyikan');
+      logAssertion(b2, doc.getElementById('sb-role-badge').textContent.includes('Manager'), 'Role badge di sidebar menampilkan "Manager"');
+      logAssertion(b2, doc.getElementById('page-dashboard').classList.contains('active'), 'Halaman default Manager adalah Dashboard');
+
+      // -------------------------------------------------------------
+      // TEST 3: Dashboard Analytics & KPI Data
+      // -------------------------------------------------------------
+      const b3 = renderTestSection('Test 3: Validasi Dashboard KPI & Analytics');
+      const kpiRow = doc.getElementById('kpi-row');
+      logAssertion(b3, kpiRow.children.length >= 4, 'Terdapat minimal 4 kartu metrik KPI di Dashboard');
+      logAssertion(b3, kpiRow.innerHTML.includes('Total Penghuni'), 'KPI Total Penghuni terisi data');
+      logAssertion(b3, kpiRow.innerHTML.includes('Kamar Terisi'), 'KPI Kamar Terisi terisi data');
+      logAssertion(b3, kpiRow.innerHTML.includes('Pendapatan / Bulan'), 'KPI Target Pendapatan terisi data');
+
+      // -------------------------------------------------------------
+      // TEST 4: Data Penghuni (Tenant Management)
+      // -------------------------------------------------------------
+      const b4 = renderTestSection('Test 4: Manajemen Data Penghuni & Filter');
+      doc.getElementById('nav-penghuni').click();
+      await new Promise(r => setTimeout(r, 150));
+      logAssertion(b4, doc.getElementById('page-penghuni').classList.contains('active'), 'Berhasil navigasi ke Halaman Penghuni');
+
+      const grid = doc.getElementById('penghuni-grid');
+      const countAwal = grid.children.length;
+      logAssertion(b4, countAwal >= 6, `Grid penghuni terisi data (aktual: ${countAwal} penghuni)`);
+
+      // Search
+      const searchInput = doc.getElementById('cari-penghuni');
+      searchInput.value = 'Anisa';
+      searchInput.dispatchEvent(new win.Event('input'));
+      logAssertion(b4, grid.children.length === 1, 'Pencarian nama "Anisa" menampilkan tepat 1 hasil');
+
+      searchInput.value = '';
+      searchInput.dispatchEvent(new win.Event('input'));
+      logAssertion(b4, grid.children.length === countAwal, 'Reset filter pencarian mengembalikan seluruh penghuni');
+
+      // -------------------------------------------------------------
+      // TEST 5: Manajemen Kamar & Okupansi
+      // -------------------------------------------------------------
+      const b5 = renderTestSection('Test 5: Manajemen Kamar & Status Okupansi');
+      doc.getElementById('nav-kamar').click();
+      await new Promise(r => setTimeout(r, 150));
+      logAssertion(b5, doc.getElementById('page-kamar').classList.contains('active'), 'Berhasil navigasi ke Halaman Kamar');
+      
+      const kamarGrid = doc.getElementById('kamar-grid');
+      logAssertion(b5, kamarGrid.children.length >= 8, 'Daftar kamar menampilkan minimal 8 kamar terdaftar');
+
+      // -------------------------------------------------------------
+      // TEST 6: Pembayaran & WhatsApp Reminder
+      // -------------------------------------------------------------
+      const b6 = renderTestSection('Test 6: Alur Pembayaran & WhatsApp Tagihan');
+      doc.getElementById('nav-pembayaran').click();
+      await new Promise(r => setTimeout(r, 150));
+      logAssertion(b6, doc.getElementById('page-pembayaran').classList.contains('active'), 'Berhasil navigasi ke Halaman Pembayaran');
+
+      const tbodyBayar = doc.getElementById('tbody-pembayaran');
+      logAssertion(b6, tbodyBayar.children.length > 0, 'Tabel pembayaran terisi data tagihan');
+      logAssertion(b6, tbodyBayar.innerHTML.includes('📱 WA'), 'Tombol WhatsApp Tagihan tersedia di tabel pembayaran');
+
+      // -------------------------------------------------------------
+      // TEST 7: Theme Toggle (Dark <-> Light)
+      // -------------------------------------------------------------
+      const b7 = renderTestSection('Test 7: Uji Pergantian Tema (Dark / Light)');
+      const themeToggle = doc.getElementById('theme-toggle');
+      themeToggle.click();
+      logAssertion(b7, doc.documentElement.getAttribute('data-theme') === 'light', 'Tema berhasil beralih ke Light Mode');
+
+      themeToggle.click();
+      logAssertion(b7, doc.documentElement.getAttribute('data-theme') === 'dark', 'Tema berhasil beralih kembali ke Dark Mode');
+
+      // -------------------------------------------------------------
+      // TEST 8: Logout & Login Anak Kost via Google (Dimas)
+      // -------------------------------------------------------------
+      const b8 = renderTestSection('Test 8: Logout & Login Anak Kost via Google');
+      doc.getElementById('btn-logout').click();
+      await new Promise(r => setTimeout(r, 100));
+
+      const confirmOk = doc.getElementById('confirm-ok');
+      if (confirmOk) confirmOk.click();
+      await new Promise(r => setTimeout(r, 200));
+
+      logAssertion(b8, doc.getElementById('screen-login').style.display !== 'none', 'Berhasil logout kembali ke Layar Login');
+      logAssertion(b8, doc.getElementById('screen-app').style.display === 'none', 'App Shell ditutup setelah logout');
+
+      // Login as Dimas Prasetyo (Penghuni Kamar 101)
+      const inlineListAfter = doc.getElementById('inline-google-accounts-list');
+      const dimasCard = Array.from(inlineListAfter.children).find(c => c.innerHTML.includes('Dimas Prasetyo') || c.innerHTML.includes('101'));
+      logAssertion(b8, dimasCard !== null, 'Akun Google Penghuni Dimas Prasetyo (Kamar 101) tersedia');
+
+      dimasCard.click();
+      await new Promise(r => setTimeout(r, 350));
+
+      logAssertion(b8, doc.getElementById('screen-app').style.display !== 'none', 'Berhasil login ke Portal Anak Kost');
+      logAssertion(b8, doc.getElementById('sb-role-badge').textContent.includes('Penghuni'), 'Role badge di sidebar adalah "Penghuni"');
+      logAssertion(b8, doc.getElementById('page-tenant').classList.contains('active'), 'Halaman default anak kost adalah Portal "Data Saya"');
+
+      // -------------------------------------------------------------
+      // REKAPITULASI HASIL TEST
+      // -------------------------------------------------------------
+      const summaryTitle = document.getElementById('summary-title');
+      const summarySub = document.getElementById('summary-sub');
+      const summaryBadge = document.getElementById('summary-badge');
+
+      if (failedAssertions === 0) {
+        summaryTitle.textContent = `🎉 SELURUH PENGUJIAN ORGANIK SUKSES!`;
+        summarySub.textContent = `Lolos ${passedAssertions} dari ${totalAssertions} pengujian end-to-end tanpa kendala (100% PASS)`;
+        summaryBadge.className = 'badge badge-pass';
+        summaryBadge.textContent = '100% PASS';
+        console.log(`[TEST REPORT] PASSED: ${passedAssertions}/${totalAssertions}`);
+      } else {
+        summaryTitle.textContent = `⚠️ Ditemukan ${failedAssertions} Pengujian Gagal`;
+        summarySub.textContent = `${passedAssertions} lolos, ${failedAssertions} gagal dari total ${totalAssertions} pengujian`;
+        summaryBadge.className = 'badge badge-fail';
+        summaryBadge.textContent = `${passedAssertions}/${totalAssertions} PASS`;
+        console.error(`[TEST REPORT] FAILED: ${failedAssertions}`);
+      }
+    };
+  </script>
+</body>
+</html>

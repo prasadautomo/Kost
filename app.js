@@ -476,6 +476,7 @@ const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,
 const rp   = n  => 'Rp ' + (Number(n)||0).toLocaleString('id-ID');
 const fmtD = s  => s ? new Date(s).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : '–';
 const init = n  => (n||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const esc  = s  => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]));
 const ageOf = tgl => {
   if (!tgl) return null;
   const d=new Date(tgl), now=new Date();
@@ -1084,21 +1085,26 @@ function renderGoogleAccounts() {
   }
 
   // Render to modal list
-  if (googleAccountsList) {
-    googleAccountsList.innerHTML = '';
+  const mList = document.getElementById('google-accounts-list');
+  if (mList) {
+    mList.innerHTML = '';
     allAccounts.forEach(acc => {
-      googleAccountsList.appendChild(createGoogleAccountCard(acc, false));
+      mList.appendChild(createGoogleAccountCard(acc, false));
     });
   }
 
   // Render to inline list on login screen
-  if (inlineGoogleAccountsList) {
-    inlineGoogleAccountsList.innerHTML = '';
+  const iList = document.getElementById('inline-google-accounts-list');
+  if (iList) {
+    iList.innerHTML = '';
     allAccounts.forEach(acc => {
-      inlineGoogleAccountsList.appendChild(createGoogleAccountCard(acc, true));
+      iList.appendChild(createGoogleAccountCard(acc, true));
     });
   }
 }
+
+// Render akun Google langsung saat script dimuat
+try { renderGoogleAccounts(); } catch (e) { console.warn(e); }
 
 function openModalGoogle() {
   renderGoogleAccounts();
