@@ -3485,6 +3485,10 @@ function setupSupabaseUI() {
       $('modal-cloud-url').value = cfg.url;
       $('modal-cloud-key').value = cfg.key;
     }
+    const gInp = $('modal-google-client-id');
+    if (gInp) {
+      gInp.value = window.SIKOST_CONFIG?.GOOGLE_CLIENT_ID || localStorage.getItem('sk3_google_client_id') || '';
+    }
     openModal('modal-cloud-config');
   };
 
@@ -3509,10 +3513,18 @@ function setupSupabaseUI() {
       e.preventDefault();
       const url = $('modal-cloud-url').value.trim();
       const key = $('modal-cloud-key').value.trim();
+      const gClientId = $('modal-google-client-id')?.value.trim();
       const saveBtn = $('modal-cloud-simpan');
 
       saveBtn.disabled = true;
       saveBtn.textContent = 'Menghubungkan...';
+
+      if (gClientId) {
+        localStorage.setItem('sk3_google_client_id', gClientId);
+        initGoogleIdentityServices();
+      } else {
+        localStorage.removeItem('sk3_google_client_id');
+      }
 
       const res = await testSupabaseConnection(url, key);
       if (res.success) {
