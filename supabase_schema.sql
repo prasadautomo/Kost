@@ -154,41 +154,35 @@ CREATE TABLE IF NOT EXISTS public.pengumuman (
 -- DATA AWAL (SEED)
 -- ============================================================
 INSERT INTO public.kost_pengaturan (id, nama, pemilik, alamat, hp, total_kamar, bank_nama, bank_rekening, bank_atas_nama)
-VALUES ('default', 'SiKost Makmur', 'Budi Santoso', 'Jl. Utama Kost No. 1', '081234567890', 10, 'BCA', '1234567890', 'Budi Santoso')
+VALUES ('default', 'SiKost Makmur', 'Gavin Utomo', 'Jl. Utama Kost No. 1', '081234567890', 10, 'BCA', '1234567890', 'Gavin Utomo')
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
 -- TRIGGER OTOMATIS: BUAT PROFIL SAAT USER MENDAFTAR (GOOGLE / EMAIL)
+-- ATURAN KETAT: HANYA gavinutomo4@gmail.com YANG MENJADI MANAGER!
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 DECLARE
-  user_count INTEGER;
   assigned_role TEXT;
   assigned_nama TEXT;
   matched_penghuni_id TEXT;
 BEGIN
-  -- 1. Cek apakah email pengguna cocok dengan data penghuni yang didaftarkan manager
+  -- 1. Cek apakah email cocok dengan data anak kost yang didaftarkan
   SELECT id INTO matched_penghuni_id 
   FROM public.penghuni 
   WHERE LOWER(email) = LOWER(new.email) 
   LIMIT 1;
 
-  -- 2. Hitung jumlah profil saat ini
-  SELECT COUNT(*) INTO user_count FROM public.profiles;
-  
-  -- 3. Tentukan role secara cerdas:
-  -- Jika email cocok dengan data anak kost, otomatis berikan role 'penghuni'
-  IF matched_penghuni_id IS NOT NULL THEN
-    assigned_role := 'penghuni';
-  ELSIF user_count = 0 THEN
-    -- Akun pertama yang mendaftar menjadi Manager
+  -- 2. HANYA gavinutomo4@gmail.com YANG BERHAK MENJADI MANAGER!
+  -- Akun selain gavinutomo4@gmail.com otomatis ditetapkan sebagai 'penghuni'
+  IF LOWER(new.email) = 'gavinutomo4@gmail.com' THEN
     assigned_role := 'manager';
   ELSE
-    assigned_role := COALESCE(new.raw_user_meta_data->>'role', 'penghuni');
+    assigned_role := 'penghuni';
   END IF;
 
-  -- 4. Ambil nama dari Google OAuth (full_name / name) atau metadata, fallback ke split_part email
+  -- 3. Ambil nama dari Google OAuth (full_name / name) atau metadata, fallback ke split_part email
   assigned_nama := COALESCE(
     new.raw_user_meta_data->>'full_name',
     new.raw_user_meta_data->>'name',
@@ -202,13 +196,13 @@ BEGIN
     assigned_nama,
     new.email,
     assigned_role,
-    COALESCE(matched_penghuni_id, new.raw_user_meta_data->>'penghuni_id')
+    matched_penghuni_id
   )
   ON CONFLICT (id) DO UPDATE SET
     nama = EXCLUDED.nama,
     email = EXCLUDED.email,
-    role = CASE WHEN profiles.role = 'manager' THEN 'manager' ELSE EXCLUDED.role END,
-    penghuni_id = COALESCE(matched_penghuni_id, EXCLUDED.penghuni_id, profiles.penghuni_id),
+    role = CASE WHEN LOWER(EXCLUDED.email) = 'gavinutomo4@gmail.com' THEN 'manager' ELSE 'penghuni' END,
+    penghuni_id = COALESCE(matched_penghuni_id, profiles.penghuni_id),
     updated_at = NOW();
 
   RETURN NEW;
@@ -228,7 +222,7 @@ RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role = 'manager'
+    WHERE id = auth.uid() AND (role = 'manager' OR LOWER(email) = 'gavinutomo4@gmail.com')
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

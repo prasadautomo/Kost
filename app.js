@@ -186,13 +186,13 @@ function seedDemoData(force = false) {
 
   S.kost = {
     nama: 'Kost Griya Harmoni',
-    pemilik: 'Budi Santoso',
+    pemilik: 'Gavin Utomo',
     alamat: 'Jl. Kaliurang KM 5, Gg. Megatruh No. 12, Sleman, DI Yogyakarta',
     hp: '081234567890',
     totalKamar: 8,
     bankNama: 'Bank BCA',
     bankRekening: '8465-1234-90',
-    bankAtasNama: 'Budi Santoso',
+    bankAtasNama: 'Gavin Utomo',
     qrisUrl: ''
   };
 
@@ -424,7 +424,7 @@ function seedDemoData(force = false) {
   ];
 
   S.akun = [
-    { id: 'akun_mgr', nama: 'Budi Santoso (Owner)', email: 'manager@sikost.id', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null },
+    { id: 'akun_mgr_gavin', nama: 'Gavin Utomo (Owner)', email: 'gavinutomo4@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null },
     { id: 'akun_tnt', nama: 'Dimas Prasetyo', email: 'dimas@sikost.id', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'penghuni', penghuniId: 'p_dimas' }
   ];
 
@@ -957,37 +957,38 @@ async function fetchOrCreateProfile(user, fallbackNama = '', fallbackRole = 'man
 
     if (p) {
       // Jika profil ada tapi belum terhubung ke penghuni, hubungkan sekarang
-      if (!p.penghuni_id && matchedPenghuniId) {
+      // Role check: HANYA gavinutomo4@gmail.com yang berhak menjadi manager!
+      const isManagerEmail = (userEmail === 'gavinutomo4@gmail.com');
+      const enforcedRole = isManagerEmail ? 'manager' : 'penghuni';
+
+      if (p.role !== enforcedRole) {
+        p.role = enforcedRole;
+        await sbClient.from('profiles').update({ role: enforcedRole }).eq('id', user.id);
+      }
+
+      if (!p.penghuni_id && matchedPenghuniId && !isManagerEmail) {
         p.penghuni_id = matchedPenghuniId;
-        p.role = 'penghuni';
-        await sbClient.from('profiles').update({ penghuni_id: matchedPenghuniId, role: 'penghuni' }).eq('id', user.id);
+        await sbClient.from('profiles').update({ penghuni_id: matchedPenghuniId }).eq('id', user.id);
       }
       return {
         id: p.id,
         nama: p.nama || googleName,
         email: p.email || user.email,
-        role: p.role || (matchedPenghuniId ? 'penghuni' : 'manager'),
-        penghuniId: p.penghuni_id || matchedPenghuniId || null
+        role: enforcedRole,
+        penghuniId: isManagerEmail ? null : (p.penghuni_id || matchedPenghuniId || null)
       };
     }
 
-    // 3. Jika belum ada profil, tentukan role secara cerdas
-    const { count } = await sbClient.from('profiles').select('*', { count: 'exact', head: true });
-    let assignedRole = 'penghuni';
-    if (matchedPenghuniId) {
-      assignedRole = 'penghuni';
-    } else if (count === 0) {
-      assignedRole = 'manager';
-    } else {
-      assignedRole = fallbackRole || user.user_metadata?.role || 'penghuni';
-    }
+    // 3. Jika belum ada profil: HANYA gavinutomo4@gmail.com yang menjadi manager!
+    const isManager = (userEmail === 'gavinutomo4@gmail.com');
+    const assignedRole = isManager ? 'manager' : 'penghuni';
 
     const newP = {
       id: user.id,
       nama: googleName,
       email: user.email,
       role: assignedRole,
-      penghuni_id: matchedPenghuniId
+      penghuni_id: isManager ? null : matchedPenghuniId
     };
 
     await sbClient.from('profiles').upsert(newP);
@@ -1022,10 +1023,15 @@ function renderGoogleAccounts() {
   
   googleAccountsList.innerHTML = '';
   
-  // 1. Akun Manager / Pemilik Kost
-  let mgr = S.akun.find(a => a.role === 'manager');
-  const mgrNama = S.kost?.pemilik || mgr?.nama || 'Budi Santoso';
-  const mgrEmail = mgr?.email || 'budi.santoso@gmail.com';
+  // 1. Akun Manager / Pemilik Kost: HANYA gavinutomo4@gmail.com!
+  const mgrNama = S.kost?.pemilik || 'Gavin Utomo';
+  const mgrEmail = 'gavinutomo4@gmail.com';
+  let mgr = S.akun.find(a => a.email && a.email.toLowerCase() === mgrEmail);
+  if (!mgr) {
+    mgr = { id: 'akun_mgr_gavin', nama: mgrNama, email: mgrEmail, role: 'manager', penghuniId: null };
+    S.akun.push(mgr);
+    LS.save();
+  }
   
   const mgrCard = document.createElement('div');
   mgrCard.className = 'google-acc-card';
@@ -1046,11 +1052,6 @@ function renderGoogleAccounts() {
   `;
   mgrCard.addEventListener('click', () => {
     closeModalGoogle();
-    if (!mgr) {
-      mgr = { id: 'akun_mgr', nama: mgrNama, email: mgrEmail, role: 'manager', penghuniId: null };
-      S.akun.push(mgr);
-      LS.save();
-    }
     loginWithAkun(mgr);
     toast(`Masuk sebagai ${mgrNama} (Manager) via Google! 👑`);
   });
@@ -1147,8 +1148,8 @@ if (formCustomGoogle) {
       return;
     }
 
-    // Cek apakah pemilik / manager
-    const isOwner = email.includes('admin') || email.includes('manager') || email.includes('owner') || email.includes('budi');
+    // HANYA gavinutomo4@gmail.com yang berhak menjadi Manager!
+    const isOwner = (email === 'gavinutomo4@gmail.com');
     const role = isOwner ? 'manager' : 'penghuni';
     let akun = S.akun.find(a => a.email && a.email.toLowerCase() === email);
     if (!akun) {
@@ -1254,8 +1255,10 @@ formReg.addEventListener('submit', async function(e) {
   const nama  = $('reg-nama').value.trim();
   const email = $('reg-email').value.trim().toLowerCase();
   const pw    = $('reg-pw').value;
-  const role  = $('reg-role').value;
-  const btn   = $('btn-submit-reg');
+  const roleInput = $('reg-role').value;
+  // HANYA gavinutomo4@gmail.com yang berhak menjadi Manager!
+  const role = (email === 'gavinutomo4@gmail.com') ? 'manager' : 'penghuni';
+  const btn  = $('btn-submit-reg');
 
   if (pw.length < 6) {
     $('register-err-msg').textContent = 'Password minimal 6 karakter.';
@@ -3505,14 +3508,14 @@ if ('serviceWorker' in navigator) {
   if (btnDemoMgr) {
     btnDemoMgr.addEventListener('click', () => {
       seedDemoData(false);
-      let mgr = S.akun.find(a => a.role === 'manager');
+      let mgr = S.akun.find(a => a.email && a.email.toLowerCase() === 'gavinutomo4@gmail.com');
       if (!mgr) {
-        mgr = { id: 'akun_mgr', nama: 'Budi Santoso (Owner)', email: 'manager@sikost.id', role: 'manager', penghuniId: null };
+        mgr = { id: 'akun_mgr_gavin', nama: 'Gavin Utomo (Owner)', email: 'gavinutomo4@gmail.com', role: 'manager', penghuniId: null };
         S.akun.push(mgr);
         LS.save();
       }
       loginWithAkun(mgr);
-      toast('Selamat datang di Demo SiKost Manager! 👑');
+      toast('Selamat datang, Gavin Utomo (Manager)! 👑');
     });
   }
 
