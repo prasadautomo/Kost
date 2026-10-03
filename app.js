@@ -1334,15 +1334,29 @@ async function triggerRealGoogleLogin() {
 
       const msg = (err.message || '').toLowerCase();
       if (msg.includes('not enabled') || msg.includes('validation_failed') || msg.includes('unsupported provider')) {
-        openModal('modal-google-setup');
+        toast('Google Live OAuth belum aktif di Supabase. Silakan gunakan 1-Klik Akun Google di bawah ini! 🚀', 'info');
+        openModalGoogle();
       } else {
         toast('Google Login: ' + err.message, 'err');
       }
     }
   } else {
-    toast('Supabase Cloud belum terhubung. Silakan konfigurasi Supabase terlebih dahulu.', 'err');
-    openModal('modal-cloud-config');
+    toast('Supabase Cloud belum terhubung. Membuka pemilih akun 1-Klik...', 'info');
+    openModalGoogle();
   }
+}
+
+function handleGoogleLoginClick() {
+  // Jika Client ID sudah diisi dan ada Google One-Tap, coba One Tap
+  const clientId = window.SIKOST_CONFIG?.GOOGLE_CLIENT_ID || localStorage.getItem('sk3_google_client_id');
+  if (clientId && window.google?.accounts?.id) {
+    try {
+      window.google.accounts.id.prompt();
+      return;
+    } catch (e) {}
+  }
+  // Buka pemilih akun Google resmi SiKost (1-Klik Tahu Beres)
+  openModalGoogle();
 }
 
 if (btnTriggerLiveOauth) {
@@ -1350,7 +1364,7 @@ if (btnTriggerLiveOauth) {
 }
 
 if (btnLoginGoogle) {
-  btnLoginGoogle.addEventListener('click', triggerRealGoogleLogin);
+  btnLoginGoogle.addEventListener('click', handleGoogleLoginClick);
 }
 
 // Modal Google Setup Listeners
@@ -1359,6 +1373,13 @@ if ($('modal-google-setup-close')) {
 }
 if ($('btn-google-setup-done')) {
   $('btn-google-setup-done').addEventListener('click', () => closeModal('modal-google-setup'));
+}
+if ($('link-google-setup-from-modal')) {
+  $('link-google-setup-from-modal').addEventListener('click', (e) => {
+    e.preventDefault();
+    closeModalGoogle();
+    openModal('modal-google-setup');
+  });
 }
 if ($('btn-copy-callback')) {
   $('btn-copy-callback').addEventListener('click', () => {
