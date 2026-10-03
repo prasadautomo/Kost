@@ -3379,6 +3379,38 @@ function setupSupabaseUI() {
     });
   }
 
+  const btnVerifyDb = $('btn-verify-supabase-db');
+  if (btnVerifyDb) {
+    btnVerifyDb.addEventListener('click', async () => {
+      if (!sbClient) {
+        toast('Hubungkan Supabase Cloud terlebih dahulu.', 'err');
+        return;
+      }
+      btnVerifyDb.disabled = true;
+      btnVerifyDb.textContent = 'Memeriksa 7 Tabel...';
+      const tables = ['kost_pengaturan', 'kamar', 'penghuni', 'pembayaran', 'pengeluaran', 'keluhan', 'profiles'];
+      let activeCount = 0;
+      for (const t of tables) {
+        try {
+          const { error } = await sbClient.from(t).select('*').limit(1);
+          if (!error) activeCount++;
+        } catch {}
+      }
+      btnVerifyDb.disabled = false;
+      btnVerifyDb.textContent = '⚡ Cek Skrip Database';
+      if (activeCount === tables.length) {
+        confirm_dlg(
+          'Skrip Database Supabase Sempurna! 🎉',
+          `Semua ${activeCount} dari ${tables.length} tabel database (kost_pengaturan, kamar, penghuni, pembayaran, pengeluaran, keluhan, profiles) telah AKTIF dan siap digunakan di Supabase Cloud Anda!`,
+          () => {},
+          'Selesai'
+        );
+      } else {
+        toast(`${activeCount} dari ${tables.length} tabel aktif di Supabase.`, 'warn');
+      }
+    });
+  }
+
   const btnDisc = $('btn-disconnect-cloud');
   if (btnDisc) {
     btnDisc.addEventListener('click', () => {
