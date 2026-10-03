@@ -5,7 +5,8 @@
 #>
 
 param (
-    [int]$Port = 3000
+    [int]$Port = 3000,
+    [switch]$NoBrowser = $false
 )
 
 $HostName = "localhost"
@@ -28,11 +29,11 @@ $MimeTypes = @{
 }
 
 Write-Host "=================================================" -ForegroundColor Cyan
-Write-Host "   🏠 SiKost Local Web Server (v4.1)" -ForegroundColor Yellow
+Write-Host "   [SiKost] Local Web Server (v4.1)" -ForegroundColor Yellow
 Write-Host "=================================================" -ForegroundColor Cyan
-Write-Host "🌐 Server berjalan di: $Url" -ForegroundColor Green
-Write-Host "📁 Folder: $DocRoot" -ForegroundColor Gray
-Write-Host "💡 Google OAuth resmi aktif untuk: http://localhost:${Port}" -ForegroundColor White
+Write-Host ">> Server berjalan di: $Url" -ForegroundColor Green
+Write-Host ">> Folder: $DocRoot" -ForegroundColor Gray
+Write-Host ">> Google OAuth aktif untuk: http://localhost:${Port}" -ForegroundColor White
 Write-Host "Tekan CTRL + C untuk menghentikan server." -ForegroundColor Yellow
 Write-Host "-------------------------------------------------" -ForegroundColor Cyan
 
@@ -48,11 +49,13 @@ try {
     $Listener = New-Object System.Net.HttpListener
     $Listener.Prefixes.Add($Url)
     $Listener.Start()
-    Write-Host "🌐 Server berjalan di: $Url" -ForegroundColor Green
+    Write-Host ">> Server berjalan di: $Url" -ForegroundColor Green
 }
 
-# Buka browser otomatis
-Start-Process $Url
+# Buka browser otomatis jika tidak dalam mode NoBrowser
+if (-not $NoBrowser) {
+    Start-Process $Url
+}
 
 while ($Listener.IsListening) {
     try {
