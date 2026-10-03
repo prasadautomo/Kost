@@ -1308,14 +1308,6 @@ function initGoogleIdentityServices() {
     const container = document.getElementById('g_id_signin');
     if (container) {
       container.innerHTML = '';
-      window.google.accounts.id.renderButton(container, {
-        theme: 'filled_blue',
-        size: 'large',
-        width: 320,
-        text: 'signin_with',
-        shape: 'pill',
-        logo_alignment: 'left'
-      });
     }
 
     window.google.accounts.id.prompt();
