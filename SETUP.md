@@ -24,26 +24,22 @@
    - Application type: **Web application**
    - Name: `SiKost Web`
    - **Authorized JavaScript origins**: tambahkan:
-     - `http://localhost` (jika dijalankan via server lokal)
-     - `null` (untuk file:// lokal – **penting!**)
-   - Klik **Create**
+     - `https://kost-5rxniz1mm-prasada.vercel.app` (domain Vercel Anda)
+     - `http://localhost:3000` (server lokal)
+     - `http://localhost`
+   - **Authorized redirect URIs**: tambahkan:
+     - `https://kost-5rxniz1mm-prasada.vercel.app`
+     - `http://localhost:3000`
+   - Klik **Create** (atau **Save**)
 
-## Langkah 4 – Salin Client ID
+## Langkah 4 – Client ID SiKost Anda
 
-Setelah dibuat, akan muncul **Client ID** berbentuk:
+Client ID Anda:
 ```
-123456789012-abcdefghijklmnop.apps.googleusercontent.com
-```
-
-## Langkah 5 – Isi Client ID di SiKost
-
-Buka file `app.js`, cari baris ini di bagian paling atas:
-
-```javascript
-const GOOGLE_CLIENT_ID = 'GANTI_DENGAN_CLIENT_ID_ANDA';
+923123118444-je8bu4euke8hunresmb4cj67c5oi4mh0.apps.googleusercontent.com
 ```
 
-Ganti `GANTI_DENGAN_CLIENT_ID_ANDA` dengan Client ID Anda.
+Client ID ini sudah otomatis dipasang di `config.js`!
 
 ---
 
