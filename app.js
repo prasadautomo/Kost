@@ -1199,24 +1199,194 @@ if (formInlineCustomGoogle) {
   });
 }
 
-if (btnTriggerLiveOauth) {
-  btnTriggerLiveOauth.addEventListener('click', async () => {
-    if (!sbClient) return;
+// ── GOOGLE LIVE OAUTH & IDENTITY SERVICES ─────────────────────
+function decodeJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
+async function handleGoogleCredentialResponse(response) {
+  const payload = decodeJwt(response.credential);
+  if (!payload || !payload.email) {
+    toast('Gagal memproses data akun Google', 'err');
+    return;
+  }
+  const email = payload.email.toLowerCase();
+  const nama = payload.name || email.split('@')[0];
+  const avatar = payload.picture || '';
+
+  // STRICT SECURITY RULE: HANYA gavinutomo4@gmail.com YANG MENJADI MANAGER!
+  const isMgr = (email === 'gavinutomo4@gmail.com');
+  const role = isMgr ? 'manager' : 'penghuni';
+
+  if (sbClient) {
+    try {
+      if (sbClient.auth.signInWithIdToken) {
+        await sbClient.auth.signInWithIdToken({
+          provider: 'google',
+          token: response.credential
+        });
+      }
+    } catch (e) {
+      console.warn('signInWithIdToken Supabase warning:', e);
+    }
+  }
+
+  const akun = {
+    id: 'google_' + (payload.sub || uid()),
+    email,
+    nama,
+    avatar,
+    role,
+    googleAuth: true
+  };
+
+  loginWithAkun(akun);
+  toast(`Berhasil masuk via Google: ${nama} (${isMgr ? 'Manager 👑' : 'Penghuni 👤'})! 🚀`);
+}
+
+function initGoogleIdentityServices() {
+  const clientId = window.SIKOST_CONFIG?.GOOGLE_CLIENT_ID || localStorage.getItem('sk3_google_client_id');
+  if (!clientId || !window.google?.accounts?.id) return;
+
+  try {
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleCredentialResponse,
+      auto_select: false,
+      cancel_on_tap_outside: true
+    });
+
+    const container = document.getElementById('g_id_signin');
+    if (container) {
+      window.google.accounts.id.renderButton(container, {
+        theme: 'filled_blue',
+        size: 'large',
+        width: 320,
+        text: 'signin_with',
+        shape: 'pill',
+        logo_alignment: 'left'
+      });
+    }
+
+    window.google.accounts.id.prompt();
+  } catch (err) {
+    console.warn('Inisialisasi Google Identity Services warning:', err);
+  }
+}
+
+async function triggerRealGoogleLogin() {
+  // 1. Cek apakah dijalankan dari protokol file:///
+  if (window.location.protocol === 'file:') {
+    openModal('modal-google-protocol');
+    return;
+  }
+
+  // 2. Jika ada Google Identity Services One-Tap:
+  const clientId = window.SIKOST_CONFIG?.GOOGLE_CLIENT_ID || localStorage.getItem('sk3_google_client_id');
+  if (clientId && window.google?.accounts?.id) {
+    try {
+      window.google.accounts.id.prompt();
+      return;
+    } catch (e) {}
+  }
+
+  // 3. Eksekusi Supabase Live Google OAuth
+  if (sbClient) {
+    const btn = $('btn-login-google');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px"></span> Menghubungkan ke Google...`;
+    }
+
     try {
       const redirectUrl = window.location.origin + window.location.pathname;
       const { data, error } = await sbClient.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: redirectUrl }
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account'
+          }
+        }
       });
+
       if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
     } catch (err) {
-      toast('Google OAuth: ' + err.message, 'err');
+      console.error('Google OAuth live error:', err);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+
+      const msg = (err.message || '').toLowerCase();
+      if (msg.includes('not enabled') || msg.includes('validation_failed') || msg.includes('unsupported provider')) {
+        openModal('modal-google-setup');
+      } else {
+        toast('Google Login: ' + err.message, 'err');
+      }
+    }
+  } else {
+    toast('Supabase Cloud belum terhubung. Silakan konfigurasi Supabase terlebih dahulu.', 'err');
+    openModal('modal-cloud-config');
+  }
+}
+
+if (btnTriggerLiveOauth) {
+  btnTriggerLiveOauth.addEventListener('click', triggerRealGoogleLogin);
+}
+
+if (btnLoginGoogle) {
+  btnLoginGoogle.addEventListener('click', triggerRealGoogleLogin);
+}
+
+// Modal Google Setup Listeners
+if ($('modal-google-setup-close')) {
+  $('modal-google-setup-close').addEventListener('click', () => closeModal('modal-google-setup'));
+}
+if ($('btn-google-setup-done')) {
+  $('btn-google-setup-done').addEventListener('click', () => closeModal('modal-google-setup'));
+}
+if ($('btn-copy-callback')) {
+  $('btn-copy-callback').addEventListener('click', () => {
+    const inp = $('google-callback-url');
+    if (inp) {
+      navigator.clipboard.writeText(inp.value).then(() => {
+        toast('Redirect URL disalin ke clipboard! 📋');
+      }).catch(() => {
+        inp.select();
+        document.execCommand('copy');
+        toast('Redirect URL disalin! 📋');
+      });
     }
   });
 }
 
-if (btnLoginGoogle) {
-  btnLoginGoogle.addEventListener('click', () => {
+// Modal Protocol Listeners
+if ($('modal-google-proto-close')) {
+  $('modal-google-proto-close').addEventListener('click', () => closeModal('modal-google-protocol'));
+}
+if ($('btn-proto-close')) {
+  $('btn-proto-close').addEventListener('click', () => closeModal('modal-google-protocol'));
+}
+if ($('btn-proto-simulasi')) {
+  $('btn-proto-simulasi').addEventListener('click', () => {
+    closeModal('modal-google-protocol');
+    const details = $('details-simulasi-google');
+    if (details) details.open = true;
     openModalGoogle();
   });
 }
@@ -3490,6 +3660,7 @@ if ('serviceWorker' in navigator) {
 (async function init() {
   LS.load();
   setupSupabaseUI();
+  initGoogleIdentityServices();
 
   // Dark Mode default
   const t = localStorage.getItem('sk3_theme') || 'dark';

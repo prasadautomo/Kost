@@ -120,33 +120,38 @@ Jika Anda sebelumnya sudah pernah memasukkan data kamar, penghuni, atau pembayar
 
 ---
 
-## 6. Mengaktifkan Login 1-Klik dengan Google (Google OAuth)
+## 6. Mengaktifkan Login Asli dengan Google (Live Google OAuth)
 
-Supabase mendukung login Google instan untuk memudahkan penghuni kost masuk tanpa perlu membuat password baru.
+Aplikasi SiKost mendukung login resmi Google (**accounts.google.com**) agar Manager dan Penghuni dapat masuk langsung 1-klik dengan akun Google mereka:
 
-### Langkah Singkat Setup Google Auth:
-1. **Buka Google Cloud Console**:
-   - Kunjungi [https://console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials)
-   - Buat Project baru (misal: `Kost-Auth`).
-   - Buka menu **OAuth consent screen**: pilih **External**, isi nama aplikasi ("SiKost") dan email Anda, lalu klik Simpan.
-   - Buka menu **Credentials** -> Klik **+ CREATE CREDENTIALS** -> Pilih **OAuth client ID**.
-   - Application type: **Web application**.
-   - Pada bagian **Authorized redirect URIs**, tambahkan Callback URL dari Supabase Anda:
-     `https://<ID-PROJECT-SUPABASE-ANDA>.supabase.co/auth/v1/callback`
-   - Klik **Create**. Anda akan mendapatkan **Client ID** dan **Client Secret**.
+> 🔒 **Aturan Keamanan Eksklusif**: HANYA **`gavinutomo4@gmail.com`** yang berhak menjadi **Manager 👑**. Semua akun Google lainnya secara otomatis berstatus **Penghuni 👤**!
 
-2. **Aktifkan di Dashboard Supabase**:
-   - Buka Dashboard Supabase project Anda -> Menu **Authentication** -> **Providers** -> Klik **Google**.
-   - Aktifkan toggle **Enable Google provider**.
-   - Masukkan **Client ID** dan **Client Secret** yang Anda peroleh dari Google Cloud Console.
-   - Klik **Save**.
+### Langkah Cepat Setup Google OAuth di Supabase:
+1. **Dapatkan Client ID & Secret dari Google Cloud**:
+   - Kunjungi [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+   - Buat OAuth Client ID (Tipe: *Web application*).
+   - Pada kolom **Authorized redirect URIs**, masukkan:
+     ```text
+     https://tzplpnqtwcfchhmodphz.supabase.co/auth/v1/callback
+     ```
+   - Catat **Client ID** dan **Client Secret**.
+
+2. **Aktifkan Google di Supabase Dashboard**:
+   - Buka [Supabase Providers Dashboard](https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/auth/providers).
+   - Klik **Google** > Nyalakan toggle **Enable Google provider**.
+   - Masukkan **Client ID** dan **Client Secret**, lalu klik **Save**.
 
 3. **Atur Redirect URL di Supabase**:
-   - Di Supabase -> Menu **Authentication** -> **URL Configuration**.
-   - Di bagian **Redirect URLs**, masukkan URL tempat web Anda dibuka, contoh:
-     - `http://localhost:5500` (atau port live server lokal Anda)
-     - `https://sikost-xxxx.vercel.app` (URL Vercel Anda)
+   - Buka menu **Authentication** > **URL Configuration**.
+   - Tambahkan URL web Anda di **Redirect URLs**:
+     - `http://localhost:3000` (untuk server lokal)
+     - `https://sikost.vercel.app` (untuk hosting Vercel Anda)
    - Klik **Save Changes**.
 
-4. **Selesai!**
-   - Saat penghuni mengklik tombol **"Masuk dengan Google (1-Klik)"**, browser akan membuka akun Google mereka dan langsung otomatis masuk ke portal penghuni sesuai kamar mereka.
+4. **Menjalankan di Komputer Lokal**:
+   - Google OAuth melarang pengalihan ke URL `file:///`.
+   - Jalankan server lokal bawaan SiKost dengan perintah:
+     ```powershell
+     powershell -File serve.ps1
+     ```
+   - Browser akan otomatis membuka `http://localhost:3000` dan login Google asli dapat langsung digunakan!

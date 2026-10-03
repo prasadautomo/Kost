@@ -18,6 +18,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="config.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -79,43 +80,56 @@
       </div>
     </div>
 
-    <!-- Tombol Utama: Masuk dengan Google -->
-    <button type="button" class="btn-google-login" id="btn-login-google" title="Masuk langsung dengan Akun Google">
+    <!-- Tombol Utama: Masuk dengan Google Asli -->
+    <button type="button" class="btn-google-login" id="btn-login-google" title="Masuk langsung dengan Akun Google Resmi">
       <svg class="google-icon" viewBox="0 0 24 24">
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
       </svg>
-      <span>Masuk dengan Google (1-Klik)</span>
+      <span>Masuk dengan Google (Real OAuth)</span>
     </button>
 
-    <!-- Daftar Pilihan Akun Google Langsung -->
-    <div style="margin-top:14px;text-align:left">
-      <div style="font-size:0.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">
-        Pilih Akun Google:
-      </div>
-      <div id="inline-google-accounts-list" style="display:flex;flex-direction:column;gap:8px">
-        <!-- Rendered dynamically -->
-      </div>
+    <!-- Google Identity Services Container -->
+    <div id="g_id_signin" style="display:flex;justify-content:center;margin-top:10px"></div>
 
-      <!-- Input Akun Google Kustom -->
-      <div style="margin-top:14px;border-top:1px dashed var(--border);padding-top:12px">
-        <button type="button" id="btn-toggle-inline-custom-google" class="btn-ghost" style="width:100%;justify-content:center;font-size:0.82rem;padding:8px">
-          ➕ Masuk dengan Email Google Lain
-        </button>
-
-        <form id="form-inline-custom-google" style="display:none;margin-top:10px;background:var(--surface-2);padding:12px;border-radius:12px;border:1px solid var(--border)">
-          <div class="fg" style="margin-bottom:10px">
-            <label style="font-size:0.78rem">Email Akun Google Anda</label>
-            <input type="email" id="inline-custom-google-email" class="fc" placeholder="nama@gmail.com" required />
-          </div>
-          <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:10px">
-            🚀 Masuk Langsung (Tanpa Password)
-          </button>
-        </form>
-      </div>
+    <div style="margin-top:10px;text-align:center;font-size:0.75rem;color:var(--text-3);display:flex;align-items:center;justify-content:center;gap:6px">
+      <span>🌐 Terhubung ke Google OAuth Live</span>
     </div>
+
+    <!-- Opsi Uji Coba Simulasi / Offline (Collapsible) -->
+    <details id="details-simulasi-google" style="margin-top:14px;text-align:left;border:1px dashed var(--border);border-radius:10px;padding:8px 12px;background:rgba(255,255,255,0.02)">
+      <summary style="font-size:0.74rem;color:var(--text-3);cursor:pointer;font-weight:600;display:flex;align-items:center;justify-content:space-between">
+        <span>🧪 Opsi Simulasi Offline / Akun Lokal</span>
+        <span style="font-size:0.7rem;color:var(--accent-light)">Buka ▾</span>
+      </summary>
+      <div style="margin-top:10px">
+        <div style="font-size:0.72rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">
+          Pilih Akun Demo / Uji Coba:
+        </div>
+        <div id="inline-google-accounts-list" style="display:flex;flex-direction:column;gap:8px">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Input Akun Google Kustom -->
+        <div style="margin-top:12px;border-top:1px dashed var(--border);padding-top:10px">
+          <button type="button" id="btn-toggle-inline-custom-google" class="btn-ghost" style="width:100%;justify-content:center;font-size:0.8rem;padding:6px">
+            ➕ Masuk dengan Email Google Lain
+          </button>
+
+          <form id="form-inline-custom-google" style="display:none;margin-top:10px;background:var(--surface-2);padding:12px;border-radius:12px;border:1px solid var(--border)">
+            <div class="fg" style="margin-bottom:10px">
+              <label style="font-size:0.78rem">Email Akun Google Anda</label>
+              <input type="email" id="inline-custom-google-email" class="fc" placeholder="nama@gmail.com" required />
+            </div>
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:10px">
+              🚀 Masuk Langsung (Tanpa Password)
+            </button>
+          </form>
+        </div>
+      </div>
+    </details>
 
     <div style="font-size:0.74rem;color:var(--text-3);line-height:1.4;margin-top:16px;padding:8px;background:var(--surface-2);border-radius:8px">
       🔒 Manager: <span style="color:#10b981;font-weight:600">gavinutomo4@gmail.com</span> | Selain itu: Penghuni
@@ -1028,6 +1042,90 @@
       <div id="google-live-oauth-box" style="display:none;margin-top:14px;text-align:center">
         <button type="button" id="btn-trigger-live-oauth" class="btn-ghost" style="font-size:0.78rem;color:var(--accent-light);text-decoration:underline">
           🌐 Atau buka jendela Google OAuth resmi Supabase
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL PANDUAN AKTIVASI GOOGLE OAUTH SUPABASE ====== -->
+<div class="modal-overlay" id="modal-google-setup">
+  <div class="modal" style="max-width:520px;padding:0;overflow:hidden">
+    <div style="background:var(--surface-2);padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.5rem">🔑</span>
+        <div>
+          <h3 style="font-size:1.1rem;font-weight:700;margin:0">Aktivasi Google Login di Supabase</h3>
+          <p style="font-size:0.78rem;color:var(--text-3);margin:2px 0 0">Hubungkan Google Cloud Console ke Supabase Cloud</p>
+        </div>
+      </div>
+      <button type="button" class="modal-x" id="modal-google-setup-close">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px 24px;line-height:1.5;font-size:0.86rem">
+      <p style="margin-top:0;color:var(--text-2)">
+        Agar login dengan Google asli (Live OAuth) dapat berfungsi, Anda perlu mengaktifkan provider <strong>Google</strong> di dashboard Supabase Anda:
+      </p>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+        <div style="font-weight:600;font-size:0.8rem;color:var(--accent-light);margin-bottom:4px">1. Redirect URL (Callback Supabase):</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="google-callback-url" class="fc" style="font-size:0.78rem;font-family:monospace;padding:6px 10px" readonly value="https://tzplpnqtwcfchhmodphz.supabase.co/auth/v1/callback" />
+          <button type="button" class="btn-ghost" id="btn-copy-callback" style="padding:6px 12px;font-size:0.78rem">📋 Salin</button>
+        </div>
+      </div>
+
+      <ol style="padding-left:20px;margin-bottom:16px;color:var(--text-2);font-size:0.82rem">
+        <li style="margin-bottom:6px">Buka <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--accent-light)">Google Cloud Console</a> &gt; <em>Credentials</em> &gt; Buat <strong>OAuth Client ID</strong> (Web Application).</li>
+        <li style="margin-bottom:6px">Tambahkan URL di atas ke kolom <strong>Authorized redirect URIs</strong>.</li>
+        <li style="margin-bottom:6px">Buka <a id="link-supabase-providers" href="https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/auth/providers" target="_blank" style="color:var(--accent-light);font-weight:600">Supabase Auth Providers ↗</a>, aktifkan <strong>Google</strong>, dan tempel <em>Client ID</em> serta <em>Client Secret</em>.</li>
+      </ol>
+
+      <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:space-between;align-items:center">
+        <a href="https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/auth/providers" target="_blank" class="btn-primary" style="text-decoration:none;padding:8px 16px;font-size:0.82rem">
+          🚀 Buka Supabase Providers ↗
+        </a>
+        <button type="button" class="btn-ghost" id="btn-google-setup-done" style="font-size:0.82rem">
+          Tutup &amp; Coba Lagi
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL PROTOKOL FILE:// ====== -->
+<div class="modal-overlay" id="modal-google-protocol">
+  <div class="modal" style="max-width:500px;padding:0;overflow:hidden">
+    <div style="background:var(--surface-2);padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.5rem">🌐</span>
+        <div>
+          <h3 style="font-size:1.1rem;font-weight:700;margin:0">Buka via Server Web (Localhost / Vercel)</h3>
+          <p style="font-size:0.78rem;color:var(--text-3);margin:2px 0 0">Google OAuth melarang pengalihan ke URL file://</p>
+        </div>
+      </div>
+      <button type="button" class="modal-x" id="modal-google-proto-close">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px 24px;line-height:1.5;font-size:0.86rem">
+      <p style="margin-top:0;color:var(--text-2)">
+        Anda sedang membuka aplikasi langsung melalui berkas lokal (<code>file:///</code>). Google OAuth resmi mewajibkan aplikasi dijalankan melalui web server lokal (<code>http://localhost</code>) atau hosting HTTPS (seperti Vercel).
+      </p>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+        <div style="font-weight:600;font-size:0.82rem;color:var(--accent-light);margin-bottom:4px">Cara Cepat Menjalankan Server Lokal:</div>
+        <div style="font-family:monospace;font-size:0.8rem;background:var(--surface-2);padding:8px 10px;border-radius:6px;margin-top:6px;user-select:all">
+          powershell -File serve.ps1
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-3);margin-top:4px">
+          Otomatis membuka <code>http://localhost:3000</code> di browser Anda.
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+        <button type="button" class="btn-primary" id="btn-proto-simulasi" style="padding:8px 16px;font-size:0.82rem">
+          🧪 Gunakan Akun Demo Dulu
+        </button>
+        <button type="button" class="btn-ghost" id="btn-proto-close" style="font-size:0.82rem">
+          Tutup
         </button>
       </div>
     </div>
