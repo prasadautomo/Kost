@@ -690,7 +690,12 @@ const DB = {
 
       // 2. Kamar
       const { data: kList } = await sbClient.from('kamar').select('*').order('no', { ascending: true });
-      if (kList) S.kamar = kList;
+      if (kList && kList.length > 0) {
+        S.kamar = kList;
+      } else if (currentUser?.role === 'manager') {
+        seedDemoData(false);
+        setTimeout(() => this.uploadLocalToCloud(true), 500);
+      }
 
       // 3. Pembayaran
       const { data: bList } = await sbClient.from('pembayaran').select('*');
@@ -902,12 +907,12 @@ const DB = {
     }
   },
 
-  async uploadLocalToCloud() {
+  async uploadLocalToCloud(silent = false) {
     if (!sbClient) {
-      toast('Supabase belum terhubung! Atur URL dan Anon Key terlebih dahulu.', 'err');
+      if (!silent) toast('Supabase belum terhubung! Atur URL dan Anon Key terlebih dahulu.', 'err');
       return;
     }
-    toast('Mengunggah seluruh data ke Supabase Cloud... ⏳');
+    if (!silent) toast('Mengunggah seluruh data ke Supabase Cloud... ⏳');
     try {
       await this.saveKost();
       for (const k of S.kamar) await this.saveKamar(k);
@@ -917,11 +922,11 @@ const DB = {
       for (const klh of S.keluhan) await this.saveKeluhan(klh);
       for (const ann of S.pengumuman) await this.savePengumuman(ann);
 
-      toast('Semua data lokal berhasil diunggah ke Supabase Cloud! 🎉');
-      await this.fetchData();
+      if (!silent) toast('Semua data lokal berhasil diunggah ke Supabase Cloud! 🎉');
+      await this.fetchData(true);
     } catch (err) {
       console.error(err);
-      toast('Gagal migrasi data: ' + err.message, 'err');
+      if (!silent) toast('Gagal migrasi data: ' + err.message, 'err');
     }
   }
 };
