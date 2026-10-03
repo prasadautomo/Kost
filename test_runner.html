@@ -55,7 +55,7 @@
 <body>
 
   <h1>🧪 SiKost Organic Test Suite (v4.1)</h1>
-  <p style="color:#94a3b8;margin-top:0">End-to-End Automated Testing: Google-First Auth, Strict Manager Role, Rooms, Billing, Expenses, and Tenant Portal</p>
+  <p style="color:#94a3b8;margin-top:0">End-to-End Automated Testing: Google-First Auth, Strict Manager Role, Multi-Branch Kost Switcher, Rooms, Billing, Expenses, and Manager Analytics</p>
 
   <div id="summary-card">
     <div>
@@ -209,30 +209,52 @@
       logAssertion(b7, doc.documentElement.getAttribute('data-theme') === 'dark', 'Tema berhasil beralih kembali ke Dark Mode');
 
       // -------------------------------------------------------------
-      // TEST 8: Logout & Login Anak Kost via Google (Dimas)
+      // TEST 8: Multi-Kost Switcher & Re-Login Manager (Prasada Utomo)
       // -------------------------------------------------------------
-      const b8 = renderTestSection('Test 8: Logout & Login Anak Kost via Google');
+      const b8 = renderTestSection('Test 8: Multi-Kost Switcher & Re-Login Manager');
+      
+      // 1. Switch ke Cabang Kost 2: Graha Asri Dago (Bandung)
+      win.switchKost('kost_2');
+      await new Promise(r => setTimeout(r, 200));
+      logAssertion(b8, win.S.kost.nama === 'Kost Graha Asri Dago', 'Berhasil beralih ke Cabang 2: Kost Graha Asri Dago');
+      logAssertion(b8, doc.getElementById('sb-kost-name').textContent.includes('Dago'), 'Nama kost di sidebar terupdate ke Cabang Dago');
+
+      // 2. Switch ke Cabang Kost 3: Puri Indah Tebet (Jakarta)
+      win.switchKost('kost_3');
+      await new Promise(r => setTimeout(r, 200));
+      logAssertion(b8, win.S.kost.nama === 'Kost Puri Indah Tebet', 'Berhasil beralih ke Cabang 3: Kost Puri Indah Tebet');
+
+      // 3. Switch kembali ke Cabang 1: Griya Harmoni (Yogyakarta)
+      win.switchKost('kost_1');
+      await new Promise(r => setTimeout(r, 200));
+      logAssertion(b8, win.S.activeKostId === 'kost_1', 'Berhasil beralih kembali ke Cabang 1 (kost_1)');
+
+      // 4. Logout Manager
       doc.getElementById('btn-logout').click();
       await new Promise(r => setTimeout(r, 100));
 
       const confirmOk = doc.getElementById('confirm-ok');
       if (confirmOk) confirmOk.click();
-      await new Promise(r => setTimeout(r, 200));
+      await new Promise(r => setTimeout(r, 350));
 
       logAssertion(b8, doc.getElementById('screen-login').style.display !== 'none', 'Berhasil logout kembali ke Layar Login');
       logAssertion(b8, doc.getElementById('screen-app').style.display === 'none', 'App Shell ditutup setelah logout');
 
-      // Login as Dimas Prasetyo (Penghuni Kamar 101)
+      // 5. Validasi Daftar Akun: 100% Khusus Manager (tidak ada akun tenant)
       const inlineListAfter = doc.getElementById('inline-google-accounts-list');
-      const dimasCard = Array.from(inlineListAfter.children).find(c => c.innerHTML.includes('Dimas Prasetyo') || c.innerHTML.includes('101'));
-      logAssertion(b8, dimasCard !== null, 'Akun Google Penghuni Dimas Prasetyo (Kamar 101) tersedia');
+      const tenantCards = Array.from(inlineListAfter.children).filter(c => c.innerHTML.includes('Penghuni 👤') || c.innerHTML.includes('Kamar '));
+      logAssertion(b8, tenantCards.length === 0, 'Daftar Google Login 100% khusus Manager (0 akun penghuni)');
 
-      dimasCard.click();
+      const prasadaCard = Array.from(inlineListAfter.children).find(c => c.innerHTML.includes('prasadautomo@gmail.com'));
+      logAssertion(b8, prasadaCard !== null, 'Akun Google Manager Prasada Utomo tersedia');
+
+      // 6. Login sebagai Manager Prasada Utomo
+      prasadaCard.click();
       await new Promise(r => setTimeout(r, 350));
 
-      logAssertion(b8, doc.getElementById('screen-app').style.display !== 'none', 'Berhasil login ke Portal Anak Kost');
-      logAssertion(b8, doc.getElementById('sb-role-badge').textContent.includes('Penghuni'), 'Role badge di sidebar adalah "Penghuni"');
-      logAssertion(b8, doc.getElementById('page-tenant').classList.contains('active'), 'Halaman default anak kost adalah Portal "Data Saya"');
+      logAssertion(b8, doc.getElementById('screen-app').style.display !== 'none', 'Berhasil login sebagai Manager Prasada Utomo');
+      logAssertion(b8, doc.getElementById('sb-role-badge').textContent.includes('Manager'), 'Role badge di sidebar tetap "Manager"');
+      logAssertion(b8, doc.getElementById('page-dashboard').classList.contains('active'), 'Halaman default Manager adalah Dashboard');
 
       // -------------------------------------------------------------
       // REKAPITULASI HASIL TEST

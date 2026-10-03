@@ -189,9 +189,6 @@
 
       <!-- PAGE: DASHBOARD (Manager) -->
       <section class="page" id="page-dashboard">
-        <!-- Banner Pengumuman Terkini (Jika ada) -->
-        <div id="dash-pengumuman-banner" style="display:none;margin-bottom:18px"></div>
-
         <div class="page-heading">
           <h1 id="dash-greeting">Selamat datang 👋</h1>
           <p class="text-muted" id="dash-date">–</p>
@@ -407,17 +404,6 @@
         <div class="keluhan-grid" id="keluhan-grid"></div>
       </section>
 
-      <!-- PAGE: PENGUMUMAN (Manager - FITUR BARU) -->
-      <section class="page" id="page-pengumuman">
-        <div class="toolbar" style="justify-content:flex-end">
-          <button class="btn-primary" id="btn-tambah-pengumuman">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Buat Pengumuman Baru
-          </button>
-        </div>
-        <div class="pengumuman-list" id="pengumuman-list"></div>
-      </section>
-
       <!-- PAGE: PENGATURAN (Manager) -->
       <section class="page" id="page-pengaturan">
         <div class="settings-layout">
@@ -425,7 +411,6 @@
             <button class="settings-tab active" data-stab="profil">🏠 Profil Kost</button>
             <button class="settings-tab" data-stab="cabang">🏢 5 Cabang Kost</button>
             <button class="settings-tab" data-stab="bank">💳 Rekening &amp; QRIS</button>
-            <button class="settings-tab" data-stab="akun">👤 Akun Penghuni</button>
             <button class="settings-tab" data-stab="cloud">⚡ Cloud Supabase</button>
             <button class="settings-tab" data-stab="pw">🔑 Ganti Password</button>
             <button class="settings-tab" data-stab="data">🗂️ Data</button>
@@ -470,35 +455,6 @@
                 <div class="fg"><label>Link / URL Gambar QRIS (opsional)</label><input type="url" id="set-qris-url" class="fc" placeholder="https://..." /></div>
                 <button type="submit" class="btn-primary">Simpan Informasi Pembayaran</button>
               </form>
-            </div>
-
-            <!-- Akun Penghuni -->
-            <div class="stab-content" id="stab-akun">
-              <h2 class="settings-title">Akun Login Penghuni</h2>
-              <p class="text-muted">Buat akun login untuk penghuni agar mereka bisa masuk ke portal untuk melihat sewa, konfirmasi bayar, dan melapor keluhan.</p>
-              <div class="panel" style="margin-top:16px">
-                <div class="panel-header"><span class="panel-title">Daftar Akun</span></div>
-                <div class="tbl-wrap">
-                  <table class="tbl" id="tbl-akun">
-                    <thead><tr><th>Nama</th><th>Email Login</th><th>Role</th><th>Terhubung ke</th><th></th></tr></thead>
-                    <tbody id="tbody-akun"></tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="akun-form" style="margin-top:16px">
-                <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:12px">Tambah Akun Penghuni Baru</h3>
-                <div class="fg-grid" style="grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end">
-                  <div class="fg" style="margin:0"><label>Nama</label><input type="text" id="akun-nama" class="fc" placeholder="Nama penghuni" /></div>
-                  <div class="fg" style="margin:0"><label>Email Login</label><input type="email" id="akun-email" class="fc" placeholder="email@gmail.com" /></div>
-                  <div class="fg" style="margin:0"><label>Password</label>
-                    <div class="pw-wrap"><input type="password" id="akun-pw" class="fc" placeholder="Min. 6 karakter" /><button type="button" class="pw-eye" data-target="akun-pw">👁</button></div>
-                  </div>
-                  <button class="btn-primary" onclick="tambahAkunPenghuni()" style="margin-bottom:0;white-space:nowrap">+ Tambah</button>
-                </div>
-                <div class="fg" style="margin-top:10px"><label>Hubungkan ke Data Penghuni (opsional)</label>
-                  <select id="akun-link-penghuni" class="fc"><option value="">-- Pilih penghuni --</option></select>
-                </div>
-              </div>
             </div>
 
             <!-- Cloud Supabase -->
@@ -586,16 +542,6 @@
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <!-- PAGE: TENANT VIEW (Penghuni) -->
-      <section class="page" id="page-tenant">
-        <div class="tenant-wrap" id="tenant-content"></div>
-        <div class="empty-state" id="tenant-not-found" style="display:none">
-          <div class="empty-emoji">🔍</div>
-          <p class="empty-title">Data belum terhubung</p>
-          <p class="empty-sub">Akun Anda belum dihubungkan ke data penghuni.<br>Hubungi Manager kost untuk menghubungkan data Anda.</p>
         </div>
       </section>
 
@@ -815,7 +761,7 @@
   </div>
 </div>
 
-<!-- ====== MODAL: TANGGAPI KELUHAN (FITUR BARU) ====== -->
+<!-- ====== MODAL: TANGGAPI KELUHAN ====== -->
 <div class="modal-overlay" id="modal-keluhan-manager">
   <div class="modal" style="max-width:540px">
     <div class="modal-head">
@@ -823,40 +769,6 @@
       <button class="modal-x" id="modal-keluhan-manager-close">✕</button>
     </div>
     <div class="modal-body" id="modal-keluhan-manager-body"></div>
-  </div>
-</div>
-
-<!-- ====== MODAL: BUAT PENGUMUMAN (FITUR BARU) ====== -->
-<div class="modal-overlay" id="modal-pengumuman">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-head">
-      <h2 class="modal-title">📢 Buat Pengumuman Kost</h2>
-      <button class="modal-x" id="modal-pengumuman-close">✕</button>
-    </div>
-    <div class="modal-body">
-      <form id="form-pengumuman">
-        <div class="fg" style="margin-bottom:12px">
-          <label>Judul Pengumuman <em>*</em></label>
-          <input type="text" id="field-pengumuman-judul" class="fc" placeholder="Contoh: Pembersihan Tandon Air Bersama" required />
-        </div>
-        <div class="fg" style="margin-bottom:12px">
-          <label>Tingkat Prioritas</label>
-          <select id="field-pengumuman-prioritas" class="fc">
-            <option value="info">🔵 Informasi Biasa</option>
-            <option value="penting">🟡 Penting</option>
-            <option value="urgent">🔴 Mendesak / Urgent</option>
-          </select>
-        </div>
-        <div class="fg" style="margin-bottom:16px">
-          <label>Isi Pesan Pengumuman <em>*</em></label>
-          <textarea id="field-pengumuman-isi" class="fc" rows="4" placeholder="Tuliskan detail pengumuman yang dapat dibaca seluruh anak kost..." required></textarea>
-        </div>
-        <div class="modal-foot" style="padding:0">
-          <button type="button" class="btn-ghost" id="btn-batal-pengumuman">Batal</button>
-          <button type="submit" class="btn-primary">Publikasikan Pengumuman</button>
-        </div>
-      </form>
-    </div>
   </div>
 </div>
 
@@ -871,91 +783,6 @@
     <div class="modal-foot modal-foot-split">
       <button type="button" class="btn-ghost" id="btn-print-kwitansi">🖨️ Cetak / Unduh PDF</button>
       <button type="button" class="btn-wa" id="btn-wa-kwitansi">📱 Kirim Kwitansi via WA</button>
-    </div>
-  </div>
-</div>
-
-<!-- ====== MODAL: KONFIRMASI BAYAR PENJAGA / ANAK KOST ====== -->
-<div class="modal-overlay" id="modal-konfirmasi-bayar">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-head">
-      <h2 class="modal-title">💳 Konfirmasi Pembayaran Sewa</h2>
-      <button class="modal-x" id="modal-konfirmasi-bayar-close">✕</button>
-    </div>
-    <div class="modal-body">
-      <form id="form-konfirmasi-bayar">
-        <div class="fg" style="margin-bottom:12px">
-          <label>Pilih Bulan Tagihan <em>*</em></label>
-          <select id="field-konfirmasi-bulan" class="fc" required></select>
-        </div>
-        <div class="fg" style="margin-bottom:12px">
-          <label>Jumlah Nominal Ditransfer (Rp) <em>*</em></label>
-          <input type="number" id="field-konfirmasi-jumlah" class="fc" required />
-        </div>
-        <div class="fg" style="margin-bottom:12px">
-          <label>Catatan Pengirim / Bank Pengirim</label>
-          <input type="text" id="field-konfirmasi-catatan" class="fc" placeholder="Contoh: Transfer via BCA a.n Dimas" />
-        </div>
-        <div class="fg" style="margin-bottom:16px">
-          <label>Unggah Bukti Struk Transfer (Foto) <em>*</em></label>
-          <div style="display:flex;gap:12px;align-items:center;margin-top:6px">
-            <label class="btn-outline btn-sm" for="field-konfirmasi-bukti" style="cursor:pointer">📷 Pilih Foto Bukti</label>
-            <input type="file" id="field-konfirmasi-bukti" accept="image/*" style="display:none" required />
-            <img id="prev-konfirmasi-bukti" src="" alt="Bukti" style="display:none;width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" />
-          </div>
-          <small class="text-muted" style="font-size:0.72rem;display:block;margin-top:4px">Otomatis dikompresi agar hemat kuota dan cepat diunggah.</small>
-        </div>
-        <div class="modal-foot" style="padding:0">
-          <button type="button" class="btn-ghost" id="btn-batal-konfirmasi-bayar">Batal</button>
-          <button type="submit" class="btn-primary">Kirim Konfirmasi Bayar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- ====== MODAL: BUAT LAPORAN KELUHAN (ANAK KOST) ====== -->
-<div class="modal-overlay" id="modal-buat-keluhan">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-head">
-      <h2 class="modal-title">🛠️ Lapor Kerusakan / Keluhan Kamar</h2>
-      <button class="modal-x" id="modal-buat-keluhan-close">✕</button>
-    </div>
-    <div class="modal-body">
-      <form id="form-buat-keluhan">
-        <div class="fg" style="margin-bottom:12px">
-          <label>Kategori Masalah <em>*</em></label>
-          <select id="field-keluhan-kategori" class="fc" required>
-            <option value="AC">❄️ AC Tidak Dingin / Bocor</option>
-            <option value="Air/Plumbing">🚰 Kran Air / Toilet / Wastafel Bocor</option>
-            <option value="Listrik">⚡ Lampu / Stopkontak / Listrik</option>
-            <option value="WiFi">📶 WiFi Lambat / Terputus</option>
-            <option value="Pintu/Kunci">🔑 Pintu / Jendela / Kunci Rusak</option>
-            <option value="Kebersihan">🧹 Fasilitas Umum / Sampah</option>
-            <option value="Lainnya">📦 Masalah Lainnya</option>
-          </select>
-        </div>
-        <div class="fg" style="margin-bottom:12px">
-          <label>Judul Masalah <em>*</em></label>
-          <input type="text" id="field-keluhan-judul" class="fc" placeholder="Contoh: Kran wastafel bocor menetes terus" required />
-        </div>
-        <div class="fg" style="margin-bottom:12px">
-          <label>Deskripsi Detail Masalah <em>*</em></label>
-          <textarea id="field-keluhan-deskripsi" class="fc" rows="3" placeholder="Jelaskan secara rinci kendala yang dialami..." required></textarea>
-        </div>
-        <div class="fg" style="margin-bottom:16px">
-          <label>Foto Kerusakan (Opsional)</label>
-          <div style="display:flex;gap:12px;align-items:center;margin-top:6px">
-            <label class="btn-outline btn-sm" for="field-keluhan-foto" style="cursor:pointer">📷 Foto Kendala</label>
-            <input type="file" id="field-keluhan-foto" accept="image/*" style="display:none" />
-            <img id="prev-keluhan-foto" src="" alt="Kendala" style="display:none;width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" />
-          </div>
-        </div>
-        <div class="modal-foot" style="padding:0">
-          <button type="button" class="btn-ghost" id="btn-batal-buat-keluhan">Batal</button>
-          <button type="submit" class="btn-primary">Kirim Laporan</button>
-        </div>
-      </form>
     </div>
   </div>
 </div>

@@ -625,9 +625,7 @@ function seedDemoData(force = false) {
 
   S.akun = [
     { id: 'akun_mgr_gavin', nama: 'Gavin Utomo (Owner)', email: 'gavinutomo4@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null },
-    { id: 'akun_mgr_prasada', nama: 'Prasada Utomo (Manager)', email: 'prasadautomo@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null },
-    { id: 'akun_tnt', nama: 'Dimas Prasetyo', email: 'dimas@sikost.id', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'penghuni', penghuniId: 'p_dimas' },
-    { id: 'akun_tnt_bdg', nama: 'Arya Pratama', email: 'arya.pratama@itb.ac.id', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'penghuni', penghuniId: 'p_bdg_arya' }
+    { id: 'akun_mgr_prasada', nama: 'Prasada Utomo (Manager)', email: 'prasadautomo@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null }
   ];
 
   LS.save();
@@ -1203,9 +1201,7 @@ const DB = {
         if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
         if ($('page-pengeluaran')?.classList.contains('active')) renderPengeluaran();
         if ($('page-keluhan')?.classList.contains('active')) renderKeluhan();
-        if ($('page-pengumuman')?.classList.contains('active')) renderPengumuman();
         if ($('page-pengaturan')?.classList.contains('active')) renderPengaturan();
-        if ($('page-tenant')?.classList.contains('active')) renderTenant();
         if ($('sb-kost-name')) $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
       }
     } catch (e) {
@@ -1497,22 +1493,6 @@ function renderGoogleAccounts() {
 
   const allAccounts = [mgr, prasad];
 
-  // 2. Akun Penghuni
-  if (S.penghuni && S.penghuni.length > 0) {
-    S.penghuni.forEach(p => {
-      const emailP = p.email || (p.nama.toLowerCase().replace(/\s+/g, '.') + '@gmail.com');
-      let akunTnt = S.akun.find(a => a.penghuniId === p.id || (a.email && a.email.toLowerCase() === emailP.toLowerCase()));
-      if (!akunTnt) {
-        akunTnt = { id: 'akun_' + p.id, nama: p.nama, email: emailP, role: 'penghuni', penghuniId: p.id, kamar: p.kamar };
-        S.akun.push(akunTnt);
-      } else {
-        akunTnt.kamar = p.kamar;
-      }
-      allAccounts.push(akunTnt);
-    });
-    LS.save();
-  }
-
   // Render to modal list
   const mList = document.getElementById('google-accounts-list');
   if (mList) {
@@ -1580,32 +1560,15 @@ function handleCustomGoogleLogin(rawEmail, rawNama) {
 
   closeModalGoogle();
 
-  // Cek apakah email cocok dengan penghuni yang terdaftar
-  const matchedP = S.penghuni.find(p => p.email && p.email.toLowerCase() === email);
-  if (matchedP) {
-    let akun = S.akun.find(a => a.penghuniId === matchedP.id || (a.email && a.email.toLowerCase() === email));
-    if (!akun) {
-      akun = { id: 'akun_' + matchedP.id, nama: matchedP.nama, email: email, role: 'penghuni', penghuniId: matchedP.id };
-      S.akun.push(akun);
-      LS.save();
-    }
-    loginWithAkun(akun);
-    toast(`Selamat datang di Kamar ${matchedP.kamar}, ${matchedP.nama}! 🔑`);
-    return;
-  }
-
-  // gavinutomo4@gmail.com & prasadautomo@gmail.com berhak menjadi Manager!
-  const isOwner = (email === 'gavinutomo4@gmail.com' || email === 'prasadautomo@gmail.com');
-  const role = isOwner ? 'manager' : 'penghuni';
   let akun = S.akun.find(a => a.email && a.email.toLowerCase() === email);
   if (!akun) {
-    const pFirst = role === 'penghuni' ? (S.penghuni[0] || null) : null;
+    const isOwner = (email === 'gavinutomo4@gmail.com' || email === 'prasadautomo@gmail.com');
     akun = {
       id: 'akun_' + uid(),
-      nama: isOwner ? (email === 'prasadautomo@gmail.com' ? 'Prasad Automo' : 'Gavin Utomo (Owner)') : namaInput,
+      nama: isOwner ? (email === 'prasadautomo@gmail.com' ? 'Prasad Automo' : 'Gavin Utomo (Owner)') : (namaInput || 'Manager'),
       email: email,
-      role: role,
-      penghuniId: pFirst ? pFirst.id : null
+      role: 'manager',
+      penghuniId: null
     };
     S.akun.push(akun);
     LS.save();
@@ -2015,13 +1978,14 @@ function loginWithAkun(akun) {
 // ── LOGOUT ────────────────────────────────────────────────────
 $('btn-logout').addEventListener('click', async () => {
   confirm_dlg('Konfirmasi Keluar', 'Apakah Anda yakin ingin keluar dari SiKost?', async () => {
-    if (sbClient) {
-      try { await sbClient.auth.signOut(); } catch {}
-    }
     currentUser = null;
     LS.clearSession();
     showScreen('screen-login');
+    renderGoogleAccounts();
     toast('Anda telah keluar.');
+    if (sbClient) {
+      try { await sbClient.auth.signOut(); } catch {}
+    }
   }, 'Keluar');
 });
 
@@ -2031,7 +1995,7 @@ function enterApp() {
   renderUserChip();
   updatePropertySwitcherUI();
   setupPropertySwitcherEvents();
-  const firstPage = currentUser.role === 'manager' ? 'dashboard' : 'tenant';
+  const firstPage = 'dashboard';
   navigateTo(firstPage);
 
   if (sbClient) {
@@ -2047,18 +2011,11 @@ const NAV_MANAGER = [
   { id:'pembayaran',  icon:'💳', label:'Pembayaran', badgePending:true },
   { id:'pengeluaran', icon:'💸', label:'Pengeluaran' },
   { id:'keluhan',     icon:'🛠️', label:'Keluhan', badgeKeluhan:true },
-  { id:'pengumuman',  icon:'📢', label:'Pengumuman' },
   { id:'pengaturan',  icon:'⚙',  label:'Pengaturan' },
 ];
 
-const NAV_TENANT = [
-  { id:'tenant', icon:'🪪', label:'Data Saya' },
-  { id:'profil', icon:'👤', label:'Profil Akun' },
-];
-
 function buildSidebar() {
-  const isMgr = currentUser.role === 'manager';
-  const items = isMgr ? NAV_MANAGER : NAV_TENANT;
+  const items = NAV_MANAGER;
   $('sidebar-nav').innerHTML = items.map(item => `
     <a href="#" class="nav-item" data-page="${item.id}" id="nav-${item.id}">
       <span class="nav-icon">${item.icon}</span>
@@ -2069,14 +2026,13 @@ function buildSidebar() {
   $('sidebar-nav').querySelectorAll('.nav-item').forEach(el =>
     el.addEventListener('click', e => { e.preventDefault(); navigateTo(el.dataset.page); })
   );
-  $('sb-role-badge').textContent = isMgr ? 'Manager' : 'Penghuni';
-  $('sb-role-badge').className   = 'brand-role' + (isMgr ? '' : ' tenant');
+  $('sb-role-badge').textContent = 'Manager';
+  $('sb-role-badge').className   = 'brand-role';
   $('sb-kost-name').textContent  = S.kost.nama || 'SiKost';
   updateSidebarBadges();
 }
 
 function updateSidebarBadges() {
-  if (currentUser?.role !== 'manager') return;
   const bPenghuni = $('badge-penghuni');
   if (bPenghuni) {
     bPenghuni.textContent = S.penghuni.length;
@@ -2112,9 +2068,7 @@ const PAGE_TITLES = {
   pembayaran:  'Pembayaran & Tagihan',
   pengeluaran: 'Pengeluaran & Pembukuan',
   keluhan:     'Tiket Keluhan & Perbaikan',
-  pengumuman:  'Papan Pengumuman Kost',
   pengaturan:  'Pengaturan Sistem',
-  tenant:      'Data Hunian Saya',
   profil:      'Profil Akun'
 };
 
@@ -2125,9 +2079,8 @@ function navigateTo(page) {
   const navEl  = $('nav-' + page);  if (navEl)  navEl.classList.add('active');
   $('topbar-title').textContent = PAGE_TITLES[page] || page;
 
-  const isMgr = currentUser?.role === 'manager';
-  $('btn-tambah-penghuni').style.display = (isMgr && page === 'penghuni') ? 'inline-flex' : 'none';
-  $('btn-export-csv').style.display      = (isMgr && page === 'penghuni') ? 'inline-flex' : 'none';
+  $('btn-tambah-penghuni').style.display = (page === 'penghuni') ? 'inline-flex' : 'none';
+  $('btn-export-csv').style.display      = (page === 'penghuni') ? 'inline-flex' : 'none';
 
   if (page === 'dashboard')   renderDashboard();
   if (page === 'penghuni')    renderPenghuni();
@@ -2135,9 +2088,7 @@ function navigateTo(page) {
   if (page === 'pembayaran')  renderPembayaran();
   if (page === 'pengeluaran') renderPengeluaran();
   if (page === 'keluhan')     renderKeluhan();
-  if (page === 'pengumuman')  renderPengumuman();
   if (page === 'pengaturan')  renderPengaturan();
-  if (page === 'tenant')      renderTenant();
   if (page === 'profil')      renderProfil();
 
   updateSidebarBadges();
@@ -2165,28 +2116,6 @@ function renderDashboard() {
   $('dash-greeting').textContent = greet + ', ' + (currentUser?.nama?.split(' ')[0] || '') + ' 👋';
   $('dash-date').textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
-  // Banner Pengumuman Terkini
-  const bannerEl = $('dash-pengumuman-banner');
-  if (bannerEl) {
-    const latestAnn = S.pengumuman && S.pengumuman.length > 0 ? S.pengumuman[0] : null;
-    if (latestAnn) {
-      bannerEl.style.display = 'block';
-      bannerEl.innerHTML = `
-        <div class="pengumuman-banner">
-          <span class="pengumuman-banner-icon">📢</span>
-          <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <strong>${latestAnn.judul}</strong>
-              <span class="badge ${latestAnn.prioritas === 'urgent' ? 'badge-red' : latestAnn.prioritas === 'penting' ? 'badge-orange' : 'badge-blue'}">${latestAnn.prioritas.toUpperCase()}</span>
-            </div>
-            <div style="font-size:0.8rem;color:var(--text-2);line-height:1.5">${latestAnn.isi}</div>
-          </div>
-        </div>
-      `;
-    } else {
-      bannerEl.style.display = 'none';
-    }
-  }
 
   const aktif = S.penghuni.filter(p => p.status === 'aktif');
   const kamarTerisi = [...new Set(aktif.map(p => p.kamar).filter(Boolean))].length;
@@ -3445,332 +3374,11 @@ window.openResponKeluhan = function(id) {
 
 $('modal-keluhan-manager-close').addEventListener('click', () => closeModal('modal-keluhan-manager'));
 
-// ── PENGUMUMAN (BROADCAST) ────────────────────────────────────
-function renderPengumuman() {
-  $('pengumuman-list').innerHTML = S.pengumuman.map(ann => `
-    <div class="pengumuman-card priority-${ann.prioritas}">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <h3 style="font-size:1.05rem;font-weight:800;color:var(--text);margin-bottom:4px">${ann.judul}</h3>
-          <div style="font-size:0.75rem;color:var(--text-3)">Diposting: ${fmtD(ann.tanggal)} · Oleh: ${ann.createdBy || 'Pengelola'}</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <span class="badge ${ann.prioritas==='urgent'?'badge-red':ann.prioritas==='penting'?'badge-orange':'badge-blue'}">${ann.prioritas.toUpperCase()}</span>
-          <button class="btn-danger btn-sm" onclick="hapusPengumuman('${ann.id}')">Hapus</button>
-        </div>
-      </div>
-      <div style="font-size:0.85rem;color:var(--text-2);line-height:1.6">${ann.isi}</div>
-    </div>`).join('') || `<div class="empty-state"><div class="empty-emoji">📢</div><p class="empty-title">Belum ada pengumuman</p><p class="empty-sub">Klik "Buat Pengumuman Baru" untuk menyiarkan informasi ke seluruh anak kost.</p></div>`;
-}
+// ── FITUR PENGUMUMAN DIHAPUS (KHUSUS MANAGER) ────────────────
+function renderPengumuman() {}
 
-$('btn-tambah-pengumuman').addEventListener('click', () => {
-  $('form-pengumuman').reset();
-  openModal('modal-pengumuman');
-});
-$('modal-pengumuman-close').addEventListener('click', () => closeModal('modal-pengumuman'));
-$('btn-batal-pengumuman').addEventListener('click', () => closeModal('modal-pengumuman'));
 
-$('form-pengumuman').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const judul = $('field-pengumuman-judul').value.trim();
-  const isi   = $('field-pengumuman-isi').value.trim();
-  const prioritas = $('field-pengumuman-prioritas').value;
-  if (!judul || !isi) return;
-
-  const ann = {
-    id: uid(),
-    judul, isi, prioritas,
-    tanggal: new Date().toISOString().slice(0, 10),
-    createdBy: currentUser?.nama || 'Manager'
-  };
-
-  S.pengumuman.unshift(ann);
-  LS.save();
-  closeModal('modal-pengumuman');
-  renderPengumuman();
-  toast('Pengumuman berhasil disiarkan! 📢');
-  await DB.savePengumuman(ann);
-});
-
-window.hapusPengumuman = function(id) {
-  confirm_dlg('Hapus Pengumuman', 'Hapus pengumuman ini?', async () => {
-    S.pengumuman = S.pengumuman.filter(x => x.id !== id);
-    LS.save(); renderPengumuman(); toast('Pengumuman dihapus.');
-    await DB.deletePengumuman(id);
-  }, 'Hapus');
-};
-
-// ── TENANT PORTAL (ANAK KOST) ─────────────────────────────────
-function renderTenant() {
-  const p = currentUser?.penghuniId ? S.penghuni.find(x => x.id === currentUser.penghuniId) : null;
-  if (!p) {
-    $('tenant-content').style.display = 'none';
-    $('tenant-not-found').style.display = 'block';
-    return;
-  }
-  $('tenant-not-found').style.display = 'none';
-  $('tenant-content').style.display   = 'block';
-
-  const bln = thisMonth(), pb = S.pembayaran.find(x => x.penghuniId === p.id && x.bulan === bln), age = ageOf(p.tglLahir);
-  const av = p.foto ? `<img class="t-avatar" src="${p.foto}" alt="${p.nama}"/>` : `<div class="t-avatar-ph">${init(p.nama)}</div>`;
-
-  // Banner Pengumuman Kost
-  let annHtml = '';
-  if (S.pengumuman && S.pengumuman.length > 0) {
-    const ann = S.pengumuman[0];
-    annHtml = `
-      <div class="pengumuman-banner" style="margin-bottom:18px">
-        <span class="pengumuman-banner-icon">📢</span>
-        <div>
-          <div style="font-weight:800;margin-bottom:2px">${ann.judul} <span class="badge ${ann.prioritas==='urgent'?'badge-red':'badge-blue'}">${ann.prioritas.toUpperCase()}</span></div>
-          <div style="font-size:0.8rem;color:var(--text-2);line-height:1.5">${ann.isi}</div>
-        </div>
-      </div>
-    `;
-  }
-
-  // Riwayat Pembayaran Pribadi
-  const myPayments = S.pembayaran.filter(x => x.penghuniId === p.id).sort((a,b) => b.bulan.localeCompare(a.bulan));
-  const myComplaints = S.keluhan.filter(x => x.penghuniId === p.id).sort((a,b) => (b.tglLapor||'').localeCompare(a.tglLapor||''));
-
-  // Info Rekening Bank Kost
-  let bankBox = '';
-  if (S.kost.bankNama && S.kost.bankRekening) {
-    bankBox = `
-      <div style="background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--radius);padding:14px 18px;margin-top:14px">
-        <div style="font-size:0.75rem;font-weight:700;color:var(--accent-light);text-transform:uppercase">Info Pembayaran Kost:</div>
-        <div style="font-size:0.95rem;font-weight:800;color:#fff;margin:4px 0">${S.kost.bankNama}: ${S.kost.bankRekening}</div>
-        <div style="font-size:0.8rem;color:var(--text-2)">a.n ${S.kost.bankAtasNama || S.kost.pemilik}</div>
-      </div>
-    `;
-  }
-
-  $('tenant-content').innerHTML = `
-    ${annHtml}
-
-    <div class="tenant-hero">
-      ${av}
-      <div style="flex:1">
-        <div class="t-name">${p.nama}</div>
-        <div class="text-muted">${p.pekerjaan || '–'}</div>
-        <div class="t-tags">
-          ${p.status==='aktif'?'<span class="badge badge-green">Aktif</span>':'<span class="badge badge-gray">Tidak Aktif</span>'}
-          ${pb?.status==='lunas'?'<span class="badge badge-green">✅ Lunas Bulan Ini</span>':(pb?.status==='menunggu'?'<span class="badge badge-orange">⏳ Verifikasi Pembayaran</span>':'<span class="badge badge-red">❌ Belum Bayar Bulan Ini</span>')}
-        </div>
-      </div>
-      <div>
-        ${pb?.status==='lunas' ? `<button class="btn-ghost" onclick="showKwitansi('${p.id}','${bln}')">🧾 Unduh Kwitansi</button>` : `<button class="btn-primary" onclick="openKonfirmasiBayarTenant('${p.id}','${bln}')">💳 Upload Bukti Bayar</button>`}
-      </div>
-    </div>
-
-    ${bankBox}
-
-    <div class="tenant-grid" style="margin-top:18px">
-      <div class="t-section"><h4>🪪 Identitas</h4>
-        <div class="t-row"><div class="t-key">NIK (Terproteksi)</div><div class="t-val">${maskNik(p.nik, p.id)}</div></div>
-        <div class="t-row"><div class="t-key">Jenis Kelamin</div><div class="t-val">${p.gender||'–'}</div></div>
-        <div class="t-row"><div class="t-key">Tempat, Tgl Lahir</div><div class="t-val">${p.tempatLahir?p.tempatLahir+', ':''}${fmtD(p.tglLahir)}${age?' ('+age+' th)':''}</div></div>
-        <div class="t-row"><div class="t-key">Alamat KTP</div><div class="t-val">${p.alamatKtp||'–'}</div></div>
-        <div class="t-row"><div class="t-key">Pekerjaan</div><div class="t-val">${p.pekerjaan||'–'}</div></div>
-      </div>
-      <div class="t-section"><h4>🏠 Hunian &amp; Sewa</h4>
-        <div class="t-row"><div class="t-key">Kamar</div><div class="t-val">${p.kamar||'–'} ${p.lantai?'(Lantai '+p.lantai+')':''}</div></div>
-        <div class="t-row"><div class="t-key">Tanggal Masuk</div><div class="t-val">${fmtD(p.tglMasuk)}</div></div>
-        <div class="t-row"><div class="t-key">Lama Tinggal</div><div class="t-val">${durasi(p.tglMasuk)}</div></div>
-        <div class="t-row"><div class="t-key">Sewa / Bulan</div><div class="t-val">${rp(p.sewa)}</div></div>
-        <div class="t-row"><div class="t-key">Jatuh Tempo</div><div class="t-val">${p.tempo?'Tgl '+p.tempo+' setiap bulan':'–'}</div></div>
-        <div class="t-row"><div class="t-key">Uang Jaminan (Deposit)</div><div class="t-val" style="color:var(--orange)">${p.deposit ? rp(p.deposit) : 'Rp 0'}</div></div>
-      </div>
-      <div class="t-section"><h4>🚗 Kendaraan</h4>
-        <div class="t-row"><div class="t-key">Kepemilikan</div><div class="t-val">${p.kendaraan||'Tidak ada'}</div></div>
-        ${p.merk1?`<div class="t-row"><div class="t-key">Kendaraan 1</div><div class="t-val">${p.merk1}${p.plat1?' · '+p.plat1:''}</div></div>`:''}
-        ${p.merk2?`<div class="t-row"><div class="t-key">Kendaraan 2</div><div class="t-val">${p.merk2}${p.plat2?' · '+p.plat2:''}</div></div>`:''}
-      </div>
-      <div class="t-section"><h4>📞 Kontak Darurat</h4>
-        <div class="t-row"><div class="t-key">Nama Kontak Darurat</div><div class="t-val">${p.daruratNama||'–'} ${p.daruratHub?'('+p.daruratHub+')':''}</div></div>
-        <div class="t-row"><div class="t-key">HP Darurat</div><div class="t-val">${p.daruratHp||'–'}</div></div>
-        <div class="t-row"><div class="t-key">Alamat Darurat</div><div class="t-val">${p.daruratAlamat||'–'}</div></div>
-      </div>
-    </div>
-
-    <!-- Riwayat Pembayaran Saya -->
-    <div class="panel" style="margin-top:20px">
-      <div class="panel-header"><span class="panel-title">💳 Riwayat Pembayaran Sewa Saya</span></div>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <thead><tr><th>Bulan</th><th>Nominal</th><th>Tgl Bayar</th><th>Status</th><th>Aksi</th></tr></thead>
-          <tbody>
-            ${myPayments.map(pbRow => `
-              <tr>
-                <td><strong>${pbRow.bulan}</strong></td>
-                <td>${rp(pbRow.jumlah)}</td>
-                <td>${fmtD(pbRow.tglBayar)}</td>
-                <td>${pbRow.status==='lunas'?'<span class="badge badge-green">Lunas</span>':'<span class="badge badge-orange">Menunggu Verifikasi</span>'}</td>
-                <td>${pbRow.status==='lunas'?`<button class="btn-ghost btn-sm" onclick="showKwitansi('${p.id}','${pbRow.bulan}')">🧾 Kwitansi</button>`:'–'}</td>
-              </tr>
-            `).join('') || `<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-3)">Belum ada catatan pembayaran.</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Tiket Keluhan & Perbaikan Saya -->
-    <div class="panel" style="margin-top:20px">
-      <div class="panel-header">
-        <span class="panel-title">🛠️ Keluhan &amp; Perbaikan Fasilitas Kamar</span>
-        <button class="btn-primary btn-sm" onclick="openLaporKeluhan('${p.id}')">+ Lapor Masalah</button>
-      </div>
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <thead><tr><th>Tanggal</th><th>Kategori</th><th>Masalah</th><th>Status</th><th>Tanggapan Pengelola</th></tr></thead>
-          <tbody>
-            ${myComplaints.map(k => `
-              <tr>
-                <td>${fmtD(k.tglLapor)}</td>
-                <td><span class="badge badge-purple">${k.kategori||'Lainnya'}</span></td>
-                <td><strong>${k.judul}</strong><br><small style="color:var(--text-3)">${k.deskripsi}</small></td>
-                <td>${k.status==='selesai'?'<span class="badge badge-green">Selesai</span>':(k.status==='diproses'?'<span class="badge badge-blue">Diproses</span>':'<span class="badge badge-orange">Menunggu</span>')}</td>
-                <td>${k.responManager ? `<span style="color:var(--accent-light)">${k.responManager}</span>` : '<span style="color:var(--text-4)">Menunggu tanggapan</span>'}</td>
-              </tr>
-            `).join('') || `<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-3)">Belum ada keluhan yang dilaporkan.</td></tr>`}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-}
-
-// ── MODAL KONFIRMASI BAYAR (TENANT) ───────────────────────────
-window.openKonfirmasiBayarTenant = function(pid, blnDefault) {
-  const p = S.penghuni.find(x => x.id === pid); if (!p) return;
-  const sel = $('field-konfirmasi-bulan');
-  const months = []; const now = new Date();
-  for (let i = 0; i < 4; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(d.toISOString().slice(0, 7));
-  }
-  sel.innerHTML = months.map(m => {
-    const [y, mo] = m.split('-');
-    const lbl = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-    return `<option value="${m}"${m === blnDefault ? ' selected' : ''}>${lbl} (${m})</option>`;
-  }).join('');
-
-  $('field-konfirmasi-jumlah').value = p.sewa || '';
-  $('field-konfirmasi-catatan').value = '';
-  $('field-konfirmasi-bukti').value = '';
-  $('prev-konfirmasi-bukti').src = '';
-  $('prev-konfirmasi-bukti').style.display = 'none';
-
-  openModal('modal-konfirmasi-bayar');
-};
-
-$('modal-konfirmasi-bayar-close').addEventListener('click', () => closeModal('modal-konfirmasi-bayar'));
-$('btn-batal-konfirmasi-bayar').addEventListener('click', () => closeModal('modal-konfirmasi-bayar'));
-
-$('field-konfirmasi-bukti').addEventListener('change', async function() {
-  const f = this.files[0]; if (!f) return;
-  try {
-    toast('Mengompres bukti transfer... ⏳');
-    const dataUrl = await compressImage(f, 900, 900, 0.75);
-    $('prev-konfirmasi-bukti').src = dataUrl;
-    $('prev-konfirmasi-bukti').style.display = 'block';
-    toast('Bukti transfer siap diunggah! ✅');
-  } catch (err) { toast(err.message, 'err'); }
-});
-
-$('form-konfirmasi-bayar').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const pid   = currentUser?.penghuniId;
-  const bulan = $('field-konfirmasi-bulan').value;
-  const jumlah = Number($('field-konfirmasi-jumlah').value) || 0;
-  const catatan = $('field-konfirmasi-catatan').value.trim();
-  const buktiTransfer = $('prev-konfirmasi-bukti').src;
-
-  if (!buktiTransfer || $('prev-konfirmasi-bukti').style.display === 'none') {
-    toast('Harap unggah foto bukti transfer!', 'err'); return;
-  }
-
-  let pb = S.pembayaran.find(x => x.penghuniId === pid && x.bulan === bulan);
-  if (pb) {
-    pb.jumlah = jumlah;
-    pb.status = 'menunggu';
-    pb.buktiTransfer = buktiTransfer;
-    pb.catatanBayar = catatan;
-    pb.tglBayar = new Date().toISOString();
-  } else {
-    pb = {
-      id: uid(),
-      penghuniId: pid,
-      bulan,
-      jumlah,
-      status: 'menunggu',
-      buktiTransfer,
-      catatanBayar: catatan,
-      tglBayar: new Date().toISOString()
-    };
-    S.pembayaran.push(pb);
-  }
-
-  LS.save();
-  closeModal('modal-konfirmasi-bayar');
-  renderTenant();
-  toast('Konfirmasi pembayaran terkirim! Menunggu verifikasi Manager. ⏳');
-  await DB.savePembayaran(pb);
-  updateSidebarBadges();
-});
-
-// ── MODAL LAPOR KELUHAN (TENANT) ──────────────────────────────
-window.openLaporKeluhan = function(pid) {
-  $('form-buat-keluhan').reset();
-  $('prev-keluhan-foto').src = '';
-  $('prev-keluhan-foto').style.display = 'none';
-  openModal('modal-buat-keluhan');
-};
-
-$('modal-buat-keluhan-close').addEventListener('click', () => closeModal('modal-buat-keluhan'));
-$('btn-batal-buat-keluhan').addEventListener('click', () => closeModal('modal-buat-keluhan'));
-
-$('field-keluhan-foto').addEventListener('change', async function() {
-  const f = this.files[0]; if (!f) return;
-  try {
-    toast('Mengompres foto kendala... ⏳');
-    const dataUrl = await compressImage(f, 900, 900, 0.75);
-    $('prev-keluhan-foto').src = dataUrl;
-    $('prev-keluhan-foto').style.display = 'block';
-  } catch (err) { toast(err.message, 'err'); }
-});
-
-$('form-buat-keluhan').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const p = S.penghuni.find(x => x.id === currentUser?.penghuniId);
-  const judul = $('field-keluhan-judul').value.trim();
-  const kategori = $('field-keluhan-kategori').value;
-  const deskripsi = $('field-keluhan-deskripsi').value.trim();
-  const foto = $('prev-keluhan-foto').style.display !== 'none' ? $('prev-keluhan-foto').src : null;
-
-  if (!judul || !deskripsi) return;
-
-  const klh = {
-    id: uid(),
-    penghuniId: currentUser.penghuniId,
-    kamar: p?.kamar || '–',
-    judul,
-    kategori,
-    deskripsi,
-    foto,
-    status: 'menunggu',
-    responManager: null,
-    tglLapor: new Date().toISOString()
-  };
-
-  S.keluhan.unshift(klh);
-  LS.save();
-  closeModal('modal-buat-keluhan');
-  renderTenant();
-  toast('Laporan keluhan terkirim ke pengelola! 🛠️');
-  await DB.saveKeluhan(klh);
-  updateSidebarBadges();
-});
+function renderTenant() {}
 
 // ── PROFIL AKUN ───────────────────────────────────────────────
 function renderProfil() {
@@ -3800,8 +3408,6 @@ function renderPengaturan() {
   if ($('set-bank-atas-nama'))$('set-bank-atas-nama').value= S.kost.bankAtasNama || '';
   if ($('set-qris-url'))      $('set-qris-url').value      = S.kost.qrisUrl || '';
 
-  renderAkunList();
-  fillAkunLinkSelect();
 
   const cfg = getSupabaseConfig();
   if (cfg) {
@@ -3849,75 +3455,6 @@ document.querySelectorAll('.settings-tab').forEach(btn => {
   });
 });
 
-function renderAkunList() {
-  const tbody = $('tbody-akun'); if (!tbody) return;
-  tbody.innerHTML = S.akun.map(a => {
-    const p = a.penghuniId ? S.penghuni.find(x => x.id === a.penghuniId) : null;
-    const isMe = a.id === currentUser?.id;
-    return `<tr>
-      <td><strong>${a.nama}</strong> ${isMe?'<span class="badge badge-blue">Anda</span>':''}</td>
-      <td>${a.email}</td>
-      <td><span class="badge ${a.role==='manager'?'badge-blue':'badge-gray'}">${a.role==='manager'?'Manager':'Penghuni'}</span></td>
-      <td>${p ? p.nama + ' (Kamar ' + (p.kamar||'–') + ')' : '<span style="color:var(--text-3)">–</span>'}</td>
-      <td>${!isMe ? `<button class="btn-danger btn-sm" onclick="hapusAkun('${a.id}')">Hapus</button>` : '–'}</td>
-    </tr>`;
-  }).join('') || `<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--text-3)">Belum ada akun lain.</td></tr>`;
-}
-
-function fillAkunLinkSelect() {
-  const sel = $('akun-link-penghuni'); if (!sel) return;
-  sel.innerHTML = '<option value="">-- Pilih penghuni (opsional) --</option>' +
-    S.penghuni.map(p => `<option value="${p.id}">${p.nama} (Kamar ${p.kamar||'–'})</option>`).join('');
-}
-
-window.tambahAkunPenghuni = async function() {
-  const nama  = $('akun-nama').value.trim();
-  const email = $('akun-email').value.trim().toLowerCase();
-  const pw    = $('akun-pw').value;
-  const pid   = $('akun-link-penghuni').value;
-  if (!nama)  { toast('Nama wajib diisi!','err'); return; }
-  if (!email) { toast('Email wajib diisi!','err'); return; }
-  if (pw.length < 6) { toast('Password minimal 6 karakter!','err'); return; }
-  if (S.akun.find(a => a.email === email)) { toast('Email sudah terdaftar!','err'); return; }
-
-  if (sbClient) {
-    try {
-      const cfg = getSupabaseConfig();
-      const tempClient = window.supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: false } });
-      const { data, error } = await tempClient.auth.signUp({
-        email, password: pw, options: { data: { nama, role: 'penghuni', penghuni_id: pid || null } }
-      });
-      if (error) throw error;
-      const newId = data.user?.id || uid();
-      await sbClient.from('profiles').upsert({ id: newId, nama, email, role: 'penghuni', penghuni_id: pid || null });
-      S.akun.push({ id: newId, nama, email, role: 'penghuni', penghuniId: pid || null });
-      LS.save(); renderAkunList(); fillAkunLinkSelect();
-      $('akun-nama').value = ''; $('akun-email').value = ''; $('akun-pw').value = ''; $('akun-link-penghuni').value = '';
-      toast(`Akun Cloud untuk ${nama} berhasil dibuat! 🎉`);
-      return;
-    } catch (err) {
-      toast('Gagal buat akun Cloud: ' + err.message, 'err');
-      return;
-    }
-  }
-
-  const pwHash = await hashPw(pw);
-  S.akun.push({ id: uid(), nama, email, pwHash, role: 'penghuni', penghuniId: pid || null });
-  LS.save(); renderAkunList(); fillAkunLinkSelect();
-  $('akun-nama').value = ''; $('akun-email').value = ''; $('akun-pw').value = ''; $('akun-link-penghuni').value = '';
-  toast(`Akun untuk ${nama} berhasil dibuat! 🎉`);
-};
-
-window.hapusAkun = function(id) {
-  const a = S.akun.find(x => x.id === id); if (!a || a.id === currentUser?.id) return;
-  confirm_dlg('Hapus Akun', `Hapus akun "${a.email}"?`, async () => {
-    S.akun = S.akun.filter(x => x.id !== id);
-    LS.save(); renderAkunList(); toast('Akun dihapus.');
-    if (sbClient) {
-      try { await sbClient.from('profiles').delete().eq('id', id); } catch {}
-    }
-  }, 'Hapus');
-};
 
 $('form-ganti-pw').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -4186,7 +3723,10 @@ $('menu-toggle').addEventListener('click', () => {
 // ── CONFIRM DIALOG ────────────────────────────────────────────
 $('confirm-ok').addEventListener('click', () => {
   closeModal('modal-confirm');
-  if (confirmCb) { confirmCb(); confirmCb = null; }
+  if (confirmCb) {
+    confirmCb();
+    confirmCb = null;
+  }
 });
 $('confirm-cancel').addEventListener('click', () => {
   closeModal('modal-confirm');
