@@ -15,16 +15,20 @@ let S = {
   pengumuman: [], // [{id, judul, isi, tanggal, prioritas, createdBy}]
   akun:       [],
   kost: {
-    nama: 'SiKost',
-    pemilik: '',
-    alamat: '',
-    hp: '',
-    totalKamar: 10,
-    bankNama: '',
-    bankRekening: '',
-    bankAtasNama: '',
+    nama: 'Kost Griya Harmoni',
+    pemilik: 'Gavin Utomo',
+    kota: 'Sleman, Yogyakarta',
+    alamat: 'Jl. Kaliurang KM 5, Gg. Megatruh No. 12, Sleman, DI Yogyakarta',
+    hp: '081234567890',
+    totalKamar: 8,
+    bankNama: 'Bank BCA',
+    bankRekening: '8465-1234-90',
+    bankAtasNama: 'Gavin Utomo',
     qrisUrl: ''
-  }
+  },
+  activeKostId: 'kost_1',
+  properties: [],
+  propertiesData: {}
 };
 window.S = S;
 
@@ -180,13 +184,16 @@ function compressImage(file, maxWidth = 900, maxHeight = 900, quality = 0.75) {
   });
 }
 
-// ── DEMO SEED DATA GENERATOR ─────────────────────────────────
-function seedDemoData(force = false) {
-  if (!force && S.penghuni && S.penghuni.length > 0 && S.kamar && S.kamar.length > 0) return;
+// ── MULTI-KOST SEED DATA GENERATOR (5 CABANG TERPISAH) ─────────
+function generateInitialMultiKostData() {
+  const bln = thisMonth();
 
-  S.kost = {
+  // CABANG 1: Kost Griya Harmoni (Yogyakarta)
+  const kost1 = {
+    id: 'kost_1',
     nama: 'Kost Griya Harmoni',
     pemilik: 'Gavin Utomo',
+    kota: 'Sleman, Yogyakarta',
     alamat: 'Jl. Kaliurang KM 5, Gg. Megatruh No. 12, Sleman, DI Yogyakarta',
     hp: '081234567890',
     totalKamar: 8,
@@ -195,8 +202,7 @@ function seedDemoData(force = false) {
     bankAtasNama: 'Gavin Utomo',
     qrisUrl: ''
   };
-
-  S.kamar = [
+  const kamar1 = [
     { id: 'km_101', no: '101', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Kasur Springbed 160x200, Lemari 2 Pintu, Meja Belajar, Kamar Mandi Dalam' },
     { id: 'km_102', no: '102', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Kasur Springbed, Lemari, Meja Belajar, Kamar Mandi Dalam' },
     { id: 'km_103', no: '103', lantai: '1', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
@@ -206,8 +212,7 @@ function seedDemoData(force = false) {
     { id: 'km_203', no: '203', lantai: '2', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Springbed, Lemari 2 Pintu, Meja Kerja' },
     { id: 'km_204', no: '204', lantai: '2', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur, Lemari, Meja' }
   ];
-
-  S.penghuni = [
+  const penghuni1 = [
     {
       id: 'p_dimas',
       nama: 'Dimas Prasetyo',
@@ -229,7 +234,7 @@ function seedDemoData(force = false) {
       sewa: 1500000,
       tempo: 5,
       deposit: 500000,
-      catatanDeposit: 'Uang jaminan kunci & remote AC (disimpan saat masuk)',
+      catatanDeposit: 'Uang jaminan kunci & remote AC',
       catatanBayar: 'Termasuk iuran sampah',
       daruratNama: 'Bambang Prasetyo',
       daruratHub: 'Orang Tua',
@@ -370,71 +375,468 @@ function seedDemoData(force = false) {
       daruratAlamat: 'Solo'
     }
   ];
-
-  const bln = thisMonth();
-  S.pembayaran = [
+  const pembayaran1 = [
     { id: 'pb_1', penghuniId: 'p_dimas', bulan: bln, jumlah: 1500000, status: 'lunas', tglBayar: `${bln}-03T09:30:00Z` },
     { id: 'pb_2', penghuniId: 'p_anisa', bulan: bln, jumlah: 1500000, status: 'lunas', tglBayar: `${bln}-01T14:15:00Z` },
     { id: 'pb_3', penghuniId: 'p_kevin', bulan: bln, jumlah: 1850000, status: 'lunas', tglBayar: `${bln}-01T10:00:00Z` }
   ];
-
-  S.pengeluaran = [
-    { id: 'exp_1', tanggal: `${bln}-02`, kategori: 'Listrik/PLN', jumlah: 650000, keterangan: 'Beli token listrik utama & pompa air', createdBy: 'Budi Santoso' },
-    { id: 'exp_2', tanggal: `${bln}-03`, kategori: 'WiFi/Internet', jumlah: 450000, keterangan: 'Langganan Indihome 100 Mbps', createdBy: 'Budi Santoso' },
-    { id: 'exp_3', tanggal: `${bln}-05`, kategori: 'Kebersihan/Sampah', jumlah: 150000, keterangan: 'Iuran sampah RT & kebersihan lorong', createdBy: 'Budi Santoso' },
-    { id: 'exp_4', tanggal: `${bln}-07`, kategori: 'Perbaikan/Maintenance', jumlah: 250000, keterangan: 'Servis kran air wastafel lantai 1 & ganti sil', createdBy: 'Budi Santoso' }
+  const pengeluaran1 = [
+    { id: 'exp_1_1', tanggal: `${bln}-02`, kategori: 'Listrik/PLN', jumlah: 650000, keterangan: 'Beli token listrik utama & pompa air Yogya', createdBy: 'Gavin Utomo' },
+    { id: 'exp_1_2', tanggal: `${bln}-03`, kategori: 'WiFi/Internet', jumlah: 450000, keterangan: 'Langganan Indihome 100 Mbps Sleman', createdBy: 'Gavin Utomo' },
+    { id: 'exp_1_3', tanggal: `${bln}-05`, kategori: 'Kebersihan/Sampah', jumlah: 150000, keterangan: 'Iuran sampah RT & kebersihan lorong', createdBy: 'Gavin Utomo' },
+    { id: 'exp_1_4', tanggal: `${bln}-07`, kategori: 'Perbaikan/Maintenance', jumlah: 250000, keterangan: 'Servis kran air wastafel lantai 1', createdBy: 'Gavin Utomo' }
+  ];
+  const keluhan1 = [
+    { id: 'klh_1_1', penghuniId: 'p_rizky', kamar: '103', judul: 'Kran kamar mandi menetes terus', kategori: 'Air/Plumbing', deskripsi: 'Kran air di kamar mandi tidak bisa ditutup rapat, menetes semalaman.', status: 'selesai', responManager: 'Kran sudah diganti dengan yang baru oleh tukang ledeng tgl 7.', tglLapor: `${bln}-06T10:00:00Z`, tglSelesai: `${bln}-07T14:00:00Z` },
+    { id: 'klh_1_2', penghuniId: 'p_dimas', kamar: '101', judul: 'Remote AC baterai habis & AC kurang dingin', kategori: 'AC', deskripsi: 'Remote AC tidak merespon saat ditekan.', status: 'diproses', responManager: 'Teknisi AC dijadwalkan cuci AC besok.', tglLapor: `${bln}-10T12:30:00Z`, tglSelesai: null }
+  ];
+  const pengumuman1 = [
+    { id: 'ann_1_1', judul: 'Pembersihan Tandon Air Rutin Hari Minggu', isi: 'Pengurasan tandon air utama Minggu pagi pukul 08.00–11.00 WIB. Mohon tampung air secukupnya.', tanggal: `${bln}-05`, prioritas: 'penting', createdBy: 'Gavin Utomo' }
   ];
 
-  S.keluhan = [
-    {
-      id: 'klh_1',
-      penghuniId: 'p_rizky',
-      kamar: '103',
-      judul: 'Kran kamar mandi menetes terus',
-      kategori: 'Air/Plumbing',
-      deskripsi: 'Kran air di kamar mandi tidak bisa ditutup rapat, menetes semalaman.',
-      status: 'selesai',
-      responManager: 'Kran sudah diganti dengan yang baru oleh tukang ledeng tgl 7.',
-      tglLapor: `${bln}-06T10:00:00Z`,
-      tglSelesai: `${bln}-07T14:00:00Z`
-    },
-    {
-      id: 'klh_2',
-      penghuniId: 'p_dimas',
-      kamar: '101',
-      judul: 'Remote AC baterai habis & AC kurang dingin',
-      kategori: 'AC',
-      deskripsi: 'Remote AC tidak merespon saat ditekan dan hembusan angin terasa kurang dingin.',
-      status: 'diproses',
-      responManager: 'Teknisi AC dijadwalkan datang besok Sabtu jam 10 pagi untuk cuci AC.',
-      tglLapor: `${bln}-10T12:30:00Z`,
-      tglSelesai: null
-    }
+  // CABANG 2: Kost Graha Asri Dago (Bandung)
+  const kost2 = {
+    id: 'kost_2',
+    nama: 'Kost Graha Asri Dago',
+    pemilik: 'Gavin Utomo',
+    kota: 'Dago, Bandung',
+    alamat: 'Jl. Cisitu Lama No. 28, Dago, Coblong, Kota Bandung, Jawa Barat',
+    hp: '081388224411',
+    totalKamar: 8,
+    bankNama: 'Bank Mandiri',
+    bankRekening: '131-00-9876543-1',
+    bankAtasNama: 'Gavin Utomo',
+    qrisUrl: ''
+  };
+  const kamar2 = [
+    { id: 'km_2_A01', no: 'A-01', lantai: '1', tipe: 'Studio Dago', harga: 1700000, fasilitas: 'AC, Kasur Queen Size, Meja Belajar Kayu Jati, Kamar Mandi Dalam' },
+    { id: 'km_2_A02', no: 'A-02', lantai: '1', tipe: 'Studio Dago', harga: 1700000, fasilitas: 'AC, Kasur Queen Size, Lemari Pakaian, Water Heater' },
+    { id: 'km_2_A03', no: 'A-03', lantai: '1', tipe: 'Deluxe Asri', harga: 1600000, fasilitas: 'AC, Kasur Springbed, Meja Kerja, KM Dalam' },
+    { id: 'km_2_A04', no: 'A-04', lantai: '1', tipe: 'Standar Bandung', harga: 1200000, fasilitas: 'Exhaust Fan, Kasur Busa, Lemari, KM Luar' },
+    { id: 'km_2_B01', no: 'B-01', lantai: '2', tipe: 'Executive Suite', harga: 1950000, fasilitas: 'AC, Smart TV, Kulkas Mini, Balkon View Bukit Dago' },
+    { id: 'km_2_B02', no: 'B-02', lantai: '2', tipe: 'Executive Suite', harga: 1950000, fasilitas: 'AC, Smart TV, Kulkas Mini, Balkon View Dago' },
+    { id: 'km_2_B03', no: 'B-03', lantai: '2', tipe: 'Deluxe Asri', harga: 1600000, fasilitas: 'AC, Kasur Springbed, Lemari 2 Pintu' },
+    { id: 'km_2_B04', no: 'B-04', lantai: '2', tipe: 'Standar Bandung', harga: 1200000, fasilitas: 'Exhaust Fan, Meja, Lemari' }
+  ];
+  const penghuni2 = [
+    { id: 'p_bdg_arya', nama: 'Arya Pratama', hp: '081211223301', kamar: 'A-01', lantai: '1', tglMasuk: '2025-05-10', nik: '3273010101990001', gender: 'Laki-laki', tempatLahir: 'Bandung', tglLahir: '2001-02-14', alamatKtp: 'Jl. Riau No. 12, Bandung', email: 'arya.pratama@itb.ac.id', pekerjaan: 'Mahasiswa Teknik Informatika ITB', status: 'aktif', sewa: 1700000, tempo: 10, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_bdg_bella', nama: 'Bella Safitri', hp: '081211223302', kamar: 'A-02', lantai: '1', tglMasuk: '2025-07-01', nik: '3273010202990002', gender: 'Perempuan', tempatLahir: 'Bogor', tglLahir: '1998-09-20', alamatKtp: 'Jl. Pajajaran No. 44, Bogor', email: 'bella.safitri.arch@gmail.com', pekerjaan: 'Arsitek PT Wijaya Karya', status: 'aktif', sewa: 1700000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_bdg_eko', nama: 'Eko Prasetyo', hp: '081211223303', kamar: 'A-03', lantai: '1', tglMasuk: '2025-08-15', nik: '3273010303990003', gender: 'Laki-laki', tempatLahir: 'Cirebon', tglLahir: '2000-11-12', alamatKtp: 'Jl. Tuparev No. 8, Cirebon', email: 'eko.designer@creativeagency.id', pekerjaan: 'Graphic Designer Agensi Bandung', status: 'aktif', sewa: 1600000, tempo: 5, deposit: 400000, catatanDeposit: 'Lunas' },
+    { id: 'p_bdg_chandra', nama: 'Chandra Wijaya', hp: '081211223304', kamar: 'B-01', lantai: '2', tglMasuk: '2025-04-01', nik: '3273010404990004', gender: 'Laki-laki', tempatLahir: 'Jakarta', tglLahir: '1997-04-25', alamatKtp: 'Jl. Fatmawati No. 9, Jakarta Selatan', email: 'chandra.wijaya@shopee.com', pekerjaan: 'Data Analyst Shopee Bandung Hub', status: 'aktif', sewa: 1950000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_bdg_dea', nama: 'Dea Amanda', hp: '081211223305', kamar: 'B-02', lantai: '2', tglMasuk: '2025-06-20', nik: '3273010505990005', gender: 'Perempuan', tempatLahir: 'Sukabumi', tglLahir: '2002-06-18', alamatKtp: 'Jl. Suryakencana No. 15, Sukabumi', email: 'dea.amanda@unpad.ac.id', pekerjaan: 'Mahasiswi FK Universitas Padjadjaran', status: 'aktif', sewa: 1950000, tempo: 5, deposit: 500000, catatanDeposit: 'Lunas' }
+  ];
+  const pembayaran2 = [
+    { id: 'pb_2_1', penghuniId: 'p_bdg_arya', bulan: bln, jumlah: 1700000, status: 'lunas', tglBayar: `${bln}-05T11:00:00Z` },
+    { id: 'pb_2_2', penghuniId: 'p_bdg_chandra', bulan: bln, jumlah: 1950000, status: 'lunas', tglBayar: `${bln}-02T08:30:00Z` },
+    { id: 'pb_2_3', penghuniId: 'p_bdg_dea', bulan: bln, jumlah: 1950000, status: 'lunas', tglBayar: `${bln}-04T13:20:00Z` }
+  ];
+  const pengeluaran2 = [
+    { id: 'exp_2_1', tanggal: `${bln}-02`, kategori: 'Listrik/PLN', jumlah: 720000, keterangan: 'Token listrik gedung utama Dago Bandung', createdBy: 'Gavin Utomo' },
+    { id: 'exp_2_2', tanggal: `${bln}-03`, kategori: 'WiFi/Internet', jumlah: 500000, keterangan: 'Biznet Fiber 150 Mbps Dago', createdBy: 'Gavin Utomo' },
+    { id: 'exp_2_3', tanggal: `${bln}-06`, kategori: 'Kebersihan/Sampah', jumlah: 200000, keterangan: 'Perawatan taman & kebersihan lorong Dago', createdBy: 'Gavin Utomo' }
+  ];
+  const keluhan2 = [
+    { id: 'klh_2_1', penghuniId: 'p_bdg_chandra', kamar: 'B-01', judul: 'Lampu koridor lantai 2 redup', kategori: 'Listrik', deskripsi: 'Lampu LED koridor depan kamar B-01 berkedip', status: 'selesai', responManager: 'Diganti bohlam LED Philips 14W.', tglLapor: `${bln}-04T18:00:00Z`, tglSelesai: `${bln}-05T10:00:00Z` }
+  ];
+  const pengumuman2 = [
+    { id: 'ann_2_1', judul: 'Pengecekan Akses Smart Gate Dago', isi: 'Setiap penghuni diimbau memperbarui kartu akses RFID gerbang sebelum tgl 15.', tanggal: `${bln}-02`, prioritas: 'biasa', createdBy: 'Gavin Utomo' }
   ];
 
-  S.pengumuman = [
-    {
-      id: 'ann_1',
-      judul: 'Pembersihan Tandon Air Rutin Hari Minggu',
-      isi: 'Diberitahukan kepada seluruh penghuni kost bahwa hari Minggu pagi pukul 08.00–11.00 akan diadakan pengurasan tandon air utama. Mohon menampung air secukupnya sebelumnya. Terima kasih atas pengertiannya.',
-      tanggal: `${bln}-05`,
-      prioritas: 'penting',
-      createdBy: 'Budi Santoso (Owner)'
-    }
+  // CABANG 3: Kost Puri Indah Tebet (Jakarta Selatan)
+  const kost3 = {
+    id: 'kost_3',
+    nama: 'Kost Puri Indah Tebet',
+    pemilik: 'Gavin Utomo',
+    kota: 'Tebet, Jakarta Selatan',
+    alamat: 'Jl. Tebet Barat Dalam VII No. 14, Tebet, Jakarta Selatan, DKI Jakarta',
+    hp: '081199887722',
+    totalKamar: 8,
+    bankNama: 'Bank BCA',
+    bankRekening: '5271-8899-00',
+    bankAtasNama: 'Gavin Utomo',
+    qrisUrl: ''
+  };
+  const kamar3 = [
+    { id: 'km_3_101', no: '101', lantai: '1', tipe: 'Executive Studio', harga: 2500000, fasilitas: 'AC Inverter, Smart TV 40", Queen Bed, Water Heater, Meja Kerja' },
+    { id: 'km_3_102', no: '102', lantai: '1', tipe: 'Executive Studio', harga: 2500000, fasilitas: 'AC Inverter, Smart TV 40", Queen Bed, Water Heater, Meja Kerja' },
+    { id: 'km_3_103', no: '103', lantai: '1', tipe: 'Deluxe Room', harga: 2200000, fasilitas: 'AC Inverter, Single Bed 120, Lemari 2 Pintu, KM Dalam' },
+    { id: 'km_3_201', no: '201', lantai: '2', tipe: 'VIP Suite Tebet', harga: 2800000, fasilitas: 'AC, Kulkas 2 Pintu, Smart TV, Balkon Pribadi, Kamar Mandi Marmer' },
+    { id: 'km_3_202', no: '202', lantai: '2', tipe: 'VIP Suite Tebet', harga: 2800000, fasilitas: 'AC, Kulkas 2 Pintu, Smart TV, Balkon Pribadi, Kamar Mandi Marmer' },
+    { id: 'km_3_203', no: '203', lantai: '2', tipe: 'Deluxe Room', harga: 2200000, fasilitas: 'AC, Kasur Springbed, Meja Kerja Ergonomis' },
+    { id: 'km_3_301', no: '301', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' },
+    { id: 'km_3_302', no: '302', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' }
   ];
+  const penghuni3 = [
+    { id: 'p_jkt_farhan', nama: 'Farhan Ramadhan', hp: '081122334401', kamar: '101', lantai: '1', tglMasuk: '2025-03-01', nik: '3174010101980001', gender: 'Laki-laki', tempatLahir: 'Jakarta', tglLahir: '1996-08-14', alamatKtp: 'Jl. Rawamangun No. 10, Jakarta Timur', email: 'farhan.ramadhan@mandirisec.co.id', pekerjaan: 'Investment Banker SCBD', status: 'aktif', sewa: 2500000, tempo: 1, deposit: 1000000, catatanDeposit: 'Lunas' },
+    { id: 'p_jkt_gita', nama: 'Gita Permata', hp: '081122334402', kamar: '102', lantai: '1', tglMasuk: '2025-05-15', nik: '3174010202980002', gender: 'Perempuan', tempatLahir: 'Surabaya', tglLahir: '1998-03-22', alamatKtp: 'Jl. Manyar Kertoarjo No. 22, Surabaya', email: 'gita.permata@pwc.com', pekerjaan: 'Senior Tax Consultant PwC Indonesia', status: 'aktif', sewa: 2500000, tempo: 1, deposit: 1000000, catatanDeposit: 'Lunas' },
+    { id: 'p_jkt_haris', nama: 'Haris Setiawan', hp: '081122334403', kamar: '201', lantai: '2', tglMasuk: '2025-02-01', nik: '3174010303980003', gender: 'Laki-laki', tempatLahir: 'Medan', tglLahir: '1995-12-09', alamatKtp: 'Jl. Gatot Subroto No. 5, Medan', email: 'haris.setiawan@lawfirm.id', pekerjaan: 'Corporate Legal Counsel Kuningan', status: 'aktif', sewa: 2800000, tempo: 5, deposit: 1000000, catatanDeposit: 'Lunas' },
+    { id: 'p_jkt_indah', nama: 'Indah Savira', hp: '081122334404', kamar: '202', lantai: '2', tglMasuk: '2025-06-10', nik: '3174010404980004', gender: 'Perempuan', tempatLahir: 'Palembang', tglLahir: '1999-07-30', alamatKtp: 'Jl. Sudirman No. 80, Palembang', email: 'indah.savira@techunicorn.com', pekerjaan: 'HR Business Partner Tech Unicorn', status: 'aktif', sewa: 2800000, tempo: 5, deposit: 1000000, catatanDeposit: 'Lunas' },
+    { id: 'p_jkt_joko', nama: 'Joko Triyono', hp: '081122334405', kamar: '301', lantai: '3', tglMasuk: '2025-01-15', nik: '3174010505980005', gender: 'Laki-laki', tempatLahir: 'Solo', tglLahir: '1994-05-18', alamatKtp: 'Jl. Adisucipto No. 100, Solo', email: 'joko.triyono@goto.com', pekerjaan: 'Staff Backend Engineer GoTo', status: 'aktif', sewa: 3000000, tempo: 1, deposit: 1500000, catatanDeposit: 'Lunas' }
+  ];
+  const pembayaran3 = [
+    { id: 'pb_3_1', penghuniId: 'p_jkt_farhan', bulan: bln, jumlah: 2500000, status: 'lunas', tglBayar: `${bln}-01T15:00:00Z` },
+    { id: 'pb_3_2', penghuniId: 'p_jkt_haris', bulan: bln, jumlah: 2800000, status: 'lunas', tglBayar: `${bln}-03T11:45:00Z` },
+    { id: 'pb_3_3', penghuniId: 'p_jkt_joko', bulan: bln, jumlah: 3000000, status: 'lunas', tglBayar: `${bln}-01T09:15:00Z` }
+  ];
+  const pengeluaran3 = [
+    { id: 'exp_3_1', tanggal: `${bln}-02`, kategori: 'Listrik/PLN', jumlah: 1450000, keterangan: 'Tagihan PLN pascabayar gedung Tebet', createdBy: 'Gavin Utomo' },
+    { id: 'exp_3_2', tanggal: `${bln}-03`, kategori: 'WiFi/Internet', jumlah: 650000, keterangan: 'First Media Corporate Dedicated 200 Mbps', createdBy: 'Gavin Utomo' },
+    { id: 'exp_3_3', tanggal: `${bln}-05`, kategori: 'Perbaikan/Maintenance', jumlah: 800000, keterangan: 'Iuran satpam & cleaning service lingkungan Tebet', createdBy: 'Gavin Utomo' }
+  ];
+  const keluhan3 = [
+    { id: 'klh_3_1', penghuniId: 'p_jkt_haris', kamar: '201', judul: 'Suhu air water heater kurang panas', kategori: 'Fasilitas Kamar', deskripsi: 'Pemanas air otomatis mati setelah 2 menit', status: 'selesai', responManager: 'Termostat water heater diservis dan normal kembali.', tglLapor: `${bln}-05T20:00:00Z`, tglSelesai: `${bln}-06T15:00:00Z` }
+  ];
+  const pengumuman3 = [
+    { id: 'ann_3_1', judul: 'Pergantian Kartu Akses Lift & Gerbang', isi: 'Dimohon mengambil kartu akses RFID baru di pos security lobi.', tanggal: `${bln}-04`, prioritas: 'penting', createdBy: 'Gavin Utomo' }
+  ];
+
+  // CABANG 4: Kost Surya Kencana Gubeng (Surabaya)
+  const kost4 = {
+    id: 'kost_4',
+    nama: 'Kost Surya Kencana Gubeng',
+    pemilik: 'Gavin Utomo',
+    kota: 'Gubeng, Surabaya',
+    alamat: 'Jl. Dharmawangsa Barat No. 55, Airlangga, Gubeng, Surabaya, Jawa Timur',
+    hp: '081277113399',
+    totalKamar: 8,
+    bankNama: 'Bank BNI',
+    bankRekening: '045-8899-123',
+    bankAtasNama: 'Gavin Utomo',
+    qrisUrl: ''
+  };
+  const kamar4 = [
+    { id: 'km_4_G01', no: 'G-01', lantai: '1', tipe: 'Modern Compact AC', harga: 1650000, fasilitas: 'AC Daikin 1/2 PK, Springbed, Meja Belajar, KM Dalam Shower' },
+    { id: 'km_4_G02', no: 'G-02', lantai: '1', tipe: 'Modern Compact AC', harga: 1650000, fasilitas: 'AC Daikin 1/2 PK, Springbed, Meja Belajar, KM Dalam Shower' },
+    { id: 'km_4_G03', no: 'G-03', lantai: '1', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Exhaust Fan, Meja, Lemari 2 Pintu, KM Luar Bersih' },
+    { id: 'km_4_G04', no: 'G-04', lantai: '1', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Exhaust Fan, Meja, Lemari 2 Pintu, KM Luar Bersih' },
+    { id: 'km_4_U01', no: 'U-01', lantai: '2', tipe: 'Deluxe Airlangga', harga: 1800000, fasilitas: 'AC, Kulkas Pribadi, Kasur King Size, Smart TV 32"' },
+    { id: 'km_4_U02', no: 'U-02', lantai: '2', tipe: 'Deluxe Airlangga', harga: 1800000, fasilitas: 'AC, Kulkas Pribadi, Kasur King Size, Smart TV 32"' },
+    { id: 'km_4_U03', no: 'U-03', lantai: '2', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Kipas Angin Dinding, Kasur, Meja Belajar' },
+    { id: 'km_4_U04', no: 'U-04', lantai: '2', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Kipas Angin Dinding, Kasur, Meja Belajar' }
+  ];
+  const penghuni4 = [
+    { id: 'p_sby_kenzo', nama: 'Kenzo Raditya', hp: '081333445501', kamar: 'G-01', lantai: '1', tglMasuk: '2025-08-01', nik: '3578010101990001', gender: 'Laki-laki', tempatLahir: 'Surabaya', tglLahir: '2001-07-11', alamatKtp: 'Jl. Kertajaya Indah No. 12, Surabaya', email: 'kenzo.raditya@unair.ac.id', pekerjaan: 'Mahasiswa Kedokteran Unair', status: 'aktif', sewa: 1650000, tempo: 5, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_sby_larasati', nama: 'Larasati Putri', hp: '081333445502', kamar: 'G-02', lantai: '1', tglMasuk: '2025-06-01', nik: '3578010202990002', gender: 'Perempuan', tempatLahir: 'Gresik', tglLahir: '1998-10-15', alamatKtp: 'Jl. RA Kartini No. 30, Gresik', email: 'dr.larasati.p@rssoetomo.go.id', pekerjaan: 'Dokter Muda RSUD Dr. Soetomo', status: 'aktif', sewa: 1650000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_sby_oscar', nama: 'Oscar Ferdinand', hp: '081333445503', kamar: 'G-03', lantai: '1', tglMasuk: '2025-09-10', nik: '3578010303990003', gender: 'Laki-laki', tempatLahir: 'Sidoarjo', tglLahir: '2000-01-20', alamatKtp: 'Jl. Pahlawan No. 4, Sidoarjo', email: 'oscar.kuliner@gmail.com', pekerjaan: 'Owner Cafe & Kuliner Gubeng', status: 'aktif', sewa: 1300000, tempo: 10, deposit: 400000, catatanDeposit: 'Lunas' },
+    { id: 'p_sby_ilham', nama: 'M. Ilham Fauzan', hp: '081333445504', kamar: 'U-01', lantai: '2', tglMasuk: '2025-05-20', nik: '3578010404990004', gender: 'Laki-laki', tempatLahir: 'Kediri', tglLahir: '2001-09-05', alamatKtp: 'Jl. Dhoho No. 70, Kediri', email: 'ilham.fauzan@its.ac.id', pekerjaan: 'Mahasiswa Teknik Mesin ITS', status: 'aktif', sewa: 1800000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_sby_nadia', nama: 'Nadia Zahrani', hp: '081333445505', kamar: 'U-02', lantai: '2', tglMasuk: '2025-07-15', nik: '3578010505990005', gender: 'Perempuan', tempatLahir: 'Mojokerto', tglLahir: '1999-12-01', alamatKtp: 'Jl. Gajah Mada No. 18, Mojokerto', email: 'nadia.zahrani@ey.com', pekerjaan: 'Senior Auditor KAP Ernst & Young Surabaya', status: 'aktif', sewa: 1800000, tempo: 5, deposit: 500000, catatanDeposit: 'Lunas' }
+  ];
+  const pembayaran4 = [
+    { id: 'pb_4_1', penghuniId: 'p_sby_kenzo', bulan: bln, jumlah: 1650000, status: 'lunas', tglBayar: `${bln}-03T10:15:00Z` },
+    { id: 'pb_4_2', penghuniId: 'p_sby_larasati', bulan: bln, jumlah: 1650000, status: 'lunas', tglBayar: `${bln}-01T16:00:00Z` },
+    { id: 'pb_4_3', penghuniId: 'p_sby_ilham', bulan: bln, jumlah: 1800000, status: 'lunas', tglBayar: `${bln}-02T13:40:00Z` }
+  ];
+  const pengeluaran4 = [
+    { id: 'exp_4_1', tanggal: `${bln}-02`, kategori: 'Listrik/PLN', jumlah: 850000, keterangan: 'Token listrik AC Surabaya musim kemarau', createdBy: 'Gavin Utomo' },
+    { id: 'exp_4_2', tanggal: `${bln}-04`, kategori: 'WiFi/Internet', jumlah: 420000, keterangan: 'MyRepublic Ultra Fast 100 Mbps Surabaya', createdBy: 'Gavin Utomo' },
+    { id: 'exp_4_3', tanggal: `${bln}-07`, kategori: 'Lainnya', jumlah: 160000, keterangan: 'Isi ulang galon air minum & dispenser lantai 1-2', createdBy: 'Gavin Utomo' }
+  ];
+  const keluhan4 = [
+    { id: 'klh_4_1', penghuniId: 'p_sby_ilham', kamar: 'U-01', judul: 'Galon air dispenser lantai 2 habis', kategori: 'Fasilitas Bersama', deskripsi: 'Dispenser air minum lantai 2 sudah kosong', status: 'selesai', responManager: 'Galon baru sudah diantarkan dan dipasang.', tglLapor: `${bln}-06T09:00:00Z`, tglSelesai: `${bln}-06T11:00:00Z` }
+  ];
+  const pengumuman4 = [
+    { id: 'ann_4_1', judul: 'Pembersihan Filter AC Berkala Surabaya', isi: 'Teknisi pendingin ruangan akan mengecek filter AC seluruh kamar hari Sabtu.', tanggal: `${bln}-03`, prioritas: 'biasa', createdBy: 'Gavin Utomo' }
+  ];
+
+  // CABANG 5: Kost Cendana Residence (Malang)
+  const kost5 = {
+    id: 'kost_5',
+    nama: 'Kost Cendana Residence',
+    pemilik: 'Gavin Utomo',
+    kota: 'Lowokwaru, Malang',
+    alamat: 'Jl. Bendungan Sigura-gura No. 42, Lowokwaru, Kota Malang, Jawa Timur',
+    hp: '081544228866',
+    totalKamar: 8,
+    bankNama: 'Bank BRI',
+    bankRekening: '0038-01-029384-50-2',
+    bankAtasNama: 'Gavin Utomo',
+    qrisUrl: ''
+  };
+  const kamar5 = [
+    { id: 'km_5_01', no: '01', lantai: '1', tipe: 'Panorama View', harga: 1350000, fasilitas: 'Kasur Springbed Comfort, Meja Belajar Besar, Lemari 2 Pintu, KM Dalam' },
+    { id: 'km_5_02', no: '02', lantai: '1', tipe: 'Panorama View', harga: 1350000, fasilitas: 'Kasur Springbed Comfort, Meja Belajar Besar, Lemari 2 Pintu, KM Dalam' },
+    { id: 'km_5_03', no: '03', lantai: '1', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Busa Tebal, Meja, Lemari, KM Luar Bersih' },
+    { id: 'km_5_04', no: '04', lantai: '1', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Busa Tebal, Meja, Lemari, KM Luar Bersih' },
+    { id: 'km_5_05', no: '05', lantai: '2', tipe: 'Balkon Gunung', harga: 1450000, fasilitas: 'Kasur Queen, Balkon Hadap Gunung Panderman, Meja Belajar, KM Dalam' },
+    { id: 'km_5_06', no: '06', lantai: '2', tipe: 'Balkon Gunung', harga: 1450000, fasilitas: 'Kasur Queen, Balkon Hadap Gunung Panderman, Meja Belajar, KM Dalam' },
+    { id: 'km_5_07', no: '07', lantai: '2', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Springbed, Meja Kayu Pinus, Lemari' },
+    { id: 'km_5_08', no: '08', lantai: '2', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Springbed, Meja Kayu Pinus, Lemari' }
+  ];
+  const penghuni5 = [
+    { id: 'p_mlg_putri', nama: 'Putri Maharani', hp: '081555667701', kamar: '01', lantai: '1', tglMasuk: '2025-08-15', nik: '3573010101990001', gender: 'Perempuan', tempatLahir: 'Malang', tglLahir: '2002-04-03', alamatKtp: 'Jl. Soekarno Hatta No. 8, Malang', email: 'putri.maharani@student.ub.ac.id', pekerjaan: 'Mahasiswi FIA Universitas Brawijaya', status: 'aktif', sewa: 1350000, tempo: 1, deposit: 400000, catatanDeposit: 'Lunas' },
+    { id: 'p_mlg_qori', nama: 'Qori Alamsyah', hp: '081555667702', kamar: '02', lantai: '1', tglMasuk: '2025-07-01', nik: '3573010202990002', gender: 'Laki-laki', tempatLahir: 'Probolinggo', tglLahir: '2001-08-25', alamatKtp: 'Jl. Panglima Sudirman No. 14, Probolinggo', email: 'qori.alamsyah@polinema.ac.id', pekerjaan: 'Mahasiswa TI Polinema Malang', status: 'aktif', sewa: 1350000, tempo: 5, deposit: 400000, catatanDeposit: 'Lunas' },
+    { id: 'p_mlg_rendy', nama: 'Rendy Pratama', hp: '081555667703', kamar: '03', lantai: '1', tglMasuk: '2025-09-01', nik: '3573010303990003', gender: 'Laki-laki', tempatLahir: 'Pasuruan', tglLahir: '2000-02-17', alamatKtp: 'Jl. Hayam Wuruk No. 5, Pasuruan', email: 'rendy.coffee@gmail.com', pekerjaan: 'Head Barista Coffee Shop Suhat', status: 'aktif', sewa: 1150000, tempo: 10, deposit: 300000, catatanDeposit: 'Lunas' },
+    { id: 'p_mlg_salsabila', nama: 'Salsabila Nur', hp: '081555667704', kamar: '05', lantai: '2', tglMasuk: '2025-06-10', nik: '3573010404990004', gender: 'Perempuan', tempatLahir: 'Blitar', tglLahir: '2002-10-10', alamatKtp: 'Jl. Merdeka No. 90, Blitar', email: 'salsabila.nur@um.ac.id', pekerjaan: 'Mahasiswi Sastra Inggris UM', status: 'aktif', sewa: 1450000, tempo: 1, deposit: 400000, catatanDeposit: 'Lunas' },
+    { id: 'p_mlg_taufik', nama: 'Taufik Hidayat', hp: '081555667705', kamar: '06', lantai: '2', tglMasuk: '2025-05-01', nik: '3573010505990005', gender: 'Laki-laki', tempatLahir: 'Tulungagung', tglLahir: '1998-05-20', alamatKtp: 'Jl. Diponegoro No. 33, Tulungagung', email: 'taufik.freelance@gmail.com', pekerjaan: 'Freelance Fullstack Web Developer', status: 'aktif', sewa: 1450000, tempo: 5, deposit: 400000, catatanDeposit: 'Lunas' }
+  ];
+  const pembayaran5 = [
+    { id: 'pb_5_1', penghuniId: 'p_mlg_putri', bulan: bln, jumlah: 1350000, status: 'lunas', tglBayar: `${bln}-01T11:00:00Z` },
+    { id: 'pb_5_2', penghuniId: 'p_mlg_salsabila', bulan: bln, jumlah: 1450000, status: 'lunas', tglBayar: `${bln}-02T15:20:00Z` },
+    { id: 'pb_5_3', penghuniId: 'p_mlg_taufik', bulan: bln, jumlah: 1450000, status: 'lunas', tglBayar: `${bln}-03T09:40:00Z` }
+  ];
+  const pengeluaran5 = [
+    { id: 'exp_5_1', tanggal: `${bln}-02`, kategori: 'Listrik/PLN', jumlah: 550000, keterangan: 'Token listrik pompa & penerangan Malang', createdBy: 'Gavin Utomo' },
+    { id: 'exp_5_2', tanggal: `${bln}-04`, kategori: 'WiFi/Internet', jumlah: 380000, keterangan: 'Indihome 100 Mbps Lowokwaru', createdBy: 'Gavin Utomo' },
+    { id: 'exp_5_3', tanggal: `${bln}-06`, kategori: 'Kebersihan/Sampah', jumlah: 120000, keterangan: 'Iuran kebersihan RT & pembuangan sampah', createdBy: 'Gavin Utomo' }
+  ];
+  const keluhan5 = [
+    { id: 'klh_5_1', penghuniId: 'p_mlg_salsabila', kamar: '05', judul: 'Gantungan jemuran balkon perlu diperkuat', kategori: 'Balkon', deskripsi: 'Tali kawat jemuran di balkon kamar 05 kendur', status: 'selesai', responManager: 'Kawat jemuran diganti kawat baja baru.', tglLapor: `${bln}-05T14:00:00Z`, tglSelesai: `${bln}-06T10:00:00Z` }
+  ];
+  const pengumuman5 = [
+    { id: 'ann_5_1', judul: 'Pemberlakuan Jam Tenang Ujian Akhir Mahasiswa', isi: 'Diharapkan menjaga ketenangan dan volume suara mulai pukul 21.00 WIB.', tanggal: `${bln}-05`, prioritas: 'penting', createdBy: 'Gavin Utomo' }
+  ];
+
+  const properties = [
+    { id: 'kost_1', nama: kost1.nama, kota: kost1.kota, alamat: kost1.alamat, hp: kost1.hp, pemilik: kost1.pemilik, totalKamar: kost1.totalKamar },
+    { id: 'kost_2', nama: kost2.nama, kota: kost2.kota, alamat: kost2.alamat, hp: kost2.hp, pemilik: kost2.pemilik, totalKamar: kost2.totalKamar },
+    { id: 'kost_3', nama: kost3.nama, kota: kost3.kota, alamat: kost3.alamat, hp: kost3.hp, pemilik: kost3.pemilik, totalKamar: kost3.totalKamar },
+    { id: 'kost_4', nama: kost4.nama, kota: kost4.kota, alamat: kost4.alamat, hp: kost4.hp, pemilik: kost4.pemilik, totalKamar: kost4.totalKamar },
+    { id: 'kost_5', nama: kost5.nama, kota: kost5.kota, alamat: kost5.alamat, hp: kost5.hp, pemilik: kost5.pemilik, totalKamar: kost5.totalKamar }
+  ];
+
+  const propertiesData = {
+    kost_1: { kost: kost1, kamar: kamar1, penghuni: penghuni1, pembayaran: pembayaran1, pengeluaran: pengeluaran1, keluhan: keluhan1, pengumuman: pengumuman1 },
+    kost_2: { kost: kost2, kamar: kamar2, penghuni: penghuni2, pembayaran: pembayaran2, pengeluaran: pengeluaran2, keluhan: keluhan2, pengumuman: pengumuman2 },
+    kost_3: { kost: kost3, kamar: kamar3, penghuni: penghuni3, pembayaran: pembayaran3, pengeluaran: pengeluaran3, keluhan: keluhan3, pengumuman: pengumuman3 },
+    kost_4: { kost: kost4, kamar: kamar4, penghuni: penghuni4, pembayaran: pembayaran4, pengeluaran: pengeluaran4, keluhan: keluhan4, pengumuman: pengumuman4 },
+    kost_5: { kost: kost5, kamar: kamar5, penghuni: penghuni5, pembayaran: pembayaran5, pengeluaran: pengeluaran5, keluhan: keluhan5, pengumuman: pengumuman5 }
+  };
+
+  return { properties, propertiesData };
+}
+
+// ── DEMO SEED DATA GENERATOR ─────────────────────────────────
+function seedDemoData(force = false) {
+  if (!force && S.propertiesData && S.propertiesData.kost_1 && S.propertiesData.kost_5) return;
+
+  const initData = generateInitialMultiKostData();
+  S.properties = initData.properties;
+  S.propertiesData = initData.propertiesData;
+  S.activeKostId = S.activeKostId || 'kost_1';
+
+  const cur = S.propertiesData[S.activeKostId] || S.propertiesData.kost_1;
+  S.kost = { ...cur.kost };
+  S.kamar = [...cur.kamar];
+  S.penghuni = [...cur.penghuni];
+  S.pembayaran = [...cur.pembayaran];
+  S.pengeluaran = [...cur.pengeluaran];
+  S.keluhan = [...cur.keluhan];
+  S.pengumuman = [...cur.pengumuman];
 
   S.akun = [
     { id: 'akun_mgr_gavin', nama: 'Gavin Utomo (Owner)', email: 'gavinutomo4@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null },
-    { id: 'akun_tnt', nama: 'Dimas Prasetyo', email: 'dimas@sikost.id', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'penghuni', penghuniId: 'p_dimas' }
+    { id: 'akun_mgr_prasada', nama: 'Prasada Utomo (Manager)', email: 'prasadautomo@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null },
+    { id: 'akun_tnt', nama: 'Dimas Prasetyo', email: 'dimas@sikost.id', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'penghuni', penghuniId: 'p_dimas' },
+    { id: 'akun_tnt_bdg', nama: 'Arya Pratama', email: 'arya.pratama@itb.ac.id', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'penghuni', penghuniId: 'p_bdg_arya' }
   ];
 
   LS.save();
 }
 
+// ── MULTI-KOST SWITCHER & HANDLERS ────────────────────────────
+function switchKost(targetKostId) {
+  if (!S.propertiesData || !S.propertiesData[targetKostId]) {
+    console.warn('Cabang kost tidak ditemukan:', targetKostId);
+    return;
+  }
+
+  // 1. Simpan data aktif saat ini ke bucket cabangnya
+  if (S.activeKostId && S.propertiesData[S.activeKostId]) {
+    S.propertiesData[S.activeKostId] = {
+      kost: { ...S.kost },
+      penghuni: [...S.penghuni],
+      kamar: [...S.kamar],
+      pembayaran: [...S.pembayaran],
+      pengeluaran: [...S.pengeluaran],
+      keluhan: [...S.keluhan],
+      pengumuman: [...S.pengumuman]
+    };
+  }
+
+  // 2. Muat cabang sasaran
+  S.activeKostId = targetKostId;
+  const target = S.propertiesData[targetKostId];
+  S.kost = { ...target.kost };
+  S.penghuni = [...target.penghuni];
+  S.kamar = [...target.kamar];
+  S.pembayaran = [...target.pembayaran];
+  S.pengeluaran = [...target.pengeluaran];
+  S.keluhan = [...target.keluhan];
+  S.pengumuman = [...target.pengumuman];
+
+  // 3. Simpan state terisolasi
+  LS.save();
+
+  // 4. Update UI labels & dropdown
+  updatePropertySwitcherUI();
+
+  // 5. Tutup dropdown bila terbuka
+  const dd = $('property-dropdown-menu');
+  const btn = $('btn-property-switch');
+  if (dd) dd.style.display = 'none';
+  if (btn) btn.classList.remove('open');
+
+  // 6. Refresh halaman yang sedang aktif
+  const activePage = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
+  navigateTo(activePage);
+
+  toast(`🏢 Beralih ke ${S.kost.nama} (${target.kost.kota || target.kost.alamat.split(',')[0]})`, 'success');
+}
+window.switchKost = switchKost;
+
+function updatePropertySwitcherUI() {
+  const activeNameEl = $('topbar-prop-name');
+  const activeLocEl = $('topbar-prop-loc');
+  const sbNameEl = $('sb-kost-name');
+  const sbLocEl = $('sb-kost-loc');
+
+  const locText = '📍 ' + (S.kost.kota || (S.kost.alamat ? S.kost.alamat.split(',')[0] : 'Indonesia'));
+
+  if (activeNameEl) activeNameEl.textContent = S.kost.nama || 'SiKost';
+  if (activeLocEl)  activeLocEl.textContent  = locText;
+  if (sbNameEl)     sbNameEl.textContent     = S.kost.nama || 'SiKost';
+  if (sbLocEl)      sbLocEl.textContent      = locText;
+
+  const switcherWrap = $('topbar-property-selector');
+  if (switcherWrap) {
+    switcherWrap.style.display = (currentUser?.role === 'manager') ? 'block' : 'none';
+  }
+
+  const ddList = $('prop-dd-list');
+  if (ddList && S.propertiesData) {
+    ddList.innerHTML = (S.properties || []).map(p => {
+      const data = S.propertiesData[p.id];
+      if (!data) return '';
+      const isActive = p.id === S.activeKostId;
+      const penghuniCount = (data.penghuni || []).filter(x => x.status === 'aktif').length;
+      const totalKamar = data.kost?.totalKamar || (data.kamar ? data.kamar.length : 8);
+
+      return `
+        <div class="prop-dd-item ${isActive ? 'active' : ''}" onclick="switchKost('${p.id}')">
+          <div class="prop-dd-item-icon">🏢</div>
+          <div class="prop-dd-item-info">
+            <div class="prop-dd-item-name">${data.kost.nama}</div>
+            <div class="prop-dd-item-loc">📍 ${data.kost.kota || data.kost.alamat.split(',')[0]}</div>
+            <div class="prop-dd-item-meta">${penghuniCount} Penghuni Aktif · ${totalKamar} Kamar</div>
+          </div>
+          ${isActive ? '<span class="badge badge-accent" style="font-size:0.68rem">Aktif</span>' : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  renderMultiKostCards();
+  renderSettingsCabangList();
+}
+window.updatePropertySwitcherUI = updatePropertySwitcherUI;
+
+function renderMultiKostCards() {
+  const container = $('multi-kost-cards-grid');
+  if (!container || !S.propertiesData) return;
+
+  container.innerHTML = (S.properties || []).map(p => {
+    const data = S.propertiesData[p.id];
+    if (!data) return '';
+    const isActive = p.id === S.activeKostId;
+    const aktifPenghuni = (data.penghuni || []).filter(x => x.status === 'aktif');
+    const terisiCount = [...new Set(aktifPenghuni.map(x => x.kamar).filter(Boolean))].length;
+    const totalKamar = data.kost?.totalKamar || (data.kamar ? data.kamar.length : 8);
+    const targetPendapatan = aktifPenghuni.reduce((sum, x) => sum + (Number(x.sewa) || 0), 0);
+    const pct = totalKamar > 0 ? Math.round((terisiCount / totalKamar) * 100) : 0;
+
+    return `
+      <div class="kost-branch-card ${isActive ? 'active-branch' : ''}">
+        <div class="branch-card-header">
+          <div class="branch-card-icon">🏢</div>
+          <div style="flex:1;min-width:0">
+            <div class="branch-card-title">${data.kost.nama}</div>
+            <div class="branch-card-loc">📍 ${data.kost.kota || data.kost.alamat.split(',')[0]}</div>
+          </div>
+          ${isActive ? '<span class="badge badge-accent" style="font-size:0.68rem">✓ Aktif</span>' : ''}
+        </div>
+        
+        <div class="branch-card-stats">
+          <div>
+            <div style="color:var(--text-3);font-size:0.7rem">Okupansi</div>
+            <div style="font-weight:800;color:var(--text)">${terisiCount} / ${totalKamar} (${pct}%)</div>
+          </div>
+          <div style="text-align:right">
+            <div style="color:var(--text-3);font-size:0.7rem">Target Sewa</div>
+            <div style="font-weight:800;color:var(--green)">${rp(targetPendapatan)}</div>
+          </div>
+        </div>
+
+        <button type="button" class="branch-card-btn ${isActive ? 'btn-ghost' : 'btn-primary'}" onclick="switchKost('${p.id}')">
+          ${isActive ? '✓ Sedang Dikelola' : 'Kelola Cabang Ini ⚡'}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+window.renderMultiKostCards = renderMultiKostCards;
+
+function renderSettingsCabangList() {
+  const container = $('settings-cabang-list');
+  if (!container || !S.propertiesData) return;
+
+  container.innerHTML = (S.properties || []).map(p => {
+    const data = S.propertiesData[p.id];
+    if (!data) return '';
+    const isActive = p.id === S.activeKostId;
+    const aktifPenghuni = (data.penghuni || []).filter(x => x.status === 'aktif');
+    const terisiCount = [...new Set(aktifPenghuni.map(x => x.kamar).filter(Boolean))].length;
+    const totalKamar = data.kost?.totalKamar || (data.kamar ? data.kamar.length : 8);
+
+    return `
+      <div class="panel" style="padding:16px 20px;border-radius:12px;background:var(--surface-2);border:${isActive ? '2px solid var(--accent)' : '1px solid var(--border)'}">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.4rem;border:1px solid var(--border)">🏢</div>
+            <div>
+              <div style="font-weight:800;font-size:1.02rem;color:var(--text)">
+                ${data.kost.nama} 
+                ${isActive ? '<span class="badge badge-accent" style="margin-left:6px;font-size:0.7rem">Sedang Aktif</span>' : ''}
+              </div>
+              <div style="font-size:0.78rem;color:var(--text-3);margin-top:2px">📍 ${data.kost.alamat}</div>
+              <div style="font-size:0.74rem;color:var(--text-2);margin-top:2px">
+                Okupansi: <strong>${terisiCount}/${totalKamar} kamar terisi</strong> · 📞 Telp/WA: ${data.kost.hp || '–'} · 🏦 ${data.kost.bankNama}: ${data.kost.bankRekening} (a.n ${data.kost.bankAtasNama})
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn-primary btn-sm" onclick="switchKost('${p.id}')">
+              ${isActive ? '✓ Sedang Dikelola' : 'Beralih ke Cabang Ini ⚡'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+window.renderSettingsCabangList = renderSettingsCabangList;
+
 // ── STORAGE ──────────────────────────────────────────────────
 const LS = {
   save() {
     try {
+      // Sinkronkan data cabang yang sedang aktif ke dalam bucket propertiesData
+      if (S.activeKostId && S.propertiesData) {
+        S.propertiesData[S.activeKostId] = {
+          kost: { ...S.kost },
+          penghuni: [...S.penghuni],
+          kamar: [...S.kamar],
+          pembayaran: [...S.pembayaran],
+          pengeluaran: [...S.pengeluaran],
+          keluhan: [...S.keluhan],
+          pengumuman: [...S.pengumuman]
+        };
+      }
+
+      localStorage.setItem('sk3_properties_data', JSON.stringify(S.propertiesData));
+      localStorage.setItem('sk3_active_kost_id',  S.activeKostId || 'kost_1');
+      localStorage.setItem('sk3_properties',       JSON.stringify(S.properties));
+
+      // Simpan cabang aktif ke key standar untuk kompatibilitas test runner & modul
       localStorage.setItem('sk3_penghuni',    JSON.stringify(S.penghuni));
       localStorage.setItem('sk3_kamar',       JSON.stringify(S.kamar));
       localStorage.setItem('sk3_pembayaran',  JSON.stringify(S.pembayaran));
@@ -448,16 +850,39 @@ const LS = {
     }
   },
   load() {
-    const keys = ['penghuni','kamar','pembayaran','pengeluaran','keluhan','pengumuman','akun','kost'];
-    keys.forEach(k => {
-      const v = localStorage.getItem('sk3_' + k);
-      if (v) try { S[k] = JSON.parse(v); } catch {}
-    });
-    if (!S.pengeluaran) S.pengeluaran = [];
-    if (!S.keluhan)     S.keluhan = [];
-    if (!S.pengumuman)  S.pengumuman = [];
-    if ((!S.penghuni || S.penghuni.length === 0) && (!S.kamar || S.kamar.length === 0)) {
-      seedDemoData(false);
+    const rawPropertiesData = localStorage.getItem('sk3_properties_data');
+    const savedActiveId = localStorage.getItem('sk3_active_kost_id');
+
+    if (rawPropertiesData) {
+      try {
+        S.propertiesData = JSON.parse(rawPropertiesData);
+        S.activeKostId = savedActiveId || 'kost_1';
+        const rawProps = localStorage.getItem('sk3_properties');
+        if (rawProps) S.properties = JSON.parse(rawProps);
+
+        if (!S.propertiesData.kost_1 || !S.propertiesData.kost_5) {
+          seedDemoData(true);
+        } else {
+          const cur = S.propertiesData[S.activeKostId] || S.propertiesData.kost_1;
+          S.kost = { ...cur.kost };
+          S.penghuni = cur.penghuni || [];
+          S.kamar = cur.kamar || [];
+          S.pembayaran = cur.pembayaran || [];
+          S.pengeluaran = cur.pengeluaran || [];
+          S.keluhan = cur.keluhan || [];
+          S.pengumuman = cur.pengumuman || [];
+        }
+      } catch (e) {
+        console.warn('Load multi-kost failed, fallback to seed:', e);
+        seedDemoData(true);
+      }
+    } else {
+      seedDemoData(true);
+    }
+
+    const rawAkun = localStorage.getItem('sk3_akun');
+    if (rawAkun) {
+      try { S.akun = JSON.parse(rawAkun); } catch {}
     }
   },
   saveSession(u) { localStorage.setItem('sk3_session', JSON.stringify(u)); },
@@ -687,24 +1112,21 @@ const DB = {
     try {
       // 1. Penghuni
       const { data: pList } = await sbClient.from('penghuni').select('*').order('created_at', { ascending: false });
-      if (pList) S.penghuni = pList.map(mapPenghuniFromDb);
+      if (pList && pList.length > 0) S.penghuni = pList.map(mapPenghuniFromDb);
 
       // 2. Kamar
       const { data: kList } = await sbClient.from('kamar').select('*').order('no', { ascending: true });
       if (kList && kList.length > 0) {
         S.kamar = kList;
-      } else if (currentUser?.role === 'manager') {
-        seedDemoData(false);
-        setTimeout(() => this.uploadLocalToCloud(true), 500);
       }
 
       // 3. Pembayaran
       const { data: bList } = await sbClient.from('pembayaran').select('*');
-      if (bList) S.pembayaran = bList.map(mapBayarFromDb);
+      if (bList && bList.length > 0) S.pembayaran = bList.map(mapBayarFromDb);
 
       // 4. Pengeluaran
       const { data: expList } = await sbClient.from('pengeluaran').select('*').order('tanggal', { ascending: false });
-      if (expList) S.pengeluaran = expList.map(x => ({
+      if (expList && expList.length > 0) S.pengeluaran = expList.map(x => ({
         id: x.id,
         tanggal: x.tanggal,
         kategori: x.kategori,
@@ -716,7 +1138,7 @@ const DB = {
 
       // 5. Keluhan
       const { data: klhList } = await sbClient.from('keluhan').select('*').order('created_at', { ascending: false });
-      if (klhList) S.keluhan = klhList.map(x => ({
+      if (klhList && klhList.length > 0) S.keluhan = klhList.map(x => ({
         id: x.id,
         penghuniId: x.penghuni_id,
         kamar: x.kamar,
@@ -732,7 +1154,7 @@ const DB = {
 
       // 6. Pengumuman
       const { data: annList } = await sbClient.from('pengumuman').select('*').order('created_at', { ascending: false });
-      if (annList) S.pengumuman = annList.map(x => ({
+      if (annList && annList.length > 0) S.pengumuman = annList.map(x => ({
         id: x.id,
         judul: x.judul,
         isi: x.isi,
@@ -1547,8 +1969,45 @@ if (formReg) {
   });
 }
 
+let propertySwitcherEventsBound = false;
+function setupPropertySwitcherEvents() {
+  if (propertySwitcherEventsBound) return;
+  propertySwitcherEventsBound = true;
+
+  const btn = $('btn-property-switch');
+  const dd = $('property-dropdown-menu');
+
+  if (btn && dd) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isClosed = dd.style.display === 'none' || !dd.style.display;
+      dd.style.display = isClosed ? 'block' : 'none';
+      btn.classList.toggle('open', isClosed);
+      btn.setAttribute('aria-expanded', isClosed ? 'true' : 'false');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#topbar-property-selector')) {
+        dd.style.display = 'none';
+        btn.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+}
+
 function loginWithAkun(akun) {
   currentUser = akun;
+  if (akun.role === 'penghuni' && akun.penghuniId && S.propertiesData) {
+    for (const [propId, pData] of Object.entries(S.propertiesData)) {
+      if (pData.penghuni && pData.penghuni.some(p => p.id === akun.penghuniId)) {
+        if (S.activeKostId !== propId) {
+          switchKost(propId);
+        }
+        break;
+      }
+    }
+  }
   LS.saveSession(akun);
   enterApp();
 }
@@ -1570,6 +2029,8 @@ function enterApp() {
   showScreen('screen-app');
   buildSidebar();
   renderUserChip();
+  updatePropertySwitcherUI();
+  setupPropertySwitcherEvents();
   const firstPage = currentUser.role === 'manager' ? 'dashboard' : 'tenant';
   navigateTo(firstPage);
 
@@ -1819,6 +2280,7 @@ function renderDashboard() {
   $('quick-kamar').innerHTML = allKamar.map(no => `<span class="qk-chip ${occ[no] ? 'terisi' : 'kosong'}">${no}</span>`).join('') || '<span style="font-size:0.78rem;color:var(--text-3);padding:12px;display:block">Belum ada kamar.</span>';
 
   renderCharts();
+  renderMultiKostCards();
 }
 
 function renderCharts() {
@@ -3347,6 +3809,7 @@ function renderPengaturan() {
     if ($('cloud-key-input')) $('cloud-key-input').value = cfg.key;
   }
   updateCloudStatusUI(isCloudConnected, cfg?.url || '');
+  renderSettingsCabangList();
 }
 
 $('form-kost').addEventListener('submit', async function(e) {

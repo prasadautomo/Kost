@@ -110,7 +110,8 @@
       <div class="brand">
         <span class="brand-mark">🏠</span>
         <div class="brand-text">
-          <span class="brand-name" id="sb-kost-name">SiKost</span>
+          <span class="brand-name" id="sb-kost-name">Kost Griya Harmoni</span>
+          <span class="brand-loc" id="sb-kost-loc">📍 Sleman, Yogyakarta</span>
           <span class="brand-role" id="sb-role-badge">Manager</span>
         </div>
       </div>
@@ -143,6 +144,28 @@
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 4h14M2 9h14M2 14h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
         <div class="topbar-title" id="topbar-title">Dashboard</div>
+
+        <!-- Property Switcher (Multi-Kost 5 Cabang) -->
+        <div class="topbar-property-selector" id="topbar-property-selector">
+          <button type="button" class="btn-property-switch" id="btn-property-switch" title="Ganti Cabang Kost" aria-haspopup="true" aria-expanded="false">
+            <span class="prop-icon-badge">🏢</span>
+            <div class="prop-text-col">
+              <span class="prop-label-kost" id="topbar-prop-name">Kost Griya Harmoni</span>
+              <span class="prop-label-loc" id="topbar-prop-loc">📍 Sleman, Yogyakarta</span>
+            </div>
+            <svg class="prop-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          
+          <div class="property-dropdown-menu" id="property-dropdown-menu" style="display:none">
+            <div class="prop-dd-header">
+              <span class="prop-dd-title">🏢 5 Cabang Kost Anda</span>
+              <span class="badge" style="background:rgba(99,102,241,0.15);color:var(--accent-light);font-size:0.7rem;font-weight:700">Multi-Kost</span>
+            </div>
+            <div class="prop-dd-list" id="prop-dd-list">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
       </div>
       <div class="topbar-right">
         <button class="cloud-btn disconnected" id="topbar-cloud-btn" title="Status Cloud Supabase">
@@ -176,6 +199,23 @@
 
         <!-- KPI Keuangan Lengkap: Okupansi, Pemasukan, Pengeluaran, Laba Bersih -->
         <div class="kpi-row" id="kpi-row"></div>
+
+        <!-- Portofolio Multi-Kost: 5 Cabang Terpisah -->
+        <div class="panel multi-kost-panel" id="multi-kost-panel" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(99,102,241,0.06),rgba(16,185,129,0.06));border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+            <div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:1.25rem">🏢</span>
+                <h3 style="margin:0;font-size:1.05rem;font-weight:700">Portofolio Multi-Kost (5 Cabang Aktif)</h3>
+              </div>
+              <p style="margin:3px 0 0;font-size:0.8rem;color:var(--text-3)">Seluruh data kamar, nama penghuni, dan pembukuan terisolasi 100% mandiri pada setiap cabang lokasi</p>
+            </div>
+            <span class="badge" style="background:rgba(99,102,241,0.15);color:var(--accent-light);font-weight:700;padding:6px 12px;border-radius:20px;font-size:0.78rem">5 Lokasi Berbeda</span>
+          </div>
+          <div class="multi-kost-grid" id="multi-kost-cards-grid">
+            <!-- 5 Kost Cards di-render secara dinamis -->
+          </div>
+        </div>
 
         <!-- Notifikasi Cepat: Keluhan Pending & Konfirmasi Bayar Pending -->
         <div id="dash-alerts-row" style="margin-bottom:20px;display:none"></div>
@@ -383,6 +423,7 @@
         <div class="settings-layout">
           <div class="settings-sidebar">
             <button class="settings-tab active" data-stab="profil">🏠 Profil Kost</button>
+            <button class="settings-tab" data-stab="cabang">🏢 5 Cabang Kost</button>
             <button class="settings-tab" data-stab="bank">💳 Rekening &amp; QRIS</button>
             <button class="settings-tab" data-stab="akun">👤 Akun Penghuni</button>
             <button class="settings-tab" data-stab="cloud">⚡ Cloud Supabase</button>
@@ -402,6 +443,20 @@
                 <div class="fg"><label>Jumlah Total Kamar</label><input type="number" id="set-total-kamar" class="fc" min="1" placeholder="10" /></div>
                 <button type="submit" class="btn-primary">Simpan Profil Kost</button>
               </form>
+            </div>
+
+            <!-- 5 Cabang Kost Portofolio Manager -->
+            <div class="stab-content" id="stab-cabang">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+                <div>
+                  <h2 class="settings-title" style="margin-bottom:4px">🏢 Kelola 5 Cabang Kost Anda</h2>
+                  <p class="text-muted" style="margin:0">Setiap cabang memiliki data kamar, daftar penghuni, dan pembukuan keuangan yang terpisah 100%.</p>
+                </div>
+              </div>
+
+              <div id="settings-cabang-list" style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
+                <!-- 5 Cabang Cards rendered via JS -->
+              </div>
             </div>
 
             <!-- Rekening & QRIS (FITUR BARU) -->
