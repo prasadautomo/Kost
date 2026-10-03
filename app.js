@@ -1007,23 +1007,55 @@ async function fetchOrCreateProfile(user, fallbackNama = '', fallbackRole = 'man
 
 // ── GOOGLE 1-KLIK LOGIN (TAHU BERES) ──────────────────────────
 const btnLoginGoogle        = $('btn-login-google');
-const modalGoogleAuth       = $('modal-google-auth');
-const modalGoogleClose      = $('modal-google-close');
-const googleAccountsList    = $('google-accounts-list');
-const btnToggleCustomGoogle = $('btn-toggle-custom-google');
-const formCustomGoogle      = $('form-custom-google');
-const customGoogleEmail     = $('custom-google-email');
-const customGoogleNama      = $('custom-google-nama');
-const googleLiveOauthBox    = $('google-live-oauth-box');
-const btnTriggerLiveOauth   = $('btn-trigger-live-oauth');
+const modalGoogleAuth              = $('modal-google-auth');
+const modalGoogleClose             = $('modal-google-close');
+const googleAccountsList           = $('google-accounts-list');
+const inlineGoogleAccountsList     = $('inline-google-accounts-list');
+const btnToggleCustomGoogle        = $('btn-toggle-custom-google');
+const formCustomGoogle             = $('form-custom-google');
+const customGoogleEmail            = $('custom-google-email');
+const customGoogleNama             = $('custom-google-nama');
+const btnToggleInlineCustomGoogle  = $('btn-toggle-inline-custom-google');
+const formInlineCustomGoogle       = $('form-inline-custom-google');
+const inlineCustomGoogleEmail      = $('inline-custom-google-email');
+const googleLiveOauthBox           = $('google-live-oauth-box');
+const btnTriggerLiveOauth          = $('btn-trigger-live-oauth');
+
+function createGoogleAccountCard(acc, isInline = false) {
+  const card = document.createElement('div');
+  card.className = 'google-acc-card';
+  const isMgr = (acc.role === 'manager');
+  const inisial = isMgr ? '👑' : (acc.nama ? acc.nama.charAt(0).toUpperCase() : '👤');
+
+  card.innerHTML = `
+    <div class="google-acc-avatar ${isMgr ? 'mgr' : ''}">
+      <span>${inisial}</span>
+      <div class="google-badge-dot">
+        <svg viewBox="0 0 24 24" style="width:10px;height:10px"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+      </div>
+    </div>
+    <div class="google-acc-meta">
+      <div class="google-acc-name">${esc(acc.nama)}</div>
+      <div class="google-acc-sub">
+        <span>${esc(acc.email)}</span>
+      </div>
+    </div>
+    <span class="google-acc-role ${isMgr ? 'mgr' : 'tnt'}">${isMgr ? 'Manager 👑' : (acc.kamar ? 'Kamar ' + esc(acc.kamar) + ' 🔑' : 'Penghuni 👤')}</span>
+  `;
+
+  card.addEventListener('click', () => {
+    closeModalGoogle();
+    loginWithAkun(acc);
+    toast(`Masuk sebagai ${acc.nama} (${acc.role}) via Google! 🚀`);
+  });
+
+  return card;
+}
 
 function renderGoogleAccounts() {
-  if (!googleAccountsList) return;
   seedDemoData(false);
-  
-  googleAccountsList.innerHTML = '';
-  
-  // 1. Akun Manager / Pemilik Kost: HANYA gavinutomo4@gmail.com!
+
+  // 1. Akun Manager: HANYA gavinutomo4@gmail.com!
   const mgrNama = S.kost?.pemilik || 'Gavin Utomo';
   const mgrEmail = 'gavinutomo4@gmail.com';
   let mgr = S.akun.find(a => a.email && a.email.toLowerCase() === mgrEmail);
@@ -1032,65 +1064,38 @@ function renderGoogleAccounts() {
     S.akun.push(mgr);
     LS.save();
   }
-  
-  const mgrCard = document.createElement('div');
-  mgrCard.className = 'google-acc-card';
-  mgrCard.innerHTML = `
-    <div class="google-acc-avatar mgr">
-      <span>👑</span>
-      <div class="google-badge-dot">
-        <svg viewBox="0 0 24 24" style="width:10px;height:10px"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-      </div>
-    </div>
-    <div class="google-acc-meta">
-      <div class="google-acc-name">${esc(mgrNama)} (Pemilik / Manager)</div>
-      <div class="google-acc-sub">
-        <span>${esc(mgrEmail)}</span>
-      </div>
-    </div>
-    <span class="google-acc-role mgr">Manager 👑</span>
-  `;
-  mgrCard.addEventListener('click', () => {
-    closeModalGoogle();
-    loginWithAkun(mgr);
-    toast(`Masuk sebagai ${mgrNama} (Manager) via Google! 👑`);
-  });
-  googleAccountsList.appendChild(mgrCard);
+
+  const allAccounts = [mgr];
 
   // 2. Akun Penghuni
   if (S.penghuni && S.penghuni.length > 0) {
     S.penghuni.forEach(p => {
       const emailP = p.email || (p.nama.toLowerCase().replace(/\s+/g, '.') + '@gmail.com');
-      const inisial = p.nama ? p.nama.charAt(0).toUpperCase() : 'P';
-      const card = document.createElement('div');
-      card.className = 'google-acc-card';
-      card.innerHTML = `
-        <div class="google-acc-avatar">
-          <span>${inisial}</span>
-          <div class="google-badge-dot">
-            <svg viewBox="0 0 24 24" style="width:10px;height:10px"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-          </div>
-        </div>
-        <div class="google-acc-meta">
-          <div class="google-acc-name">${esc(p.nama)}</div>
-          <div class="google-acc-sub">
-            <span>${esc(emailP)}</span>
-          </div>
-        </div>
-        <span class="google-acc-role tnt">Kamar ${esc(p.kamar || '-')} 🔑</span>
-      `;
-      card.addEventListener('click', () => {
-        closeModalGoogle();
-        let akunTnt = S.akun.find(a => a.penghuniId === p.id || (a.email && a.email.toLowerCase() === emailP.toLowerCase()));
-        if (!akunTnt) {
-          akunTnt = { id: 'akun_' + p.id, nama: p.nama, email: emailP, role: 'penghuni', penghuniId: p.id };
-          S.akun.push(akunTnt);
-          LS.save();
-        }
-        loginWithAkun(akunTnt);
-        toast(`Selamat datang di Kamar ${p.kamar}, ${p.nama}! 🔑`);
-      });
-      googleAccountsList.appendChild(card);
+      let akunTnt = S.akun.find(a => a.penghuniId === p.id || (a.email && a.email.toLowerCase() === emailP.toLowerCase()));
+      if (!akunTnt) {
+        akunTnt = { id: 'akun_' + p.id, nama: p.nama, email: emailP, role: 'penghuni', penghuniId: p.id, kamar: p.kamar };
+        S.akun.push(akunTnt);
+      } else {
+        akunTnt.kamar = p.kamar;
+      }
+      allAccounts.push(akunTnt);
+    });
+    LS.save();
+  }
+
+  // Render to modal list
+  if (googleAccountsList) {
+    googleAccountsList.innerHTML = '';
+    allAccounts.forEach(acc => {
+      googleAccountsList.appendChild(createGoogleAccountCard(acc, false));
+    });
+  }
+
+  // Render to inline list on login screen
+  if (inlineGoogleAccountsList) {
+    inlineGoogleAccountsList.innerHTML = '';
+    allAccounts.forEach(acc => {
+      inlineGoogleAccountsList.appendChild(createGoogleAccountCard(acc, true));
     });
   }
 }
@@ -1125,47 +1130,66 @@ if (btnToggleCustomGoogle && formCustomGoogle) {
   });
 }
 
-if (formCustomGoogle) {
-  formCustomGoogle.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = customGoogleEmail.value.trim().toLowerCase();
-    const namaInput = (customGoogleNama ? customGoogleNama.value.trim() : '') || email.split('@')[0];
-    if (!email) return;
+if (btnToggleInlineCustomGoogle && formInlineCustomGoogle) {
+  btnToggleInlineCustomGoogle.addEventListener('click', () => {
+    const isHidden = formInlineCustomGoogle.style.display === 'none';
+    formInlineCustomGoogle.style.display = isHidden ? 'block' : 'none';
+    if (isHidden && inlineCustomGoogleEmail) inlineCustomGoogleEmail.focus();
+  });
+}
 
-    closeModalGoogle();
-    
-    // Cek apakah email cocok dengan penghuni yang terdaftar
-    const matchedP = S.penghuni.find(p => p.email && p.email.toLowerCase() === email);
-    if (matchedP) {
-      let akun = S.akun.find(a => a.penghuniId === matchedP.id || (a.email && a.email.toLowerCase() === email));
-      if (!akun) {
-        akun = { id: 'akun_' + matchedP.id, nama: matchedP.nama, email: email, role: 'penghuni', penghuniId: matchedP.id };
-        S.akun.push(akun);
-        LS.save();
-      }
-      loginWithAkun(akun);
-      toast(`Selamat datang di Kamar ${matchedP.kamar}, ${matchedP.nama}! 🔑`);
-      return;
-    }
+function handleCustomGoogleLogin(rawEmail, rawNama) {
+  const email = (rawEmail || '').trim().toLowerCase();
+  const namaInput = (rawNama || '').trim() || email.split('@')[0];
+  if (!email) return;
 
-    // HANYA gavinutomo4@gmail.com yang berhak menjadi Manager!
-    const isOwner = (email === 'gavinutomo4@gmail.com');
-    const role = isOwner ? 'manager' : 'penghuni';
-    let akun = S.akun.find(a => a.email && a.email.toLowerCase() === email);
+  closeModalGoogle();
+
+  // Cek apakah email cocok dengan penghuni yang terdaftar
+  const matchedP = S.penghuni.find(p => p.email && p.email.toLowerCase() === email);
+  if (matchedP) {
+    let akun = S.akun.find(a => a.penghuniId === matchedP.id || (a.email && a.email.toLowerCase() === email));
     if (!akun) {
-      const pFirst = role === 'penghuni' ? (S.penghuni[0] || null) : null;
-      akun = {
-        id: 'akun_' + uid(),
-        nama: namaInput,
-        email: email,
-        role: role,
-        penghuniId: pFirst ? pFirst.id : null
-      };
+      akun = { id: 'akun_' + matchedP.id, nama: matchedP.nama, email: email, role: 'penghuni', penghuniId: matchedP.id };
       S.akun.push(akun);
       LS.save();
     }
     loginWithAkun(akun);
-    toast(`Berhasil masuk sebagai ${akun.nama} (${akun.role}) via Google! 🚀`);
+    toast(`Selamat datang di Kamar ${matchedP.kamar}, ${matchedP.nama}! 🔑`);
+    return;
+  }
+
+  // HANYA gavinutomo4@gmail.com yang berhak menjadi Manager!
+  const isOwner = (email === 'gavinutomo4@gmail.com');
+  const role = isOwner ? 'manager' : 'penghuni';
+  let akun = S.akun.find(a => a.email && a.email.toLowerCase() === email);
+  if (!akun) {
+    const pFirst = role === 'penghuni' ? (S.penghuni[0] || null) : null;
+    akun = {
+      id: 'akun_' + uid(),
+      nama: isOwner ? 'Gavin Utomo (Owner)' : namaInput,
+      email: email,
+      role: role,
+      penghuniId: pFirst ? pFirst.id : null
+    };
+    S.akun.push(akun);
+    LS.save();
+  }
+  loginWithAkun(akun);
+  toast(`Berhasil masuk sebagai ${akun.nama} (${akun.role}) via Google! 🚀`);
+}
+
+if (formCustomGoogle) {
+  formCustomGoogle.addEventListener('submit', (e) => {
+    e.preventDefault();
+    handleCustomGoogleLogin(customGoogleEmail.value, customGoogleNama?.value);
+  });
+}
+
+if (formInlineCustomGoogle) {
+  formInlineCustomGoogle.addEventListener('submit', (e) => {
+    e.preventDefault();
+    handleCustomGoogleLogin(inlineCustomGoogleEmail.value, '');
   });
 }
 
@@ -1180,7 +1204,7 @@ if (btnTriggerLiveOauth) {
       });
       if (error) throw error;
     } catch (err) {
-      toast('Google OAuth Cloud: ' + err.message, 'err');
+      toast('Google OAuth: ' + err.message, 'err');
     }
   });
 }
@@ -1191,113 +1215,76 @@ if (btnLoginGoogle) {
   });
 }
 
-// ── LOGIN / REGISTER TABS ─────────────────────────────────────
+// ── LOGIN / REGISTER TABS (FALLBACK GUARD) ────────────────────
 const tabBtnLogin = $('tab-btn-login');
 const tabBtnReg   = $('tab-btn-register');
 const formLogin   = $('form-login');
 const formReg     = $('form-register');
 
-if (tabBtnLogin && tabBtnReg) {
+if (tabBtnLogin && tabBtnReg && formLogin && formReg) {
   tabBtnLogin.addEventListener('click', () => {
     tabBtnLogin.classList.add('active');
     tabBtnReg.classList.remove('active');
     formLogin.style.display = 'block';
     formReg.style.display   = 'none';
-    $('login-err').style.display = 'none';
   });
   tabBtnReg.addEventListener('click', () => {
     tabBtnReg.classList.add('active');
     tabBtnLogin.classList.remove('active');
     formLogin.style.display = 'none';
     formReg.style.display   = 'block';
-    $('register-err').style.display = 'none';
   });
 }
 
-// ── LOGIN SCREEN SUBMISSION ───────────────────────────────────
-formLogin.addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const email = $('login-email').value.trim().toLowerCase();
-  const pw    = $('login-pw').value;
-  const btn   = $('btn-submit-login');
-
-  btn.disabled = true;
-  btn.textContent = 'Memverifikasi...';
-  $('login-err').style.display = 'none';
-
-  try {
-    if (sbClient) {
-      const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pw });
-      if (error) throw error;
-      const profile = await fetchOrCreateProfile(data.user);
-      loginWithAkun(profile);
-      toast(`Selamat datang kembali, ${profile.nama}! 👋`);
-    } else {
-      const akun = S.akun.find(a => a.email === email);
-      if (!akun) throw new Error('Email tidak ditemukan di penyimpanan lokal.');
-      const hashed = await hashPw(pw);
-      if (akun.pwHash && akun.pwHash !== hashed) throw new Error('Password salah.');
-      loginWithAkun(akun);
-      toast(`Selamat datang, ${akun.nama}! 👋`);
+if (formLogin) {
+  formLogin.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = $('login-email').value.trim().toLowerCase();
+    const pw    = $('login-pw').value;
+    const btn   = $('btn-submit-login');
+    btn.disabled = true;
+    try {
+      if (sbClient) {
+        const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pw });
+        if (error) throw error;
+        const profile = await fetchOrCreateProfile(data.user);
+        loginWithAkun(profile);
+      } else {
+        const akun = S.akun.find(a => a.email === email);
+        if (!akun) throw new Error('Email tidak ditemukan.');
+        loginWithAkun(akun);
+      }
+    } catch (err) {
+      toast('Login gagal: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
     }
-  } catch (err) {
-    $('login-err-msg').textContent = err.message || 'Login gagal.';
-    $('login-err').style.display = 'block';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Masuk';
-  }
-});
+  });
+}
 
-// ── REGISTER CLOUD SUBMISSION ─────────────────────────────────
-formReg.addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const nama  = $('reg-nama').value.trim();
-  const email = $('reg-email').value.trim().toLowerCase();
-  const pw    = $('reg-pw').value;
-  const roleInput = $('reg-role').value;
-  // HANYA gavinutomo4@gmail.com yang berhak menjadi Manager!
-  const role = (email === 'gavinutomo4@gmail.com') ? 'manager' : 'penghuni';
-  const btn  = $('btn-submit-reg');
-
-  if (pw.length < 6) {
-    $('register-err-msg').textContent = 'Password minimal 6 karakter.';
-    $('register-err').style.display = 'block';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Mendaftar...';
-  $('register-err').style.display = 'none';
-
-  try {
-    if (sbClient) {
-      const { data, error } = await sbClient.auth.signUp({
-        email,
-        password: pw,
-        options: { data: { nama, role } }
-      });
-      if (error) throw error;
-      const profile = await fetchOrCreateProfile(data.user, nama, role);
-      loginWithAkun(profile);
-      toast('Akun Supabase Cloud berhasil dibuat! 🎉');
-    } else {
-      if (S.akun.find(a => a.email === email)) throw new Error('Email sudah terdaftar secara lokal.');
-      const pwHash = await hashPw(pw);
-      const newAkun = { id: uid(), nama, email, pwHash, role, penghuniId: null };
-      S.akun.push(newAkun);
-      LS.save();
-      loginWithAkun(newAkun);
-      toast('Akun lokal berhasil didaftarkan! 🎉');
+if (formReg) {
+  formReg.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const nama  = $('reg-nama').value.trim();
+    const email = $('reg-email').value.trim().toLowerCase();
+    const pw    = $('reg-pw').value;
+    const role  = (email === 'gavinutomo4@gmail.com') ? 'manager' : 'penghuni';
+    const btn   = $('btn-submit-reg');
+    btn.disabled = true;
+    try {
+      if (sbClient) {
+        const { data, error } = await sbClient.auth.signUp({ email, password: pw, options: { data: { nama, role } } });
+        if (error) throw error;
+        const profile = await fetchOrCreateProfile(data.user, nama, role);
+        loginWithAkun(profile);
+      }
+    } catch (err) {
+      toast('Daftar gagal: ' + err.message, 'err');
+    } finally {
+      btn.disabled = false;
     }
-  } catch (err) {
-    $('register-err-msg').textContent = err.message || 'Pendaftaran gagal.';
-    $('register-err').style.display = 'block';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Daftar Akun Cloud';
-  }
-});
+  });
+}
 
 function loginWithAkun(akun) {
   currentUser = akun;
@@ -3592,5 +3579,6 @@ if ('serviceWorker' in navigator) {
   }
 
   if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama || 'SiKost';
+  renderGoogleAccounts();
   showScreen('screen-login');
 })();

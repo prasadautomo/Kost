@@ -79,8 +79,8 @@
       </div>
     </div>
 
-    <!-- 1-Click Login Google -->
-    <button type="button" class="btn-google-login" id="btn-login-google" title="Masuk langsung dengan Akun Google tanpa perlu ketik password">
+    <!-- Tombol Utama: Masuk dengan Google -->
+    <button type="button" class="btn-google-login" id="btn-login-google" title="Masuk langsung dengan Akun Google">
       <svg class="google-icon" viewBox="0 0 24 24">
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -90,86 +90,38 @@
       <span>Masuk dengan Google (1-Klik)</span>
     </button>
 
-    <div class="login-divider" style="margin:10px 0 16px"><span>atau email &amp; password</span></div>
+    <!-- Daftar Pilihan Akun Google Langsung -->
+    <div style="margin-top:14px;text-align:left">
+      <div style="font-size:0.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">
+        Pilih Akun Google:
+      </div>
+      <div id="inline-google-accounts-list" style="display:flex;flex-direction:column;gap:8px">
+        <!-- Rendered dynamically -->
+      </div>
 
-    <div class="login-tabs">
-      <button type="button" class="login-tab active" id="tab-btn-login">Masuk</button>
-      <button type="button" class="login-tab" id="tab-btn-register">Daftar Cloud</button>
+      <!-- Input Akun Google Kustom -->
+      <div style="margin-top:14px;border-top:1px dashed var(--border);padding-top:12px">
+        <button type="button" id="btn-toggle-inline-custom-google" class="btn-ghost" style="width:100%;justify-content:center;font-size:0.82rem;padding:8px">
+          ➕ Masuk dengan Email Google Lain
+        </button>
+
+        <form id="form-inline-custom-google" style="display:none;margin-top:10px;background:var(--surface-2);padding:12px;border-radius:12px;border:1px solid var(--border)">
+          <div class="fg" style="margin-bottom:10px">
+            <label style="font-size:0.78rem">Email Akun Google Anda</label>
+            <input type="email" id="inline-custom-google-email" class="fc" placeholder="nama@gmail.com" required />
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:10px">
+            🚀 Masuk Langsung (Tanpa Password)
+          </button>
+        </form>
+      </div>
     </div>
 
-    <!-- Form Login -->
-    <form id="form-login" autocomplete="off">
-      <div class="login-err" id="login-err" style="display:none">
-        ⚠️ <span id="login-err-msg">Email atau password salah.</span>
-      </div>
-      <div class="fg" style="margin-bottom:12px">
-        <label>Email</label>
-        <input type="email" id="login-email" class="fc" placeholder="email@anda.com" required autocomplete="email" />
-      </div>
-      <div class="fg" style="margin-bottom:20px">
-        <label>Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="login-pw" class="fc" placeholder="Password Anda" required autocomplete="current-password" />
-          <button type="button" class="pw-eye" data-target="login-pw">👁</button>
-        </div>
-      </div>
-      <button type="submit" id="btn-submit-login" class="btn-primary" style="width:100%;justify-content:center;padding:12px">
-        Masuk
-      </button>
-    </form>
-
-    <!-- Form Register Cloud -->
-    <form id="form-register" autocomplete="off" style="display:none">
-      <div class="login-err" id="register-err" style="display:none">
-        ⚠️ <span id="register-err-msg">Terjadi kesalahan saat mendaftar.</span>
-      </div>
-      <div class="fg" style="margin-bottom:12px">
-        <label>Nama Lengkap</label>
-        <input type="text" id="reg-nama" class="fc" placeholder="Nama Anda" required />
-      </div>
-      <div class="fg" style="margin-bottom:12px">
-        <label>Email</label>
-        <input type="email" id="reg-email" class="fc" placeholder="email@anda.com" required autocomplete="email" />
-      </div>
-      <div class="fg" style="margin-bottom:12px">
-        <label>Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="reg-pw" class="fc" placeholder="Min. 6 karakter" required autocomplete="new-password" />
-          <button type="button" class="pw-eye" data-target="reg-pw">👁</button>
-        </div>
-      </div>
-      <div class="fg" style="margin-bottom:20px">
-        <label>Role Akun</label>
-        <select id="reg-role" class="fc">
-          <option value="manager">Manager (Akses Penuh)</option>
-          <option value="penghuni">Penghuni (Data Saya)</option>
-        </select>
-      </div>
-      <button type="submit" id="btn-submit-reg" class="btn-primary" style="width:100%;justify-content:center;padding:12px">
-        Daftar Akun Cloud
-      </button>
-    </form>
-
-    <!-- 1-Click Demo Buttons -->
-    <div class="login-divider"><span>atau coba demo instan</span></div>
-    <div class="demo-btns">
-      <button type="button" class="btn-demo-manager" id="btn-demo-mgr">
-        <span class="demo-icon">👑</span>
-        <div>
-          <span class="demo-label">Masuk Demo Manager</span>
-          <span class="demo-sub">Akses penuh kelola kost, kamar, keuangan &amp; tiket</span>
-        </div>
-      </button>
-      <button type="button" class="btn-demo-tenant" id="btn-demo-tnt">
-        <span class="demo-icon">👤</span>
-        <div>
-          <span class="demo-label">Masuk Demo Anak Kost</span>
-          <span class="demo-sub">Portal penghuni: cek sewa, bayar &amp; lapor perbaikan</span>
-        </div>
-      </button>
+    <div style="font-size:0.74rem;color:var(--text-3);line-height:1.4;margin-top:16px;padding:8px;background:var(--surface-2);border-radius:8px">
+      🔒 Manager: <span style="color:#10b981;font-weight:600">gavinutomo4@gmail.com</span> | Selain itu: Penghuni
     </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;font-size:0.78rem;color:var(--text-3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:0.78rem;color:var(--text-3)">
       <a href="#" id="link-open-cloud-config" style="color:var(--accent-light);text-decoration:none">⚙️ Set Supabase</a>
       <span id="login-footer-hint">SiKost v4.1 Enterprise Cloud</span>
     </div>
