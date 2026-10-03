@@ -958,8 +958,8 @@ async function fetchOrCreateProfile(user, fallbackNama = '', fallbackRole = 'man
 
     if (p) {
       // Jika profil ada tapi belum terhubung ke penghuni, hubungkan sekarang
-      // Role check: HANYA gavinutomo4@gmail.com yang berhak menjadi manager!
-      const isManagerEmail = (userEmail === 'gavinutomo4@gmail.com');
+      // Role check: gavinutomo4@gmail.com & prasadautomo@gmail.com berhak menjadi manager!
+      const isManagerEmail = (userEmail === 'gavinutomo4@gmail.com' || userEmail === 'prasadautomo@gmail.com');
       const enforcedRole = isManagerEmail ? 'manager' : 'penghuni';
 
       if (p.role !== enforcedRole) {
@@ -980,8 +980,8 @@ async function fetchOrCreateProfile(user, fallbackNama = '', fallbackRole = 'man
       };
     }
 
-    // 3. Jika belum ada profil: HANYA gavinutomo4@gmail.com yang menjadi manager!
-    const isManager = (userEmail === 'gavinutomo4@gmail.com');
+    // 3. Jika belum ada profil: gavinutomo4@gmail.com & prasadautomo@gmail.com berhak menjadi manager!
+    const isManager = (userEmail === 'gavinutomo4@gmail.com' || userEmail === 'prasadautomo@gmail.com');
     const assignedRole = isManager ? 'manager' : 'penghuni';
 
     const newP = {
@@ -1056,7 +1056,7 @@ function createGoogleAccountCard(acc, isInline = false) {
 function renderGoogleAccounts() {
   seedDemoData(false);
 
-  // 1. Akun Manager: HANYA gavinutomo4@gmail.com!
+  // 1. Akun Manager: Gavin Utomo & Prasad Automo
   const mgrNama = S.kost?.pemilik || 'Gavin Utomo';
   const mgrEmail = 'gavinutomo4@gmail.com';
   let mgr = S.akun.find(a => a.email && a.email.toLowerCase() === mgrEmail);
@@ -1066,7 +1066,14 @@ function renderGoogleAccounts() {
     LS.save();
   }
 
-  const allAccounts = [mgr];
+  let prasad = S.akun.find(a => a.email && a.email.toLowerCase() === 'prasadautomo@gmail.com');
+  if (!prasad) {
+    prasad = { id: 'akun_mgr_prasad', nama: 'Prasad Automo', email: 'prasadautomo@gmail.com', role: 'manager', penghuniId: null };
+    S.akun.push(prasad);
+    LS.save();
+  }
+
+  const allAccounts = [mgr, prasad];
 
   // 2. Akun Penghuni
   if (S.penghuni && S.penghuni.length > 0) {
@@ -1165,15 +1172,15 @@ function handleCustomGoogleLogin(rawEmail, rawNama) {
     return;
   }
 
-  // HANYA gavinutomo4@gmail.com yang berhak menjadi Manager!
-  const isOwner = (email === 'gavinutomo4@gmail.com');
+  // gavinutomo4@gmail.com & prasadautomo@gmail.com berhak menjadi Manager!
+  const isOwner = (email === 'gavinutomo4@gmail.com' || email === 'prasadautomo@gmail.com');
   const role = isOwner ? 'manager' : 'penghuni';
   let akun = S.akun.find(a => a.email && a.email.toLowerCase() === email);
   if (!akun) {
     const pFirst = role === 'penghuni' ? (S.penghuni[0] || null) : null;
     akun = {
       id: 'akun_' + uid(),
-      nama: isOwner ? 'Gavin Utomo (Owner)' : namaInput,
+      nama: isOwner ? (email === 'prasadautomo@gmail.com' ? 'Prasad Automo' : 'Gavin Utomo (Owner)') : namaInput,
       email: email,
       role: role,
       penghuniId: pFirst ? pFirst.id : null
@@ -1222,8 +1229,8 @@ async function handleGoogleUserProfile(profile) {
   const nama = profile.name || email.split('@')[0];
   const avatar = profile.picture || '';
 
-  // STRICT SECURITY RULE: HANYA gavinutomo4@gmail.com YANG MENJADI MANAGER!
-  const isMgr = (email === 'gavinutomo4@gmail.com');
+  // STRICT SECURITY RULE: gavinutomo4@gmail.com & prasadautomo@gmail.com BERHAK MENJADI MANAGER!
+  const isMgr = (email === 'gavinutomo4@gmail.com' || email === 'prasadautomo@gmail.com');
   const role = isMgr ? 'manager' : 'penghuni';
 
   // Cek apakah email cocok dengan penghuni yang terdaftar
@@ -1234,7 +1241,7 @@ async function handleGoogleUserProfile(profile) {
     akun = {
       id: 'google_' + (profile.sub || uid()),
       email,
-      nama: isMgr ? 'Gavin Utomo (Owner)' : nama,
+      nama: isMgr ? (email === 'prasadautomo@gmail.com' ? (profile.name || 'Prasad Automo') : 'Gavin Utomo (Owner)') : nama,
       avatar,
       role,
       penghuniId: matchedP ? matchedP.id : null,
@@ -1243,7 +1250,7 @@ async function handleGoogleUserProfile(profile) {
     S.akun.push(akun);
     LS.save();
   } else {
-    akun.nama = isMgr ? 'Gavin Utomo (Owner)' : (akun.nama || nama);
+    akun.nama = isMgr ? (email === 'prasadautomo@gmail.com' ? (profile.name || akun.nama || 'Prasad Automo') : 'Gavin Utomo (Owner)') : (akun.nama || nama);
     akun.avatar = avatar || akun.avatar;
     akun.role = role;
     if (matchedP && !akun.penghuniId) akun.penghuniId = matchedP.id;
