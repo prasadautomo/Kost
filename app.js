@@ -1995,7 +1995,8 @@ function enterApp() {
   renderUserChip();
   updatePropertySwitcherUI();
   setupPropertySwitcherEvents();
-  const firstPage = 'dashboard';
+  const urlPage = new URLSearchParams(window.location.search).get('page') || (location.hash ? location.hash.replace('#', '') : '');
+  const firstPage = PAGE_TITLES[urlPage] ? urlPage : 'dashboard';
   navigateTo(firstPage);
 
   if (sbClient) {
@@ -2133,7 +2134,7 @@ function renderDashboard() {
   // Laba Bersih (Net Profit)
   const labaBersih = terkumpul - totalPengeluaran;
 
-  // 4 Kartu KPI Utama sesuai requirement test & user
+  // 6 Kartu KPI Utama: Penghuni, Kamar, Target Sewa, Pemasukan, Pengeluaran, Laba Bersih
   $('kpi-row').innerHTML = `
     <div class="kpi">
       <div class="kpi-label">Total Penghuni <span style="font-size:1.1rem">👥</span></div>
@@ -2150,10 +2151,20 @@ function renderDashboard() {
       <div class="kpi-value" style="font-size:1.05rem">${rp(targetPendapatan)}</div>
       <div class="kpi-sub">target bulanan</div>
     </div>
-    <div class="kpi">
+    <div class="kpi" data-page="pembayaran" style="cursor:pointer" title="Lihat riwayat pembayaran sewa">
       <div class="kpi-label">Terkumpul Bulan Ini <span style="font-size:1.1rem">💰</span></div>
       <div class="kpi-value" style="font-size:1.05rem;color:var(--green)">${rp(terkumpul)}</div>
-      <div class="kpi-sub">${lunasList.length} dari ${aktif.length} penghuni lunas</div>
+      <div class="kpi-sub">${lunasList.length} dari ${aktif.length} penghuni lunas →</div>
+    </div>
+    <div class="kpi" data-page="pengeluaran" style="cursor:pointer" title="Kelola catatan pengeluaran operasional">
+      <div class="kpi-label">Pengeluaran Bulan Ini <span style="font-size:1.1rem">💸</span></div>
+      <div class="kpi-value" style="font-size:1.05rem;color:var(--red)">${rp(totalPengeluaran)}</div>
+      <div class="kpi-sub">${expBulanIni.length} pengeluaran tercatat →</div>
+    </div>
+    <div class="kpi" data-page="pengeluaran" style="cursor:pointer" title="Rincian laba bersih operasional">
+      <div class="kpi-label">Laba Bersih <span style="font-size:1.1rem">📈</span></div>
+      <div class="kpi-value" style="font-size:1.05rem;color:${labaBersih >= 0 ? 'var(--accent-light, #818cf8)' : 'var(--red)'}">${rp(labaBersih)}</div>
+      <div class="kpi-sub">${labaBersih >= 0 ? 'Surplus operasional' : 'Defisit operasional'} →</div>
     </div>
   `;
 
@@ -2202,6 +2213,27 @@ function renderDashboard() {
       <td>${fmtD(p.tglMasuk)}</td>
       <td>${p.status === 'aktif' ? '<span class="badge badge-green">Aktif</span>' : '<span class="badge badge-gray">Keluar</span>'}</td>
     </tr>`).join('') || `<tr><td colspan="4" style="text-align:center;color:var(--text-3);padding:20px;font-size:0.8rem">Belum ada penghuni.</td></tr>`;
+
+  // Tabel Pengeluaran Operasional Terbaru di Dashboard
+  const tbodyDashPengeluaran = $('tbody-dash-pengeluaran');
+  if (tbodyDashPengeluaran) {
+    const listExp = [...S.pengeluaran].sort((a,b) => (b.tanggal||'').localeCompare(a.tanggal||'')).slice(0, 5);
+    tbodyDashPengeluaran.innerHTML = listExp.map(exp => `
+      <tr>
+        <td>${fmtD(exp.tanggal)}</td>
+        <td><span class="badge badge-purple">${exp.kategori}</span></td>
+        <td><strong>${exp.keterangan || '–'}</strong></td>
+        <td><strong style="color:var(--red)">${rp(exp.jumlah)}</strong></td>
+        <td>${exp.buktiNota ? `<a href="${exp.buktiNota}" target="_blank" title="Lihat Bukti Nota"><img src="${exp.buktiNota}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;border:1px solid var(--border)"/></a>` : '<span style="color:var(--text-4)">–</span>'}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn-outline btn-sm" onclick="editPengeluaran('${exp.id}')">Edit</button>
+            <button type="button" class="btn-danger btn-sm" onclick="hapusPengeluaran('${exp.id}')">Hapus</button>
+          </div>
+        </td>
+      </tr>
+    `).join('') || `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3);font-size:0.85rem">Belum ada catatan pengeluaran operasional. <button type="button" class="text-btn" onclick="openModalCatatPengeluaran()" style="margin-left:6px;font-weight:700">+ Catat Pengeluaran Pertama</button></td></tr>`;
+  }
 
   // Quick Kamar Chips
   const allKamar = [...new Set([...S.kamar.map(k=>k.no), ...S.penghuni.map(p=>p.kamar).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
@@ -3144,57 +3176,261 @@ $('btn-wa-kwitansi').addEventListener('click', () => {
 // ── PENGELUARAN (EXPENSE MANAGEMENT) ──────────────────────────
 function renderPengeluaran() {
   const sel = $('filter-bulan-pengeluaran');
-  const months = []; const now = new Date();
-  for (let i = 0; i < 12; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(d.toISOString().slice(0, 7));
+  if (sel) {
+    const curVal = sel.value;
+    const expenseMonths = [...new Set(S.pengeluaran.map(x => (x.tanggal || '').slice(0, 7)).filter(Boolean))];
+    const now = new Date();
+    const recentMonths = [];
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      recentMonths.push(d.toISOString().slice(0, 7));
+    }
+    const allMonths = [...new Set([...recentMonths, ...expenseMonths])].sort().reverse();
+    // Default: bulan berjalan bila belum ada seleksi
+    const cur = (curVal !== undefined && curVal !== null && curVal !== '') ? curVal : thisMonth();
+
+    sel.innerHTML = `<option value=""${cur === '' ? ' selected' : ''}>Semua Bulan (Riwayat Lengkap)</option>` +
+      allMonths.map(m => {
+        const [y, mo] = m.split('-');
+        const lbl = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        return `<option value="${m}"${m === cur ? ' selected' : ''}>${lbl}</option>`;
+      }).join('');
   }
-  const cur = sel.value || months[0];
-  sel.innerHTML = months.map(m => {
-    const [y, mo] = m.split('-');
-    const lbl = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-    return `<option value="${m}"${m === cur ? ' selected' : ''}>${lbl}</option>`;
-  }).join('');
 
-  const bln = sel.value || months[0];
+  const bln = sel?.value || '';
   const katFilter = $('filter-kategori-pengeluaran')?.value || '';
+  const qCari = ($('cari-pengeluaran')?.value || '').toLowerCase().trim();
 
+  // Filter list
   const list = S.pengeluaran.filter(x => {
     const mBln = !bln || (x.tanggal || '').startsWith(bln);
     const mKat = !katFilter || x.kategori === katFilter;
-    return mBln && mKat;
+    const mCari = !qCari ||
+      (x.keterangan || '').toLowerCase().includes(qCari) ||
+      (x.kategori || '').toLowerCase().includes(qCari) ||
+      (x.tanggal || '').toLowerCase().includes(qCari) ||
+      String(x.jumlah || '').includes(qCari);
+    return mBln && mKat && mCari;
   });
 
-  const totalBulanIni = S.pengeluaran.filter(x => (x.tanggal || '').startsWith(bln)).reduce((s, x) => s + (Number(x.jumlah) || 0), 0);
-  const avg = list.length > 0 ? Math.round(totalBulanIni / list.length) : 0;
+  const totalFiltered = list.reduce((s, x) => s + (Number(x.jumlah) || 0), 0);
+  const avg = list.length > 0 ? Math.round(totalFiltered / list.length) : 0;
+
+  // Cari kategori pengeluaran terbesar
+  const catSums = {};
+  list.forEach(x => {
+    const k = x.kategori || 'Lainnya';
+    catSums[k] = (catSums[k] || 0) + (Number(x.jumlah) || 0);
+  });
+  let maxCatName = '–';
+  let maxCatVal = 0;
+  for (const [k, v] of Object.entries(catSums)) {
+    if (v > maxCatVal) { maxCatVal = v; maxCatName = k; }
+  }
+  const maxCatPct = totalFiltered > 0 ? Math.round((maxCatVal / totalFiltered) * 100) : 0;
+
+  const blnLabel = bln ? new Date(bln + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : 'semua riwayat';
 
   $('kpi-pengeluaran').innerHTML = `
-    <div class="kpi"><div class="kpi-label">Total Pengeluaran</div><div class="kpi-value" style="color:var(--red)">${rp(totalBulanIni)}</div><div class="kpi-sub">bulan ini</div></div>
-    <div class="kpi"><div class="kpi-label">Jumlah Transaksi</div><div class="kpi-value">${list.length}</div><div class="kpi-sub">catatan operasional</div></div>
-    <div class="kpi"><div class="kpi-label">Rata-rata Transaksi</div><div class="kpi-value">${rp(avg)}</div><div class="kpi-sub">pengeluaran per item</div></div>
-    <div class="kpi"><div class="kpi-label">Kategori Aktif</div><div class="kpi-value">${[...new Set(list.map(x=>x.kategori))].length}</div><div class="kpi-sub">jenis pengeluaran</div></div>
+    <div class="kpi">
+      <div class="kpi-label">Total Pengeluaran <span style="font-size:1.1rem">💸</span></div>
+      <div class="kpi-value" style="color:var(--red)">${rp(totalFiltered)}</div>
+      <div class="kpi-sub">${blnLabel}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Jumlah Transaksi <span style="font-size:1.1rem">📝</span></div>
+      <div class="kpi-value">${list.length}</div>
+      <div class="kpi-sub">catatan operasional</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Rata-rata Transaksi <span style="font-size:1.1rem">⚖️</span></div>
+      <div class="kpi-value">${rp(avg)}</div>
+      <div class="kpi-sub">biaya per transaksi</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Kategori Terbesar <span style="font-size:1.1rem">📊</span></div>
+      <div class="kpi-value" style="font-size:1.05rem;color:var(--accent-light)">${maxCatName}</div>
+      <div class="kpi-sub">${maxCatVal > 0 ? `${rp(maxCatVal)} (${maxCatPct}%)` : 'belum ada data'}</div>
+    </div>
   `;
 
+  // Render Grafik Pengeluaran
+  renderPengeluaranCharts(list);
+
+  // Tabel Pengeluaran
   $('tbody-pengeluaran').innerHTML = list.map(exp => `
     <tr>
       <td>${fmtD(exp.tanggal)}</td>
       <td><span class="badge badge-purple">${exp.kategori}</span></td>
       <td><strong>${exp.keterangan || '–'}</strong></td>
       <td><strong style="color:var(--red)">${rp(exp.jumlah)}</strong></td>
-      <td>${exp.buktiNota ? `<a href="${exp.buktiNota}" target="_blank"><img src="${exp.buktiNota}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--border)"/></a>` : '<span style="color:var(--text-4)">–</span>'}</td>
+      <td>${exp.buktiNota ? `<a href="${exp.buktiNota}" target="_blank" title="Lihat Bukti Nota"><img src="${exp.buktiNota}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--border)"/></a>` : '<span style="color:var(--text-4)">–</span>'}</td>
       <td>
         <div style="display:flex;gap:6px">
-          <button class="btn-outline btn-sm" onclick="editPengeluaran('${exp.id}')">Edit</button>
-          <button class="btn-danger btn-sm" onclick="hapusPengeluaran('${exp.id}')">Hapus</button>
+          <button type="button" class="btn-outline btn-sm" onclick="editPengeluaran('${exp.id}')">Edit</button>
+          <button type="button" class="btn-danger btn-sm" onclick="hapusPengeluaran('${exp.id}')">Hapus</button>
         </div>
       </td>
-    </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-3)">Belum ada catatan pengeluaran pada bulan ini.</td></tr>`;
+    </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-3)">Belum ada catatan pengeluaran operasional yang sesuai kriteria filter.</td></tr>`;
 }
 
-$('filter-bulan-pengeluaran').addEventListener('change', renderPengeluaran);
-$('filter-kategori-pengeluaran').addEventListener('change', renderPengeluaran);
+// ── GRAFIK ANALISIS PENGELUARAN ──────────────────────────────
+function renderPengeluaranCharts(list) {
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const tick   = isDark ? '#94a3b8' : '#64748b';
+  const grid   = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
 
-$('btn-tambah-pengeluaran').addEventListener('click', () => {
+  // 1. Chart Komposisi Kategori (Donut)
+  const catMap = {};
+  list.forEach(x => {
+    const k = x.kategori || 'Lainnya';
+    catMap[k] = (catMap[k] || 0) + (Number(x.jumlah) || 0);
+  });
+
+  const catLabels = Object.keys(catMap);
+  const catValues = Object.values(catMap);
+  const catPalette = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'];
+
+  if (CHARTS.pengeluaranKat) CHARTS.pengeluaranKat.destroy();
+  const ctxKat = $('chart-pengeluaran-kategori');
+  if (ctxKat) {
+    if (catValues.length === 0) {
+      catLabels.push('Belum Ada Data');
+      catValues.push(1);
+    }
+    CHARTS.pengeluaranKat = new Chart(ctxKat, {
+      type: 'doughnut',
+      data: {
+        labels: catLabels,
+        datasets: [{
+          data: catValues,
+          backgroundColor: catPalette.slice(0, catLabels.length),
+          borderWidth: 0,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    const legendEl = $('pengeluaran-kategori-legend');
+    if (legendEl) {
+      if (Object.keys(catMap).length > 0) {
+        const total = catValues.reduce((a, b) => a + b, 0);
+        legendEl.innerHTML = catLabels.map((lbl, idx) => {
+          const val = catMap[lbl] || 0;
+          const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+          return `<div class="legend-item"><span class="legend-dot" style="background:${catPalette[idx % catPalette.length]}"></span><strong>${lbl}:</strong> ${rp(val)} (${pct}%)</div>`;
+        }).join('');
+      } else {
+        legendEl.innerHTML = '<span style="color:var(--text-3);font-size:0.8rem">Belum ada pengeluaran pada filter ini.</span>';
+      }
+    }
+  }
+
+  // 2. Chart Tren Pengeluaran 6 Bulan Terakhir
+  const now = new Date();
+  const monthsTren = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    monthsTren.push(d.toISOString().slice(0, 7));
+  }
+
+  const trenLabels = monthsTren.map(m => {
+    const [y, mo] = m.split('-');
+    return new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'short' });
+  });
+
+  const trenValues = monthsTren.map(m => {
+    return S.pengeluaran
+      .filter(x => (x.tanggal || '').startsWith(m))
+      .reduce((s, x) => s + (Number(x.jumlah) || 0), 0);
+  });
+
+  if (CHARTS.pengeluaranTren) CHARTS.pengeluaranTren.destroy();
+  const ctxTren = $('chart-pengeluaran-tren');
+  if (ctxTren) {
+    CHARTS.pengeluaranTren = new Chart(ctxTren, {
+      type: 'bar',
+      data: {
+        labels: trenLabels,
+        datasets: [{
+          label: 'Pengeluaran',
+          data: trenValues,
+          backgroundColor: '#f43f5e',
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: tick, font: { family:'Plus Jakarta Sans', size:11, weight:'600' } }, grid: { display: false } },
+          y: { ticks: { color: tick, font: { family:'Plus Jakarta Sans', size:10 }, callback: v => 'Rp ' + (v/1000).toLocaleString('id-ID') + 'k' }, grid: { color: grid } }
+        }
+      }
+    });
+
+    const trenLegendEl = $('pengeluaran-tren-legend');
+    if (trenLegendEl) {
+      const avg6 = Math.round(trenValues.reduce((a, b) => a + b, 0) / 6);
+      trenLegendEl.innerHTML = `
+        <div class="legend-item"><span class="legend-dot" style="background:#f43f5e"></span>Rata-rata 6 Bulan Terakhir: <strong>${rp(avg6)}</strong> / bulan</div>
+      `;
+    }
+  }
+}
+
+// ── EKSPOR CSV PENGELUARAN ───────────────────────────────────
+function exportPengeluaranCsv() {
+  if (!S.pengeluaran || S.pengeluaran.length === 0) {
+    toast('Belum ada catatan pengeluaran untuk diekspor.', 'err');
+    return;
+  }
+
+  const rows = [
+    ['ID', 'Tanggal', 'Kategori', 'Keterangan', 'Nominal (Rp)', 'Bukti Nota URL', 'Dicatat Oleh']
+  ];
+
+  S.pengeluaran.forEach(x => {
+    rows.push([
+      x.id || '',
+      x.tanggal || '',
+      `"${(x.kategori || '').replace(/"/g, '""')}"`,
+      `"${(x.keterangan || '').replace(/"/g, '""')}"`,
+      Number(x.jumlah) || 0,
+      `"${(x.buktiNota || '').replace(/"/g, '""')}"`,
+      `"${(x.createdBy || '').replace(/"/g, '""')}"`
+    ]);
+  });
+
+  const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + rows.map(e => e.join(',')).join('\n');
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  const filename = `Pengeluaran_${(S.kost.nama || 'SiKost').replace(/\s+/g, '_')}_${thisMonth()}.csv`;
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  toast(`Laporan pengeluaran berhasil diunduh (${filename})! 📥`, 'success');
+}
+window.exportPengeluaranCsv = exportPengeluaranCsv;
+
+$('filter-bulan-pengeluaran')?.addEventListener('change', renderPengeluaran);
+$('filter-kategori-pengeluaran')?.addEventListener('change', renderPengeluaran);
+$('cari-pengeluaran')?.addEventListener('input', renderPengeluaran);
+$('btn-export-pengeluaran-csv')?.addEventListener('click', exportPengeluaranCsv);
+
+window.openModalCatatPengeluaran = function() {
   $('modal-pengeluaran-title').textContent = 'Catat Pengeluaran Baru';
   $('form-pengeluaran').reset();
   $('field-pengeluaran-id').value = '';
@@ -3202,7 +3438,11 @@ $('btn-tambah-pengeluaran').addEventListener('click', () => {
   $('prev-pengeluaran-nota').style.display = 'none';
   $('btn-hapus-nota').style.display = 'none';
   openModal('modal-pengeluaran');
-});
+};
+
+$('btn-tambah-pengeluaran')?.addEventListener('click', openModalCatatPengeluaran);
+$('btn-dash-catat-pengeluaran')?.addEventListener('click', openModalCatatPengeluaran);
+$('btn-dash-catat-pengeluaran-2')?.addEventListener('click', openModalCatatPengeluaran);
 
 $('modal-pengeluaran-close').addEventListener('click', () => closeModal('modal-pengeluaran'));
 $('btn-batal-pengeluaran').addEventListener('click', () => closeModal('modal-pengeluaran'));
@@ -3278,7 +3518,10 @@ window.editPengeluaran = function(id) {
 window.hapusPengeluaran = function(id) {
   confirm_dlg('Hapus Pengeluaran', 'Hapus catatan pengeluaran ini?', async () => {
     S.pengeluaran = S.pengeluaran.filter(x => x.id !== id);
-    LS.save(); renderPengeluaran(); toast('Pengeluaran dihapus.');
+    LS.save();
+    renderPengeluaran();
+    if ($('page-dashboard').classList.contains('active')) renderDashboard();
+    toast('Pengeluaran dihapus.');
     await DB.deletePengeluaran(id);
   }, 'Hapus');
 };

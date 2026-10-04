@@ -1179,9 +1179,22 @@ em {
 /* ─── KPI CARDS ────────────────────────────────────────────── */
 .kpi-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
+}
+#kpi-row {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+@media (min-width: 1200px) {
+  #kpi-row {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+@media (max-width: 1199px) and (min-width: 800px) {
+  #kpi-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .kpi {
@@ -1190,11 +1203,17 @@ em {
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 22px 24px;
+  padding: 20px 22px;
   transition: all var(--t);
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+}
+.kpi[data-page] {
+  cursor: pointer;
+}
+.kpi[data-page]:hover {
+  border-color: var(--accent);
 }
 .kpi::before {
   content: '';

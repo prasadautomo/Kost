@@ -152,6 +152,42 @@
       logAssertion(b3, kpiRow.innerHTML.includes('Kamar Terisi'), 'KPI Kamar Terisi terisi data');
       logAssertion(b3, kpiRow.innerHTML.includes('Pendapatan / Bulan'), 'KPI Target Pendapatan terisi data');
 
+      logAssertion(b3, kpiRow.innerHTML.includes('Pengeluaran Bulan Ini'), 'KPI Pengeluaran Bulan Ini tersedia di Dashboard');
+      logAssertion(b3, kpiRow.innerHTML.includes('Laba Bersih'), 'KPI Laba Bersih tersedia di Dashboard');
+      logAssertion(b3, doc.getElementById('btn-dash-catat-pengeluaran') !== null, 'Tombol Catat Pengeluaran tersedia di Dashboard');
+      logAssertion(b3, doc.getElementById('tbl-dash-pengeluaran') !== null, 'Tabel Pengeluaran Operasional Terbaru tersedia di Dashboard');
+
+      // Test buka modal pengeluaran dari dashboard & catat pengeluaran baru
+      const totalPengeluaranAwal = win.S.pengeluaran.length;
+      doc.getElementById('btn-dash-catat-pengeluaran').click();
+      await new Promise(r => setTimeout(r, 100));
+      const modalPengeluaran = doc.getElementById('modal-pengeluaran');
+      logAssertion(b3, modalPengeluaran && modalPengeluaran.classList.contains('open'), 'Tombol Catat Pengeluaran di Dashboard sukses membuka Modal Pengeluaran');
+
+      // Isi form pengeluaran baru
+      doc.getElementById('field-pengeluaran-jumlah').value = '275000';
+      doc.getElementById('field-pengeluaran-ket').value = 'Beli Lampu LED & Fitting Lorong Lt 1';
+      doc.getElementById('field-pengeluaran-kategori').value = 'Perbaikan/Maintenance';
+      doc.getElementById('form-pengeluaran').dispatchEvent(new win.Event('submit', { cancelable: true }));
+      await new Promise(r => setTimeout(r, 150));
+
+      logAssertion(b3, !modalPengeluaran.classList.contains('open'), 'Modal Pengeluaran otomatis tertutup setelah submit');
+      logAssertion(b3, win.S.pengeluaran.length === totalPengeluaranAwal + 1, 'Data pengeluaran baru bertambah 1 di state memori');
+      logAssertion(b3, doc.getElementById('tbody-dash-pengeluaran').innerHTML.includes('Beli Lampu LED'), 'Pengeluaran baru langsung muncul di tabel dashboard');
+
+      // Test Halaman Pengeluaran (Dedicated Expense Analytics)
+      doc.getElementById('nav-pengeluaran').click();
+      await new Promise(r => setTimeout(r, 150));
+      logAssertion(b3, doc.getElementById('page-pengeluaran').classList.contains('active'), 'Berhasil navigasi ke Halaman Dashboard Pengeluaran');
+      logAssertion(b3, doc.getElementById('kpi-pengeluaran').children.length >= 4, 'Halaman Pengeluaran memiliki 4 kartu KPI analitik');
+      logAssertion(b3, doc.getElementById('chart-pengeluaran-kategori') !== null, 'Grafik Komposisi Kategori tersedia di Halaman Pengeluaran');
+      logAssertion(b3, doc.getElementById('chart-pengeluaran-tren') !== null, 'Grafik Tren Pengeluaran Bulanan tersedia di Halaman Pengeluaran');
+      logAssertion(b3, typeof win.exportPengeluaranCsv === 'function', 'Fungsi Ekspor CSV Pengeluaran siap digunakan');
+
+      // Navigasi kembali ke Dashboard
+      doc.getElementById('nav-dashboard').click();
+      await new Promise(r => setTimeout(r, 150));
+
       // -------------------------------------------------------------
       // TEST 4: Data Penghuni (Tenant Management)
       // -------------------------------------------------------------
