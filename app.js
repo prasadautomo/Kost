@@ -914,8 +914,16 @@ const durasi = tgl => {
   if(hari<365) return Math.floor(hari/30)+' bulan';
   return Math.floor(hari/365)+' tahun '+Math.floor((Math.floor(hari/30))%12)+' bulan';
 };
-const thisMonth = () => new Date().toISOString().slice(0,7);
+const thisMonth = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+const todayYMD = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 window.thisMonth = thisMonth;
+window.todayYMD = todayYMD;
 window.rp = rp;
 
 // Terbilang Rupiah Helper (untuk Kwitansi Resmi)
@@ -2245,6 +2253,10 @@ function renderDashboard() {
 }
 
 function renderCharts() {
+  if (typeof Chart === 'undefined') return;
+  const pageDashboard = $('page-dashboard');
+  if (pageDashboard && !pageDashboard.classList.contains('active')) return;
+
   const aktif = S.penghuni.filter(p => p.status === 'aktif').length;
   const nonAktif = S.penghuni.length - aktif;
   const motor = S.penghuni.filter(p => p.kendaraan === 'motor').length;
@@ -3175,6 +3187,8 @@ $('btn-wa-kwitansi').addEventListener('click', () => {
 
 // ── PENGELUARAN (EXPENSE MANAGEMENT) ──────────────────────────
 function renderPengeluaran() {
+  if (!Array.isArray(S.pengeluaran)) S.pengeluaran = [];
+
   const sel = $('filter-bulan-pengeluaran');
   if (sel) {
     const curVal = sel.value;
@@ -3183,18 +3197,25 @@ function renderPengeluaran() {
     const recentMonths = [];
     for (let i = 0; i < 12; i++) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      recentMonths.push(d.toISOString().slice(0, 7));
+      const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      recentMonths.push(ym);
     }
     const allMonths = [...new Set([...recentMonths, ...expenseMonths])].sort().reverse();
-    // Default: bulan berjalan bila belum ada seleksi
-    const cur = (curVal !== undefined && curVal !== null && curVal !== '') ? curVal : thisMonth();
+
+    // Default: bulan berjalan bila baru dimuat, pertahankan seleksi jika sudah ada
+    let cur = curVal;
+    if (curVal === undefined || curVal === null || !sel.dataset.initialized) {
+      cur = thisMonth();
+      sel.dataset.initialized = 'true';
+    }
 
     sel.innerHTML = `<option value=""${cur === '' ? ' selected' : ''}>Semua Bulan (Riwayat Lengkap)</option>` +
       allMonths.map(m => {
         const [y, mo] = m.split('-');
-        const lbl = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        const lbl = new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
         return `<option value="${m}"${m === cur ? ' selected' : ''}>${lbl}</option>`;
       }).join('');
+    sel.value = cur;
   }
 
   const bln = sel?.value || '';
@@ -3229,53 +3250,67 @@ function renderPengeluaran() {
   }
   const maxCatPct = totalFiltered > 0 ? Math.round((maxCatVal / totalFiltered) * 100) : 0;
 
-  const blnLabel = bln ? new Date(bln + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : 'semua riwayat';
+  let blnLabel = 'semua riwayat';
+  if (bln) {
+    const [y, mo] = bln.split('-');
+    blnLabel = new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  }
 
-  $('kpi-pengeluaran').innerHTML = `
-    <div class="kpi">
-      <div class="kpi-label">Total Pengeluaran <span style="font-size:1.1rem">💸</span></div>
-      <div class="kpi-value" style="color:var(--red)">${rp(totalFiltered)}</div>
-      <div class="kpi-sub">${blnLabel}</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Jumlah Transaksi <span style="font-size:1.1rem">📝</span></div>
-      <div class="kpi-value">${list.length}</div>
-      <div class="kpi-sub">catatan operasional</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Rata-rata Transaksi <span style="font-size:1.1rem">⚖️</span></div>
-      <div class="kpi-value">${rp(avg)}</div>
-      <div class="kpi-sub">biaya per transaksi</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Kategori Terbesar <span style="font-size:1.1rem">📊</span></div>
-      <div class="kpi-value" style="font-size:1.05rem;color:var(--accent-light)">${maxCatName}</div>
-      <div class="kpi-sub">${maxCatVal > 0 ? `${rp(maxCatVal)} (${maxCatPct}%)` : 'belum ada data'}</div>
-    </div>
-  `;
+  const kpiEl = $('kpi-pengeluaran');
+  if (kpiEl) {
+    kpiEl.innerHTML = `
+      <div class="kpi">
+        <div class="kpi-label">Total Pengeluaran <span style="font-size:1.1rem">💸</span></div>
+        <div class="kpi-value" style="color:var(--red)">${rp(totalFiltered)}</div>
+        <div class="kpi-sub">${blnLabel}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Jumlah Transaksi <span style="font-size:1.1rem">📝</span></div>
+        <div class="kpi-value">${list.length}</div>
+        <div class="kpi-sub">catatan operasional</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Rata-rata Transaksi <span style="font-size:1.1rem">⚖️</span></div>
+        <div class="kpi-value">${rp(avg)}</div>
+        <div class="kpi-sub">biaya per transaksi</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Kategori Terbesar <span style="font-size:1.1rem">📊</span></div>
+        <div class="kpi-value" style="font-size:1.05rem;color:var(--accent-light)">${maxCatName}</div>
+        <div class="kpi-sub">${maxCatVal > 0 ? `${rp(maxCatVal)} (${maxCatPct}%)` : 'belum ada data'}</div>
+      </div>
+    `;
+  }
 
   // Render Grafik Pengeluaran
   renderPengeluaranCharts(list);
 
   // Tabel Pengeluaran
-  $('tbody-pengeluaran').innerHTML = list.map(exp => `
-    <tr>
-      <td>${fmtD(exp.tanggal)}</td>
-      <td><span class="badge badge-purple">${exp.kategori}</span></td>
-      <td><strong>${exp.keterangan || '–'}</strong></td>
-      <td><strong style="color:var(--red)">${rp(exp.jumlah)}</strong></td>
-      <td>${exp.buktiNota ? `<a href="${exp.buktiNota}" target="_blank" title="Lihat Bukti Nota"><img src="${exp.buktiNota}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--border)"/></a>` : '<span style="color:var(--text-4)">–</span>'}</td>
-      <td>
-        <div style="display:flex;gap:6px">
-          <button type="button" class="btn-outline btn-sm" onclick="editPengeluaran('${exp.id}')">Edit</button>
-          <button type="button" class="btn-danger btn-sm" onclick="hapusPengeluaran('${exp.id}')">Hapus</button>
-        </div>
-      </td>
-    </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-3)">Belum ada catatan pengeluaran operasional yang sesuai kriteria filter.</td></tr>`;
+  const tbodyEl = $('tbody-pengeluaran');
+  if (tbodyEl) {
+    tbodyEl.innerHTML = list.map(exp => `
+      <tr>
+        <td>${fmtD(exp.tanggal)}</td>
+        <td><span class="badge badge-purple">${exp.kategori}</span></td>
+        <td><strong>${exp.keterangan || '–'}</strong></td>
+        <td><strong style="color:var(--red)">${rp(exp.jumlah)}</strong></td>
+        <td>${exp.buktiNota ? `<a href="${exp.buktiNota}" target="_blank" title="Lihat Bukti Nota"><img src="${exp.buktiNota}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--border)"/></a>` : '<span style="color:var(--text-4)">–</span>'}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn-outline btn-sm" onclick="editPengeluaran('${exp.id}')">Edit</button>
+            <button type="button" class="btn-danger btn-sm" onclick="hapusPengeluaran('${exp.id}')">Hapus</button>
+          </div>
+        </td>
+      </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-3)">Belum ada catatan pengeluaran operasional yang sesuai kriteria filter.</td></tr>`;
+  }
 }
 
 // ── GRAFIK ANALISIS PENGELUARAN ──────────────────────────────
 function renderPengeluaranCharts(list) {
+  if (typeof Chart === 'undefined') return;
+  const pagePengeluaran = $('page-pengeluaran');
+  if (!pagePengeluaran || !pagePengeluaran.classList.contains('active')) return;
+
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
   const tick   = isDark ? '#94a3b8' : '#64748b';
   const grid   = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
@@ -3291,7 +3326,9 @@ function renderPengeluaranCharts(list) {
   const catValues = Object.values(catMap);
   const catPalette = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'];
 
-  if (CHARTS.pengeluaranKat) CHARTS.pengeluaranKat.destroy();
+  if (CHARTS.pengeluaranKat) {
+    try { CHARTS.pengeluaranKat.destroy(); } catch (e) {}
+  }
   const ctxKat = $('chart-pengeluaran-kategori');
   if (ctxKat) {
     if (catValues.length === 0) {
@@ -3339,12 +3376,13 @@ function renderPengeluaranCharts(list) {
   const monthsTren = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    monthsTren.push(d.toISOString().slice(0, 7));
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthsTren.push(ym);
   }
 
   const trenLabels = monthsTren.map(m => {
     const [y, mo] = m.split('-');
-    return new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'short' });
+    return new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString('id-ID', { month: 'short' });
   });
 
   const trenValues = monthsTren.map(m => {
@@ -3353,7 +3391,9 @@ function renderPengeluaranCharts(list) {
       .reduce((s, x) => s + (Number(x.jumlah) || 0), 0);
   });
 
-  if (CHARTS.pengeluaranTren) CHARTS.pengeluaranTren.destroy();
+  if (CHARTS.pengeluaranTren) {
+    try { CHARTS.pengeluaranTren.destroy(); } catch (e) {}
+  }
   const ctxTren = $('chart-pengeluaran-tren');
   if (ctxTren) {
     CHARTS.pengeluaranTren = new Chart(ctxTren, {
@@ -3431,24 +3471,64 @@ $('cari-pengeluaran')?.addEventListener('input', renderPengeluaran);
 $('btn-export-pengeluaran-csv')?.addEventListener('click', exportPengeluaranCsv);
 
 window.openModalCatatPengeluaran = function() {
-  $('modal-pengeluaran-title').textContent = 'Catat Pengeluaran Baru';
-  $('form-pengeluaran').reset();
-  $('field-pengeluaran-id').value = '';
-  $('field-pengeluaran-tgl').value = new Date().toISOString().slice(0, 10);
-  $('prev-pengeluaran-nota').style.display = 'none';
-  $('btn-hapus-nota').style.display = 'none';
+  const titleEl = $('modal-pengeluaran-title');
+  if (titleEl) titleEl.textContent = 'Catat Pengeluaran Baru';
+  const formEl = $('form-pengeluaran');
+  if (formEl) formEl.reset();
+  const idEl = $('field-pengeluaran-id');
+  if (idEl) idEl.value = '';
+  const tglEl = $('field-pengeluaran-tgl');
+  if (tglEl) tglEl.value = todayYMD();
+  const prevNota = $('prev-pengeluaran-nota');
+  if (prevNota) { prevNota.src = ''; prevNota.style.display = 'none'; }
+  const btnHapusNota = $('btn-hapus-nota');
+  if (btnHapusNota) btnHapusNota.style.display = 'none';
+  const hintEl = $('field-pengeluaran-jumlah-hint');
+  if (hintEl) hintEl.style.display = 'none';
+
   openModal('modal-pengeluaran');
+  setTimeout(() => $('field-pengeluaran-jumlah')?.focus(), 250);
 };
 
 $('btn-tambah-pengeluaran')?.addEventListener('click', openModalCatatPengeluaran);
 $('btn-dash-catat-pengeluaran')?.addEventListener('click', openModalCatatPengeluaran);
 $('btn-dash-catat-pengeluaran-2')?.addEventListener('click', openModalCatatPengeluaran);
 
-$('modal-pengeluaran-close').addEventListener('click', () => closeModal('modal-pengeluaran'));
-$('btn-batal-pengeluaran').addEventListener('click', () => closeModal('modal-pengeluaran'));
-$('modal-pengeluaran').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-pengeluaran'); });
+$('modal-pengeluaran-close')?.addEventListener('click', () => closeModal('modal-pengeluaran'));
+$('btn-batal-pengeluaran')?.addEventListener('click', () => closeModal('modal-pengeluaran'));
+$('modal-pengeluaran')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-pengeluaran'); });
 
-$('field-pengeluaran-nota').addEventListener('change', async function() {
+// Format & Hint interaktif untuk field nominal pengeluaran
+const inputJumlahExp = $('field-pengeluaran-jumlah');
+const hintJumlahExp  = $('field-pengeluaran-jumlah-hint');
+if (inputJumlahExp) {
+  inputJumlahExp.addEventListener('input', function() {
+    const rawDigits = this.value.replace(/[^0-9]/g, '');
+    const num = Number(rawDigits) || 0;
+    if (num > 0) {
+      if (hintJumlahExp) {
+        hintJumlahExp.textContent = `Terbaca: ${rp(num)}`;
+        hintJumlahExp.style.display = 'block';
+      }
+    } else {
+      if (hintJumlahExp) hintJumlahExp.style.display = 'none';
+    }
+  });
+
+  inputJumlahExp.addEventListener('blur', function() {
+    const rawDigits = this.value.replace(/[^0-9]/g, '');
+    const num = Number(rawDigits) || 0;
+    if (num > 0) {
+      this.value = num.toLocaleString('id-ID');
+      if (hintJumlahExp) {
+        hintJumlahExp.textContent = `Terbaca: ${rp(num)}`;
+        hintJumlahExp.style.display = 'block';
+      }
+    }
+  });
+}
+
+$('field-pengeluaran-nota')?.addEventListener('change', async function() {
   const f = this.files[0]; if (!f) return;
   try {
     toast('Mengompres nota... ⏳');
@@ -3460,69 +3540,110 @@ $('field-pengeluaran-nota').addEventListener('change', async function() {
   } catch (err) { toast(err.message, 'err'); }
 });
 
-$('btn-hapus-nota').addEventListener('click', () => {
+$('btn-hapus-nota')?.addEventListener('click', () => {
   $('field-pengeluaran-nota').value = '';
   $('prev-pengeluaran-nota').src = '';
   $('prev-pengeluaran-nota').style.display = 'none';
   $('btn-hapus-nota').style.display = 'none';
 });
 
-$('form-pengeluaran').addEventListener('submit', async function(e) {
+$('form-pengeluaran')?.addEventListener('submit', async function(e) {
   e.preventDefault();
-  const id       = $('field-pengeluaran-id').value || uid();
-  const tanggal  = $('field-pengeluaran-tgl').value;
-  const kategori = $('field-pengeluaran-kategori').value;
-  const jumlah   = Number($('field-pengeluaran-jumlah').value) || 0;
-  const keterangan = $('field-pengeluaran-ket').value.trim();
-  const buktiNota  = $('prev-pengeluaran-nota').style.display !== 'none' ? $('prev-pengeluaran-nota').src : null;
+  const id       = $('field-pengeluaran-id')?.value || uid();
+  const tanggal  = $('field-pengeluaran-tgl')?.value || todayYMD();
+  const kategori = $('field-pengeluaran-kategori')?.value || 'Lainnya';
+  const rawJumlah = $('field-pengeluaran-jumlah')?.value || '0';
+  const cleanJumlah = typeof rawJumlah === 'string' ? rawJumlah.replace(/[^0-9]/g, '') : rawJumlah;
+  const jumlah   = Number(cleanJumlah) || 0;
+  const keterangan = ($('field-pengeluaran-ket')?.value || '').trim();
+  const prevNotaEl = $('prev-pengeluaran-nota');
+  const buktiNota  = (prevNotaEl && prevNotaEl.style.display !== 'none' && prevNotaEl.src) ? prevNotaEl.src : null;
 
-  if (jumlah <= 0) { toast('Nominal pengeluaran harus lebih dari 0!', 'err'); return; }
+  if (jumlah <= 0) {
+    toast('Nominal pengeluaran harus lebih dari Rp 0!', 'err');
+    $('field-pengeluaran-jumlah')?.focus();
+    return;
+  }
 
-  const expData = { id, tanggal, kategori, jumlah, keterangan, buktiNota, createdBy: currentUser?.nama };
+  if (!Array.isArray(S.pengeluaran)) S.pengeluaran = [];
+
+  const expData = { id, tanggal, kategori, jumlah, keterangan, buktiNota, createdBy: currentUser?.nama || 'Manager' };
   const idx = S.pengeluaran.findIndex(x => x.id === id);
   if (idx !== -1) {
     S.pengeluaran[idx] = expData;
-    toast('Pengeluaran diperbarui!');
+    toast('Catatan pengeluaran berhasil diperbarui! ✅', 'success');
   } else {
     S.pengeluaran.unshift(expData);
-    toast('Pengeluaran dicatat! 💸');
+    toast('Pengeluaran berhasil dicatat! 💸', 'success');
+  }
+
+  // Jika sedang membuka halaman pengeluaran dengan filter tertentu, sesuaikan pilihan bulan
+  const expMonth = (tanggal || '').slice(0, 7);
+  const filterSel = $('filter-bulan-pengeluaran');
+  if (filterSel && filterSel.value && filterSel.value !== expMonth) {
+    filterSel.value = expMonth;
   }
 
   LS.save();
   closeModal('modal-pengeluaran');
-  renderPengeluaran();
-  if ($('page-dashboard').classList.contains('active')) renderDashboard();
 
-  await DB.savePengeluaran(expData);
+  renderPengeluaran();
+  if ($('page-dashboard')?.classList.contains('active')) {
+    renderDashboard();
+  }
+
+  try {
+    await DB.savePengeluaran(expData);
+  } catch (errDb) {
+    console.warn('DB.savePengeluaran warning:', errDb);
+  }
 });
 
 window.editPengeluaran = function(id) {
   const exp = S.pengeluaran.find(x => x.id === id); if (!exp) return;
-  $('modal-pengeluaran-title').textContent = 'Edit Pengeluaran';
-  $('field-pengeluaran-id').value       = exp.id;
-  $('field-pengeluaran-tgl').value      = exp.tanggal;
-  $('field-pengeluaran-kategori').value = exp.kategori;
-  $('field-pengeluaran-jumlah').value   = exp.jumlah;
-  $('field-pengeluaran-ket').value      = exp.keterangan || '';
+  const titleEl = $('modal-pengeluaran-title');
+  if (titleEl) titleEl.textContent = 'Edit Catatan Pengeluaran';
+  const idEl = $('field-pengeluaran-id');
+  if (idEl) idEl.value = exp.id;
+  const tglEl = $('field-pengeluaran-tgl');
+  if (tglEl) tglEl.value = exp.tanggal;
+  const katEl = $('field-pengeluaran-kategori');
+  if (katEl) katEl.value = exp.kategori;
+  const jmlEl = $('field-pengeluaran-jumlah');
+  if (jmlEl) jmlEl.value = (Number(exp.jumlah) || 0).toLocaleString('id-ID');
+  const ketEl = $('field-pengeluaran-ket');
+  if (ketEl) ketEl.value = exp.keterangan || '';
+
+  const hintEl = $('field-pengeluaran-jumlah-hint');
+  if (hintEl) {
+    hintEl.textContent = `Terbaca: ${rp(exp.jumlah)}`;
+    hintEl.style.display = 'block';
+  }
+
+  const prevNota = $('prev-pengeluaran-nota');
+  const btnHapusNota = $('btn-hapus-nota');
   if (exp.buktiNota) {
-    $('prev-pengeluaran-nota').src = exp.buktiNota;
-    $('prev-pengeluaran-nota').style.display = 'block';
-    $('btn-hapus-nota').style.display = 'inline-block';
+    if (prevNota) { prevNota.src = exp.buktiNota; prevNota.style.display = 'block'; }
+    if (btnHapusNota) btnHapusNota.style.display = 'inline-block';
   } else {
-    $('prev-pengeluaran-nota').style.display = 'none';
-    $('btn-hapus-nota').style.display = 'none';
+    if (prevNota) { prevNota.src = ''; prevNota.style.display = 'none'; }
+    if (btnHapusNota) btnHapusNota.style.display = 'none';
   }
   openModal('modal-pengeluaran');
 };
 
 window.hapusPengeluaran = function(id) {
-  confirm_dlg('Hapus Pengeluaran', 'Hapus catatan pengeluaran ini?', async () => {
+  confirm_dlg('Hapus Catatan Pengeluaran', 'Apakah Anda yakin ingin menghapus catatan pengeluaran ini?', async () => {
     S.pengeluaran = S.pengeluaran.filter(x => x.id !== id);
     LS.save();
     renderPengeluaran();
-    if ($('page-dashboard').classList.contains('active')) renderDashboard();
-    toast('Pengeluaran dihapus.');
-    await DB.deletePengeluaran(id);
+    if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+    toast('Catatan pengeluaran telah dihapus.');
+    try {
+      await DB.deletePengeluaran(id);
+    } catch (errDb) {
+      console.warn('DB.deletePengeluaran warning:', errDb);
+    }
   }, 'Hapus');
 };
 

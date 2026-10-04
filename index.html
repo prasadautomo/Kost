@@ -232,7 +232,7 @@
             <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
               <span class="panel-title">Arus Kas (Pemasukan vs Pengeluaran)</span>
               <div style="display:flex;gap:8px;align-items:center">
-                <button type="button" class="btn-primary btn-sm" id="btn-dash-catat-pengeluaran" title="Catat Pengeluaran Baru Langsung dari Dashboard">
+                <button type="button" class="btn-primary btn-sm" id="btn-dash-catat-pengeluaran" onclick="openModalCatatPengeluaran()" title="Catat Pengeluaran Baru Langsung dari Dashboard">
                   <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style="vertical-align:middle;margin-right:2px"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                   + Catat Pengeluaran
                 </button>
@@ -255,7 +255,7 @@
               </div>
             </div>
             <div style="display:flex;gap:8px;align-items:center">
-              <button type="button" class="btn-primary btn-sm" id="btn-dash-catat-pengeluaran-2">
+              <button type="button" class="btn-primary btn-sm" id="btn-dash-catat-pengeluaran-2" onclick="openModalCatatPengeluaran()">
                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style="vertical-align:middle;margin-right:2px"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                 + Catat Pengeluaran
               </button>
@@ -435,7 +435,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Ekspor CSV
             </button>
-            <button type="button" class="btn-primary" id="btn-tambah-pengeluaran">
+            <button type="button" class="btn-primary" id="btn-tambah-pengeluaran" onclick="openModalCatatPengeluaran()">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               Catat Pengeluaran
             </button>
@@ -786,14 +786,14 @@
   <div class="modal" style="max-width:540px">
     <div class="modal-head">
       <h2 class="modal-title" id="modal-pengeluaran-title">Catat Pengeluaran Operasional</h2>
-      <button class="modal-x" id="modal-pengeluaran-close">✕</button>
+      <button type="button" class="modal-x" id="modal-pengeluaran-close" onclick="closeModal('modal-pengeluaran')">✕</button>
     </div>
     <div class="modal-body">
       <form id="form-pengeluaran">
         <input type="hidden" id="field-pengeluaran-id" />
         <div class="fg-grid">
-          <div class="fg"><label>Tanggal Pengeluaran <em>*</em></label><input type="date" id="field-pengeluaran-tgl" class="fc" required /></div>
-          <div class="fg"><label>Kategori <em>*</em></label>
+          <div class="fg"><label for="field-pengeluaran-tgl">Tanggal Pengeluaran <em>*</em></label><input type="date" id="field-pengeluaran-tgl" class="fc" required /></div>
+          <div class="fg"><label for="field-pengeluaran-kategori">Kategori <em>*</em></label>
             <select id="field-pengeluaran-kategori" class="fc" required>
               <option value="Listrik/PLN">⚡ Listrik / PLN</option>
               <option value="Air/PDAM">💧 Air / PDAM</option>
@@ -804,8 +804,12 @@
               <option value="Lainnya">📦 Lain-lain</option>
             </select>
           </div>
-          <div class="fg col2"><label>Nominal Pengeluaran (Rp) <em>*</em></label><input type="number" id="field-pengeluaran-jumlah" class="fc" min="0" placeholder="500000" required /></div>
-          <div class="fg col2"><label>Keterangan / Rincian</label><input type="text" id="field-pengeluaran-ket" class="fc" placeholder="Contoh: Beli token listrik tandon air lantai 2" /></div>
+          <div class="fg col2">
+            <label for="field-pengeluaran-jumlah">Nominal Pengeluaran (Rp) <em>*</em></label>
+            <input type="text" id="field-pengeluaran-jumlah" class="fc" inputmode="numeric" placeholder="Contoh: 150000 atau 150.000" required autocomplete="off" />
+            <div id="field-pengeluaran-jumlah-hint" style="font-size:0.8rem;color:var(--accent-light);margin-top:5px;font-weight:600;display:none"></div>
+          </div>
+          <div class="fg col2"><label for="field-pengeluaran-ket">Keterangan / Rincian</label><input type="text" id="field-pengeluaran-ket" class="fc" placeholder="Contoh: Beli token listrik tandon air lantai 2" /></div>
           <div class="fg col2">
             <label>Foto Nota / Kwitansi (Opsional)</label>
             <div style="display:flex;gap:12px;align-items:center">
@@ -817,8 +821,8 @@
           </div>
         </div>
         <div class="modal-foot">
-          <button type="button" class="btn-ghost" id="btn-batal-pengeluaran">Batal</button>
-          <button type="submit" class="btn-primary">Simpan Pengeluaran</button>
+          <button type="button" class="btn-ghost" id="btn-batal-pengeluaran" onclick="closeModal('modal-pengeluaran')">Batal</button>
+          <button type="submit" class="btn-primary" id="btn-simpan-pengeluaran">Simpan Pengeluaran</button>
         </div>
       </form>
     </div>
