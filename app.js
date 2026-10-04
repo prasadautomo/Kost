@@ -1266,6 +1266,7 @@ const DB = {
         });
       } catch (e) { console.warn(e); }
     }
+  },
 
   async saveKost() {
     if (sbClient) {
