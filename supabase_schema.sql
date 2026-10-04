@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS public.penghuni (
 
 ALTER TABLE public.penghuni ADD COLUMN IF NOT EXISTS deposit NUMERIC DEFAULT 0;
 ALTER TABLE public.penghuni ADD COLUMN IF NOT EXISTS catatan_deposit TEXT;
+ALTER TABLE public.penghuni ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
 
 -- 4. Tabel Data Kamar
 CREATE TABLE IF NOT EXISTS public.kamar (
@@ -87,8 +88,10 @@ CREATE TABLE IF NOT EXISTS public.kamar (
   tipe TEXT DEFAULT 'Standar',
   harga NUMERIC DEFAULT 0,
   fasilitas TEXT DEFAULT '',
+  kost_id TEXT DEFAULT 'kost_1',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.kamar ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
 
 -- 5. Tabel Pembayaran
 CREATE TABLE IF NOT EXISTS public.pembayaran (
@@ -102,7 +105,8 @@ CREATE TABLE IF NOT EXISTS public.pembayaran (
   catatan_bayar TEXT,
   denda NUMERIC DEFAULT 0,
   listrik_extra NUMERIC DEFAULT 0,
-  verified_at TIMESTAMPTZ
+  verified_at TIMESTAMPTZ,
+  kost_id TEXT DEFAULT 'kost_1'
 );
 
 ALTER TABLE public.pembayaran ADD COLUMN IF NOT EXISTS bukti_transfer TEXT;
@@ -110,6 +114,7 @@ ALTER TABLE public.pembayaran ADD COLUMN IF NOT EXISTS catatan_bayar TEXT;
 ALTER TABLE public.pembayaran ADD COLUMN IF NOT EXISTS denda NUMERIC DEFAULT 0;
 ALTER TABLE public.pembayaran ADD COLUMN IF NOT EXISTS listrik_extra NUMERIC DEFAULT 0;
 ALTER TABLE public.pembayaran ADD COLUMN IF NOT EXISTS verified_at TIMESTAMPTZ;
+ALTER TABLE public.pembayaran ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
 
 -- 6. Tabel Pengeluaran Kost (Fitur Pembukuan & Laba Rugi)
 CREATE TABLE IF NOT EXISTS public.pengeluaran (
@@ -120,8 +125,10 @@ CREATE TABLE IF NOT EXISTS public.pengeluaran (
   keterangan TEXT DEFAULT '',
   bukti_nota TEXT,
   created_by TEXT,
+  kost_id TEXT DEFAULT 'kost_1',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.pengeluaran ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
 
 -- 7. Tabel Keluhan / Maintenance Penghuni
 CREATE TABLE IF NOT EXISTS public.keluhan (
@@ -136,8 +143,10 @@ CREATE TABLE IF NOT EXISTS public.keluhan (
   respon_manager TEXT,
   tgl_lapor TIMESTAMPTZ DEFAULT NOW(),
   tgl_selesai TIMESTAMPTZ,
+  kost_id TEXT DEFAULT 'kost_1',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.keluhan ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
 
 -- 8. Tabel Papan Pengumuman / Broadcast Kost
 CREATE TABLE IF NOT EXISTS public.pengumuman (

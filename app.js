@@ -2059,12 +2059,172 @@ $('theme-toggle').addEventListener('click', () => {
   if ($('page-dashboard').classList.contains('active')) renderCharts();
 });
 
+// ── ACTION CENTER: FOKUS & TUGAS HARI INI ──────────────────────
+let activeActionFilter = 'all';
+
+function renderDashActionCenter() {
+  const container = $('dash-action-center');
+  if (!container) return;
+
+  const now = new Date();
+  const nowDay = now.getDate();
+  const curMonth = thisMonth();
+
+  const aktif = S.penghuni.filter(p => p.status === 'aktif');
+  const payments = S.pembayaran.filter(pb => pb.bulan === curMonth);
+
+  // 1. Tagihan Jatuh Tempo & Menunggak
+  const dueItems = [];
+  aktif.forEach(p => {
+    const pb = payments.find(x => x.penghuniId === p.id);
+    const isLunas = pb?.status === 'lunas';
+    if (!isLunas) {
+      const tempo = Number(p.tempo) || 1;
+      const diff = tempo - nowDay;
+      let statusLabel = '';
+      let badgeClass = 'badge-orange';
+      if (diff < 0) {
+        statusLabel = `Terlambat ${Math.abs(diff)} hari (Tempo Tgl ${tempo})`;
+        badgeClass = 'badge-red';
+      } else if (diff <= 3) {
+        statusLabel = diff === 0 ? 'Jatuh Tempo Hari Ini!' : `H-${diff} Tempo (Tgl ${tempo})`;
+        badgeClass = 'badge-orange';
+      } else {
+        statusLabel = `Tempo Tgl ${tempo}`;
+        badgeClass = 'badge-blue';
+      }
+      dueItems.push({ type: 'tagihan', p, diff, statusLabel, badgeClass });
+    }
+  });
+
+  dueItems.sort((a,b) => a.diff - b.diff);
+
+  // 2. Keluhan Fasilitas Baru
+  const complaintItems = S.keluhan.filter(k => k.status === 'menunggu').map(k => ({ type: 'keluhan', k }));
+
+  // 3. Kamar Siap Huni (Kosong)
+  const occRooms = new Set(aktif.map(p => p.kamar).filter(Boolean));
+  const emptyRooms = S.kamar.filter(k => !occRooms.has(k.no)).map(k => ({ type: 'kamar_kosong', k }));
+
+  const totalActions = dueItems.length + complaintItems.length + emptyRooms.length;
+
+  if (totalActions === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = 'block';
+
+  let displayItems = [];
+  if (activeActionFilter === 'tagihan') displayItems = dueItems;
+  else if (activeActionFilter === 'keluhan') displayItems = complaintItems;
+  else if (activeActionFilter === 'kamar') displayItems = emptyRooms;
+  else displayItems = [...dueItems.slice(0, 4), ...complaintItems.slice(0, 2), ...emptyRooms.slice(0, 2)];
+
+  container.innerHTML = `
+    <div class="dash-action-header">
+      <div class="dash-action-title-group">
+        <div class="dash-action-icon-badge">⚡</div>
+        <div>
+          <h2 class="dash-action-heading">Fokus &amp; Tugas Hari Ini</h2>
+          <div class="dash-action-subtitle">Ringkasan cepat tindakan operasional yang memerlukan perhatian Anda</div>
+        </div>
+      </div>
+      <div class="dash-action-tabs">
+        <button type="button" class="dash-action-tab ${activeActionFilter === 'all' ? 'active' : ''}" onclick="switchActionFilter('all')">
+          Semua (${totalActions})
+        </button>
+        <button type="button" class="dash-action-tab ${activeActionFilter === 'tagihan' ? 'active' : ''}" onclick="switchActionFilter('tagihan')">
+          ⚠️ Tagihan (${dueItems.length})
+        </button>
+        <button type="button" class="dash-action-tab ${activeActionFilter === 'keluhan' ? 'active' : ''}" onclick="switchActionFilter('keluhan')">
+          🛠️ Keluhan (${complaintItems.length})
+        </button>
+        <button type="button" class="dash-action-tab ${activeActionFilter === 'kamar' ? 'active' : ''}" onclick="switchActionFilter('kamar')">
+          🛏️ Kamar Kosong (${emptyRooms.length})
+        </button>
+      </div>
+    </div>
+    <div class="dash-action-grid">
+      ${displayItems.map(item => {
+        if (item.type === 'tagihan') {
+          const { p, statusLabel, badgeClass } = item;
+          return `
+            <div class="action-card" style="border-left:4px solid ${badgeClass === 'badge-red' ? 'var(--red)' : 'var(--orange)'}">
+              <div class="action-card-top">
+                <div class="action-card-main">
+                  <div class="action-card-icon">👤</div>
+                  <div>
+                    <div class="action-card-title">${p.nama} (Kamar ${p.kamar || '–'})</div>
+                    <div class="action-card-sub">Tagihan: <strong>${rp(p.sewa)}</strong></div>
+                  </div>
+                </div>
+                <span class="badge ${badgeClass}">${statusLabel}</span>
+              </div>
+              <div class="action-card-actions">
+                <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${p.id}', '${curMonth}')" title="Kirim WA Pengingat">📱 Kirim WA</button>
+                <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${p.id}', '${curMonth}')" title="Tandai langsung lunas">⚡ 1-Klik Lunas</button>
+              </div>
+            </div>
+          `;
+        } else if (item.type === 'keluhan') {
+          const { k } = item;
+          return `
+            <div class="action-card" style="border-left:4px solid var(--purple)">
+              <div class="action-card-top">
+                <div class="action-card-main">
+                  <div class="action-card-icon">🛠️</div>
+                  <div>
+                    <div class="action-card-title">${k.judul || 'Keluhan Fasilitas'}</div>
+                    <div class="action-card-sub">Kamar ${k.kamar || '–'} · ${fmtD(k.tglLapor)}</div>
+                  </div>
+                </div>
+                <span class="badge badge-purple">Menunggu</span>
+              </div>
+              <div class="action-card-actions">
+                <button type="button" class="btn-primary btn-sm" onclick="openResponKeluhan('${k.id}')">Tindak Lanjut →</button>
+              </div>
+            </div>
+          `;
+        } else if (item.type === 'kamar_kosong') {
+          const { k } = item;
+          return `
+            <div class="action-card" style="border-left:4px solid var(--text-4)">
+              <div class="action-card-top">
+                <div class="action-card-main">
+                  <div class="action-card-icon">🛏️</div>
+                  <div>
+                    <div class="action-card-title">Kamar ${k.no} (${k.tipe || 'Standar'})</div>
+                    <div class="action-card-sub">Lantai ${k.lantai || '1'} · ${rp(k.harga || 0)}/bln</div>
+                  </div>
+                </div>
+                <span class="badge badge-gray">Siap Huni</span>
+              </div>
+              <div class="action-card-actions">
+                <button type="button" class="btn-primary btn-sm" onclick="openModalPenghuniWithRoom('${k.no}')">+ Isi Penghuni</button>
+              </div>
+            </div>
+          `;
+        }
+        return '';
+      }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text-3);font-size:0.85rem">Tidak ada item tindakan pada filter ini.</div>'}
+    </div>
+  `;
+}
+
+window.switchActionFilter = function(f) {
+  activeActionFilter = f;
+  renderDashActionCenter();
+};
+
 // ── DASHBOARD (Manager) ───────────────────────────────────────
 function renderDashboard() {
   const h = new Date().getHours();
   const greet = h < 11 ? 'Selamat pagi' : h < 15 ? 'Selamat siang' : h < 18 ? 'Selamat sore' : 'Selamat malam';
   $('dash-greeting').textContent = greet + ', ' + (currentUser?.nama?.split(' ')[0] || '') + ' 👋';
   $('dash-date').textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  renderDashActionCenter();
 
 
   const aktif = S.penghuni.filter(p => p.status === 'aktif');
@@ -2348,7 +2508,53 @@ $('btn-grid-view').addEventListener('click', () => { currentView='grid'; $('btn-
 $('btn-list-view').addEventListener('click', () => { currentView='list'; $('btn-list-view').classList.add('active'); $('btn-grid-view').classList.remove('active'); renderPenghuni(); });
 
 // ── PENGHUNI MODAL (TAMBAH / EDIT) ────────────────────────────
-function openModalPenghuni(id = null) {
+function populateKamarSelect(currentKamar = '') {
+  const sel = $('field-kamar-select');
+  const tip = $('field-kamar-tip');
+  if (!sel) return;
+
+  const occ = {};
+  S.penghuni.filter(p => p.status === 'aktif').forEach(p => {
+    if (p.kamar) occ[p.kamar] = p.nama;
+  });
+
+  const rooms = [...S.kamar].sort((a,b) => (a.no||'').localeCompare(b.no||'', undefined, { numeric: true }));
+  let opts = '<option value="">-- Pilih Kamar Kosong --</option>';
+  
+  let currentFound = false;
+  rooms.forEach(k => {
+    const isOccupied = !!occ[k.no] && k.no !== currentKamar;
+    const isCurrent = k.no === currentKamar;
+    if (isCurrent) currentFound = true;
+    
+    if (!isOccupied || isCurrent) {
+      opts += `<option value="${k.no}"${isCurrent ? ' selected' : ''}>Kamar ${k.no} (${k.tipe || 'Standar'} - Lt ${k.lantai || '1'} - ${rp(k.harga || 0)}/bln)</option>`;
+    }
+  });
+
+  sel.innerHTML = opts;
+  if (currentKamar) {
+    if (currentFound) {
+      sel.value = currentKamar;
+      sel.style.display = 'block';
+      $('field-kamar').style.display = 'none';
+      $('field-kamar').value = currentKamar;
+    } else {
+      sel.value = '';
+      sel.style.display = 'none';
+      $('field-kamar').style.display = 'block';
+      $('field-kamar').value = currentKamar;
+    }
+  } else {
+    sel.style.display = 'block';
+    $('field-kamar').style.display = 'none';
+    $('field-kamar').value = '';
+  }
+
+  if (tip) tip.style.display = 'none';
+}
+
+function openModalPenghuni(id = null, preselectedKamar = null) {
   editId = id;
   switchFTab('identitas');
   $('form-penghuni').reset();
@@ -2370,6 +2576,7 @@ function openModalPenghuni(id = null) {
     $('field-email').value        = p.email || '';
     $('field-pekerjaan').value    = p.pekerjaan || '';
     $('field-kamar').value        = p.kamar || '';
+    populateKamarSelect(p.kamar || '');
     $('field-lantai').value       = p.lantai || '';
     $('field-tgl-masuk').value    = p.tglMasuk || '';
     $('field-tgl-keluar').value   = p.tglKeluar || '';
@@ -2400,15 +2607,78 @@ function openModalPenghuni(id = null) {
     $('field-gender').value = 'Laki-laki';
     $('field-kendaraan').value = 'tidak ada';
     toggleKendaraan('tidak ada');
+    
+    const roomToSelect = preselectedKamar || '';
+    populateKamarSelect(roomToSelect);
+    if (roomToSelect) {
+      $('field-kamar').value = roomToSelect;
+      const matched = S.kamar.find(k => k.no === roomToSelect);
+      if (matched) {
+        if (matched.lantai) $('field-lantai').value = matched.lantai;
+        if (matched.harga) $('field-sewa').value = matched.harga;
+        const tip = $('field-kamar-tip');
+        if (tip) {
+          tip.textContent = `✓ Otomatis terisi: Kamar ${matched.no} (Lt ${matched.lantai || 1}) · Sewa ${rp(matched.harga || 0)}/bln`;
+          tip.style.display = 'block';
+        }
+      }
+    }
   }
   openModal('modal-penghuni');
 }
+
+window.openModalPenghuniWithRoom = function(roomNo) {
+  openModalPenghuni(null, roomNo);
+};
 
 window.openEdit = id => openModalPenghuni(id);
 $('btn-tambah-penghuni').addEventListener('click', () => openModalPenghuni());
 $('modal-penghuni-close').addEventListener('click', () => closeModal('modal-penghuni'));
 $('btn-batal-penghuni').addEventListener('click', () => closeModal('modal-penghuni'));
 $('modal-penghuni').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-penghuni'); });
+
+// Smart Kamar select change listener
+const selKamarEl = $('field-kamar-select');
+if (selKamarEl) {
+  selKamarEl.addEventListener('change', function() {
+    const val = this.value;
+    $('field-kamar').value = val;
+    const tip = $('field-kamar-tip');
+    if (!val) {
+      if (tip) tip.style.display = 'none';
+      return;
+    }
+    const matched = S.kamar.find(k => k.no === val);
+    if (matched) {
+      if (matched.lantai) $('field-lantai').value = matched.lantai;
+      if (matched.harga) $('field-sewa').value = matched.harga;
+      if (tip) {
+        tip.textContent = `✓ Otomatis terisi: Lantai ${matched.lantai || 1} & Sewa ${rp(matched.harga || 0)}/bln`;
+        tip.style.display = 'block';
+      }
+    } else if (tip) {
+      tip.style.display = 'none';
+    }
+  });
+}
+
+const btnToggleKamarEl = $('btn-toggle-manual-kamar');
+if (btnToggleKamarEl) {
+  btnToggleKamarEl.addEventListener('click', function() {
+    const sel = $('field-kamar-select');
+    const inp = $('field-kamar');
+    if (inp.style.display === 'none') {
+      inp.style.display = 'block';
+      sel.style.display = 'none';
+      inp.value = sel.value;
+      this.textContent = '📋 Pilih dari List';
+    } else {
+      inp.style.display = 'none';
+      sel.style.display = 'block';
+      this.textContent = '✏️ Input Manual';
+    }
+  });
+}
 
 function switchFTab(name) {
   document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
@@ -2735,6 +3005,8 @@ ${p.merk2?`<tr><td>Kendaraan 2</td><td>${p.merk2}${p.plat2?' · Plat: '+p.plat2:
 };
 
 // ── KAMAR (ROOMS) ─────────────────────────────────────────────
+let activeFloorFilter = '';
+
 function renderKamar() {
   const filter = $('filter-kamar-status')?.value || '';
   const occ = {};
@@ -2743,6 +3015,18 @@ function renderKamar() {
   });
 
   const list = [...S.kamar].sort((a,b) => (a.no||'').localeCompare(b.no||'', undefined, { numeric: true }));
+
+  // Render Floor Tabs
+  const floorTabsEl = $('km-floor-tabs');
+  if (floorTabsEl) {
+    const floors = [...new Set(list.map(k => String(k.lantai || '1')))].sort((a,b) => a.localeCompare(b, undefined, { numeric: true }));
+    floorTabsEl.innerHTML = `
+      <button type="button" class="km-floor-tab ${activeFloorFilter === '' ? 'active' : ''}" onclick="setFloorFilter('')">Semua Lantai</button>
+      ${floors.map(fl => `
+        <button type="button" class="km-floor-tab ${activeFloorFilter === fl ? 'active' : ''}" onclick="setFloorFilter('${fl}')">Lantai ${fl}</button>
+      `).join('')}
+    `;
+  }
 
   const kpiEl = $('kpi-kamar-row');
   if (kpiEl) {
@@ -2758,29 +3042,102 @@ function renderKamar() {
     `;
   }
 
+  const curMonth = thisMonth();
   const filtered = list.filter(k => {
     const t = !!occ[k.no];
-    if (filter === 'terisi') return t;
-    if (filter === 'kosong') return !t;
+    if (filter === 'terisi' && !t) return false;
+    if (filter === 'kosong' && t) return false;
+    if (activeFloorFilter && String(k.lantai || '1') !== activeFloorFilter) return false;
     return true;
   });
 
   $('kamar-grid').innerHTML = filtered.map(k => {
     const isTerisi = !!occ[k.no], pen = occ[k.no] || [];
-    return `<div class="km-card ${isTerisi?'terisi':'kosong'}">
-      <div class="km-no">${k.no}</div>
-      <div class="km-lbl">Lantai ${k.lantai||'1'} · ${k.tipe||'Standar'}</div>
-      <div style="margin:8px 0">${isTerisi?'<span class="badge badge-green">Terisi</span>':'<span class="badge badge-gray">Kosong</span>'}</div>
-      <div class="km-name">${pen.map(p=>p.nama).join(', ')||'<span style="color:var(--text-4);font-weight:normal">Siap Huni</span>'}</div>
-      ${k.harga?`<div class="km-info">${rp(k.harga)}/bln</div>`:''}
-      ${k.fasilitas?`<div class="km-info">${k.fasilitas}</div>`:''}
-      <div class="km-actions">
-        <button class="btn-outline btn-sm" onclick="editKamar('${k.id}')">Edit</button>
-        <button class="btn-danger btn-sm" onclick="hapusKamar('${k.id}')">Hapus</button>
+    const p = pen[0];
+    let isLunas = false;
+    if (p) {
+      const pb = S.pembayaran.find(x => x.penghuniId === p.id && x.bulan === curMonth && x.status === 'lunas');
+      isLunas = !!pb;
+    }
+
+    const cardClass = isTerisi ? (isLunas ? 'terisi' : 'menunggak') : 'kosong';
+    let statusBadge = '';
+    let quickActionBtn = '';
+
+    if (isTerisi && p) {
+      if (isLunas) {
+        statusBadge = `<span class="badge badge-green">Lunas</span>`;
+        quickActionBtn = `<button type="button" class="btn-ghost btn-sm" onclick="showKwitansi('${p.id}','${curMonth}')" title="Lihat kwitansi lunas">🧾 Kwitansi</button>`;
+      } else {
+        statusBadge = `<span class="badge badge-red">Belum Lunas</span>`;
+        quickActionBtn = `
+          <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${p.id}','${curMonth}')" title="1-Klik Lunas">⚡ 1-Klik Lunas</button>
+          <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${p.id}','${curMonth}')" title="Kirim WA">📱 WA</button>
+        `;
+      }
+    } else {
+      statusBadge = `<span class="badge badge-gray">🟢 Siap Huni</span>`;
+      quickActionBtn = `<button type="button" class="btn-primary btn-sm" onclick="openModalPenghuniWithRoom('${k.no}')">+ Masukkan Penghuni</button>`;
+    }
+
+    return `<div class="km-card enhanced ${cardClass}">
+      <div>
+        <div class="km-badge-row">
+          <div class="km-no">${k.no}</div>
+          ${statusBadge}
+        </div>
+        <div class="km-lbl">Lantai ${k.lantai||'1'} · ${k.tipe||'Standar'}</div>
+        
+        <div class="km-card-tenant-box">
+          ${isTerisi ? `
+            <div class="km-name" style="font-weight:700;color:var(--text)">${pen.map(x=>x.nama).join(', ')}</div>
+            ${p?.hp ? `<div style="font-size:0.75rem;color:var(--text-3);margin-top:2px">📞 ${p.hp}</div>` : ''}
+          ` : `
+            <div class="km-name" style="color:var(--text-4);font-weight:normal;font-style:italic">Siap Huni</div>
+          `}
+        </div>
+
+        ${k.harga?`<div class="km-info" style="font-weight:700;color:var(--accent-light)">${rp(k.harga)}/bln</div>`:''}
+        ${k.fasilitas?`<div class="km-info" style="font-size:0.75rem;color:var(--text-3)">${k.fasilitas}</div>`:''}
+      </div>
+
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          ${quickActionBtn}
+        </div>
+        <div class="km-actions">
+          <button class="btn-outline btn-sm" onclick="editKamar('${k.id}')">Edit</button>
+          <button class="btn-danger btn-sm" onclick="hapusKamar('${k.id}')">Hapus</button>
+        </div>
       </div>
     </div>`;
   }).join('') || `<div class="empty-state"><div class="empty-emoji">🛏</div><p class="empty-title">Belum ada kamar</p><p class="empty-sub">Klik "Tambah Kamar" untuk mengelola kamar.</p></div>`;
 }
+
+window.setFloorFilter = function(fl) {
+  activeFloorFilter = fl;
+  renderKamar();
+};
+
+window.quickPayTenant = async function(pid, bln = thisMonth()) {
+  const p = S.penghuni.find(x => x.id === pid);
+  if (!p) return;
+  const [y, mo] = bln.split('-');
+  const blnLabel = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+  confirm_dlg(
+    'Konfirmasi Pembayaran Cepat ⚡',
+    `Tandai pembayaran sewa bulan <strong>${blnLabel}</strong> untuk <strong>${p.nama}</strong> (Kamar ${p.kamar || ''}) sebesar <strong>${rp(p.sewa)}</strong> telah <strong>LUNAS</strong>?`,
+    async () => {
+      await tandaiBayar(pid, bln, p.sewa || 0);
+      renderDashboard();
+      renderKamar();
+      renderPembayaran();
+      toast(`Pembayaran ${p.nama} (${blnLabel}) Lunas! 🧾`, 'ok');
+    },
+    '⚡ Ya, Lunas Sekarang'
+  );
+};
 
 $('filter-kamar-status').addEventListener('change', renderKamar);
 $('btn-tambah-kamar').addEventListener('click', () => {
@@ -4043,6 +4400,308 @@ $('btn-export-csv').addEventListener('click', () => {
   const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `SiKost_Penghuni_${new Date().toISOString().slice(0,10)}.csv`; a.click(); toast('Export CSV berhasil!');
 });
 
+// ── SPOTLIGHT SEARCH (CTRL + K) ───────────────────────────────
+function openSpotlight() {
+  openModal('modal-spotlight');
+  const inp = $('spotlight-input');
+  if (inp) {
+    inp.value = '';
+    inp.focus();
+    renderSpotlightResults('');
+  }
+}
+
+function closeSpotlight() {
+  closeModal('modal-spotlight');
+}
+
+function renderSpotlightResults(q) {
+  const resEl = $('spotlight-results');
+  if (!resEl) return;
+  const query = (q || '').toLowerCase().trim();
+  if (!query) {
+    resEl.innerHTML = `
+      <div style="text-align:center;padding:24px 16px;color:var(--text-3);font-size:0.85rem">
+        Ketik nama anak kost, nomor kamar, nomor HP, plat motor/mobil, atau catatan pengeluaran...
+      </div>
+    `;
+    return;
+  }
+
+  // 1. Search Penghuni
+  const matchedPenghuni = S.penghuni.filter(p => 
+    (p.nama || '').toLowerCase().includes(query) ||
+    (p.kamar || '').toLowerCase().includes(query) ||
+    (p.hp || '').toLowerCase().includes(query) ||
+    (p.nik || '').includes(query) ||
+    (p.plat1 || '').toLowerCase().includes(query) ||
+    (p.plat2 || '').toLowerCase().includes(query)
+  );
+
+  // 2. Search Kamar
+  const matchedKamar = S.kamar.filter(k => 
+    (k.no || '').toLowerCase().includes(query) ||
+    (k.tipe || '').toLowerCase().includes(query) ||
+    (k.fasilitas || '').toLowerCase().includes(query)
+  );
+
+  // 3. Search Pengeluaran
+  const matchedExp = S.pengeluaran.filter(x => 
+    (x.keterangan || '').toLowerCase().includes(query) ||
+    (x.kategori || '').toLowerCase().includes(query)
+  );
+
+  if (matchedPenghuni.length === 0 && matchedKamar.length === 0 && matchedExp.length === 0) {
+    resEl.innerHTML = `
+      <div style="text-align:center;padding:28px 16px;color:var(--text-3);font-size:0.85rem">
+        Tidak ditemukan hasil untuk "<strong>${q}</strong>"
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  if (matchedPenghuni.length > 0) {
+    html += `<div class="spotlight-group-title">Penghuni (${matchedPenghuni.length})</div>`;
+    html += matchedPenghuni.map(p => `
+      <div class="spotlight-item" onclick="closeSpotlight();openDetail('${p.id}')">
+        <div class="spotlight-item-left">
+          <div class="spotlight-item-icon">👤</div>
+          <div>
+            <div class="spotlight-item-title">${p.nama} ${p.status === 'aktif' ? '<span class="badge badge-green" style="font-size:0.65rem">Aktif</span>' : '<span class="badge badge-gray" style="font-size:0.65rem">Keluar</span>'}</div>
+            <div class="spotlight-item-sub">Kamar ${p.kamar || '–'} · Telp/WA: ${p.hp || '–'} · Sewa: ${rp(p.sewa || 0)}</div>
+          </div>
+        </div>
+        <button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation();closeSpotlight();openDetail('${p.id}')">Lihat Detail →</button>
+      </div>
+    `).join('');
+  }
+
+  if (matchedKamar.length > 0) {
+    html += `<div class="spotlight-group-title">Kamar (${matchedKamar.length})</div>`;
+    html += matchedKamar.map(k => `
+      <div class="spotlight-item" onclick="closeSpotlight();navigateTo('kamar')">
+        <div class="spotlight-item-left">
+          <div class="spotlight-item-icon">🛏️</div>
+          <div>
+            <div class="spotlight-item-title">Kamar ${k.no} (${k.tipe || 'Standar'})</div>
+            <div class="spotlight-item-sub">Lantai ${k.lantai || '1'} · ${rp(k.harga || 0)}/bln · ${k.fasilitas || 'Standar'}</div>
+          </div>
+        </div>
+        <button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation();closeSpotlight();navigateTo('kamar')">Buka Kamar →</button>
+      </div>
+    `).join('');
+  }
+
+  if (matchedExp.length > 0) {
+    html += `<div class="spotlight-group-title">Pengeluaran Operasional (${matchedExp.length})</div>`;
+    html += matchedExp.map(x => `
+      <div class="spotlight-item" onclick="closeSpotlight();navigateTo('pengeluaran')">
+        <div class="spotlight-item-left">
+          <div class="spotlight-item-icon">💸</div>
+          <div>
+            <div class="spotlight-item-title">${x.keterangan || x.kategori} <strong style="color:var(--red)">(${rp(x.jumlah)})</strong></div>
+            <div class="spotlight-item-sub">${fmtD(x.tanggal)} · ${x.kategori}</div>
+          </div>
+        </div>
+        <button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation();closeSpotlight();navigateTo('pengeluaran')">Lihat →</button>
+      </div>
+    `).join('');
+  }
+
+  resEl.innerHTML = html;
+}
+
+// ── REKAP LAPORAN KEUANGAN BULANAN ────────────────────────────
+window.openLaporanBulanan = function(targetBln = thisMonth()) {
+  const [y, mo] = targetBln.split('-');
+  const blnLabel = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+  const aktif = S.penghuni.filter(p => p.status === 'aktif');
+  const payments = S.pembayaran.filter(pb => pb.bulan === targetBln && pb.status === 'lunas');
+  const totalPemasukan = payments.reduce((s, pb) => s + (Number(pb.jumlah) || 0), 0);
+
+  const expenses = S.pengeluaran.filter(x => (x.tanggal || '').startsWith(targetBln));
+  const totalPengeluaran = expenses.reduce((s, x) => s + (Number(x.jumlah) || 0), 0);
+  const labaBersih = totalPemasukan - totalPengeluaran;
+
+  const totalKamar = S.kamar.length || S.kost.totalKamar || 10;
+  const kamarTerisi = new Set(aktif.map(p => p.kamar).filter(Boolean)).size;
+  const okupansiPersen = Math.round((kamarTerisi / totalKamar) * 100);
+
+  const expCat = {};
+  expenses.forEach(x => {
+    expCat[x.kategori] = (expCat[x.kategori] || 0) + (Number(x.jumlah) || 0);
+  });
+
+  const bodyEl = $('modal-laporan-body');
+  if (!bodyEl) return;
+
+  bodyEl.innerHTML = `
+    <div class="laporan-sheet">
+      <div style="border-bottom:2px solid #0f172a;padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h1 style="font-size:1.35rem;font-weight:800;margin:0;letter-spacing:-0.5px">${S.kost.nama || 'SiKost'}</h1>
+          <p style="margin:4px 0 0;font-size:0.8rem;color:#64748b">${S.kost.alamat || 'Alamat Kost'} · Telp/WA: ${S.kost.hp || '–'}</p>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase">Laporan Keuangan Bulanan</div>
+          <div style="font-size:1.1rem;font-weight:800;color:#0f172a">${blnLabel}</div>
+        </div>
+      </div>
+
+      <!-- Ringkasan Eksekutif -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:8px">
+          <div style="font-size:0.7rem;color:#64748b;text-transform:uppercase;font-weight:700">Pemasukan Sewa</div>
+          <div style="font-size:1rem;font-weight:800;color:#059669;margin-top:2px">${rp(totalPemasukan)}</div>
+          <div style="font-size:0.7rem;color:#64748b">${payments.length} transaksi lunas</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:8px">
+          <div style="font-size:0.7rem;color:#64748b;text-transform:uppercase;font-weight:700">Pengeluaran Operasional</div>
+          <div style="font-size:1rem;font-weight:800;color:#e11d48;margin-top:2px">${rp(totalPengeluaran)}</div>
+          <div style="font-size:0.7rem;color:#64748b">${expenses.length} pos biaya</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:8px">
+          <div style="font-size:0.7rem;color:#64748b;text-transform:uppercase;font-weight:700">Laba Bersih</div>
+          <div style="font-size:1rem;font-weight:800;color:${labaBersih >= 0 ? '#4f46e5' : '#e11d48'};margin-top:2px">${rp(labaBersih)}</div>
+          <div style="font-size:0.7rem;color:#64748b">${labaBersih >= 0 ? 'Surplus' : 'Defisit'}</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:8px">
+          <div style="font-size:0.7rem;color:#64748b;text-transform:uppercase;font-weight:700">Okupansi Kamar</div>
+          <div style="font-size:1rem;font-weight:800;color:#0f172a;margin-top:2px">${okupansiPersen}%</div>
+          <div style="font-size:0.7rem;color:#64748b">${kamarTerisi} dari ${totalKamar} kamar</div>
+        </div>
+      </div>
+
+      <!-- Rincian Biaya Operasional -->
+      <h3 style="font-size:0.9rem;font-weight:700;margin:0 0 8px">Rincian Pengeluaran per Kategori</h3>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;font-size:0.8rem">
+        <thead>
+          <tr style="background:#f1f5f9;border-bottom:2px solid #cbd5e1">
+            <th style="padding:8px 10px;text-align:left">Kategori Biaya</th>
+            <th style="padding:8px 10px;text-align:right">Total (Rp)</th>
+            <th style="padding:8px 10px;text-align:right">Porsi (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${Object.entries(expCat).map(([cat, val]) => `
+            <tr style="border-bottom:1px solid #e2e8f0">
+              <td style="padding:8px 10px">${cat}</td>
+              <td style="padding:8px 10px;text-align:right;font-weight:600">${rp(val)}</td>
+              <td style="padding:8px 10px;text-align:right">${totalPengeluaran > 0 ? Math.round((val / totalPengeluaran) * 100) : 0}%</td>
+            </tr>
+          `).join('') || `<tr><td colspan="3" style="text-align:center;padding:10px;color:#94a3b8">Tidak ada pengeluaran pada bulan ini.</td></tr>`}
+          <tr style="background:#f8fafc;font-weight:800">
+            <td style="padding:8px 10px">TOTAL PENGELUARAN</td>
+            <td style="padding:8px 10px;text-align:right;color:#e11d48">${rp(totalPengeluaran)}</td>
+            <td style="padding:8px 10px;text-align:right">100%</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Tanda Tangan -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px">
+        <div style="font-size:0.72rem;color:#64748b">
+          Dicetak otomatis oleh SiKost pada: ${new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:0.75rem;color:#64748b;margin-bottom:48px">Pemilik / Pengelola Kost,</div>
+          <div style="font-size:0.85rem;font-weight:800;border-bottom:1px solid #000;padding-bottom:2px">${S.kost.pemilik || 'Pengelola Kost'}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  openModal('modal-laporan-bulanan');
+};
+
+// ── SETUP EVENT LISTENERS BARU (SPOTLIGHT, FAB, LAPORAN) ──────
+function setupNewFeatureEvents() {
+  // 1. Spotlight Search
+  const btnSpotlight = $('btn-open-spotlight');
+  if (btnSpotlight) btnSpotlight.addEventListener('click', openSpotlight);
+
+  const btnCloseSpotlight = $('spotlight-close');
+  if (btnCloseSpotlight) btnCloseSpotlight.addEventListener('click', closeSpotlight);
+
+  const modalSpotlight = $('modal-spotlight');
+  if (modalSpotlight) modalSpotlight.addEventListener('click', e => { if (e.target === modalSpotlight) closeSpotlight(); });
+
+  const inputSpotlight = $('spotlight-input');
+  if (inputSpotlight) {
+    inputSpotlight.addEventListener('input', function() {
+      renderSpotlightResults(this.value);
+    });
+  }
+
+  window.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openSpotlight();
+    }
+    if (e.key === 'Escape') {
+      closeSpotlight();
+    }
+  });
+
+  // 2. Floating Action Button (FAB)
+  const fabMain = $('fab-main');
+  const fabMenu = $('fab-menu');
+  if (fabMain && fabMenu) {
+    fabMain.addEventListener('click', () => {
+      fabMain.classList.toggle('active');
+      fabMenu.classList.toggle('open');
+    });
+
+    const fabTambahP = $('fab-tambah-penghuni');
+    if (fabTambahP) fabTambahP.addEventListener('click', () => {
+      fabMain.classList.remove('active');
+      fabMenu.classList.remove('open');
+      openModalPenghuni();
+    });
+
+    const fabCatatB = $('fab-catat-bayar');
+    if (fabCatatB) fabCatatB.addEventListener('click', () => {
+      fabMain.classList.remove('active');
+      fabMenu.classList.remove('open');
+      navigateTo('pembayaran');
+    });
+
+    const fabCatatE = $('fab-catat-pengeluaran');
+    if (fabCatatE) fabCatatE.addEventListener('click', () => {
+      fabMain.classList.remove('active');
+      fabMenu.classList.remove('open');
+      openModalCatatPengeluaran();
+    });
+
+    const fabCari = $('fab-cari-cepat');
+    if (fabCari) fabCari.addEventListener('click', () => {
+      fabMain.classList.remove('active');
+      fabMenu.classList.remove('open');
+      openSpotlight();
+    });
+  }
+
+  // 3. Rekap Laporan Bulanan
+  const btnCetakLaporan = $('btn-cetak-laporan-keuangan');
+  if (btnCetakLaporan) {
+    btnCetakLaporan.addEventListener('click', () => {
+      const bln = $('filter-bulan-pengeluaran')?.value || thisMonth();
+      openLaporanBulanan(bln);
+    });
+  }
+
+  const btnCloseLaporan = $('modal-laporan-close');
+  if (btnCloseLaporan) btnCloseLaporan.addEventListener('click', () => closeModal('modal-laporan-bulanan'));
+
+  const btnTutupLaporan = $('btn-tutup-laporan');
+  if (btnTutupLaporan) btnTutupLaporan.addEventListener('click', () => closeModal('modal-laporan-bulanan'));
+
+  const modalLaporan = $('modal-laporan-bulanan');
+  if (modalLaporan) modalLaporan.addEventListener('click', e => { if (e.target === modalLaporan) closeModal('modal-laporan-bulanan'); });
+}
+
 // ── PWA SERVICE WORKER REGISTRATION ───────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -4059,6 +4718,7 @@ if ('serviceWorker' in navigator) {
   LS.load();
   setupSupabaseUI();
   initGoogleIdentityServices();
+  setupNewFeatureEvents();
 
   // Dark Mode default
   const t = localStorage.getItem('sk3_theme') || 'dark';

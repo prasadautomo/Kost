@@ -132,6 +132,11 @@
         </div>
       </div>
       <div class="topbar-right">
+        <button class="topbar-search-btn" id="btn-open-spotlight" type="button" title="Cari cepat (Ctrl+K)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="search-hint-text">Cari...</span>
+          <kbd class="search-kbd">Ctrl K</kbd>
+        </button>
         <button class="cloud-btn disconnected" id="topbar-cloud-btn" title="Status Cloud Supabase">
           <span class="cloud-dot"></span>
           <span id="topbar-cloud-text">Supabase</span>
@@ -157,6 +162,9 @@
           <h1 id="dash-greeting">Selamat datang 👋</h1>
           <p class="text-muted" id="dash-date">–</p>
         </div>
+
+        <!-- Action Center: Fokus & Tugas Hari Ini -->
+        <div class="dash-action-center" id="dash-action-center" style="display:none"></div>
 
         <!-- KPI Keuangan Lengkap: Okupansi, Pemasukan, Pengeluaran, Laba Bersih -->
         <div class="kpi-row" id="kpi-row"></div>
@@ -300,12 +308,13 @@
       <section class="page" id="page-kamar">
         <div class="kpi-row" id="kpi-kamar-row"></div>
         <div class="toolbar">
-          <div class="toolbar-left">
+          <div class="toolbar-left" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
             <select class="sel" id="filter-kamar-status">
-              <option value="">Semua Kamar</option>
+              <option value="">Semua Status</option>
               <option value="terisi">Terisi</option>
               <option value="kosong">Kosong</option>
             </select>
+            <div class="km-floor-tabs" id="km-floor-tabs"></div>
           </div>
           <button class="btn-primary" id="btn-tambah-kamar">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -395,6 +404,9 @@
             </select>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button type="button" class="btn-ghost btn-sm" id="btn-cetak-laporan-keuangan" title="Cetak Rekap Laporan Keuangan Bulanan (Laba Bersih & Arus Kas)">
+              🖨️ Cetak Laporan Keuangan
+            </button>
             <button type="button" class="btn-outline btn-sm" id="btn-export-pengeluaran-csv" title="Unduh catatan pengeluaran format CSV">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Ekspor CSV
@@ -651,7 +663,17 @@
         <!-- Hunian -->
         <div class="ftab-content" id="ftab-hunian">
           <div class="fg-grid">
-            <div class="fg"><label>Nomor Kamar <em>*</em></label><input type="text" id="field-kamar" class="fc" placeholder="101" required /></div>
+            <div class="fg">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <label style="margin-bottom:0">Pilih Kamar Kosong <em>*</em></label>
+                <button type="button" id="btn-toggle-manual-kamar" class="text-btn" style="font-size:0.75rem;color:var(--accent-light)">✏️ Input Manual</button>
+              </div>
+              <select id="field-kamar-select" class="fc">
+                <option value="">-- Pilih Kamar Kosong --</option>
+              </select>
+              <input type="text" id="field-kamar" class="fc" placeholder="101" required style="display:none;margin-top:6px" />
+              <div id="field-kamar-tip" style="font-size:0.75rem;color:var(--green);margin-top:4px;display:none"></div>
+            </div>
             <div class="fg"><label>Lantai</label><input type="text" id="field-lantai" class="fc" placeholder="1" /></div>
             <div class="fg"><label>Tanggal Masuk <em>*</em></label><input type="date" id="field-tgl-masuk" class="fc" required /></div>
             <div class="fg"><label>Est. Tanggal Keluar</label><input type="date" id="field-tgl-keluar" class="fc" /></div>
@@ -1013,6 +1035,64 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- ====== MODAL: SPOTLIGHT SEARCH (CTRL + K) ====== -->
+<div class="modal-overlay" id="modal-spotlight" style="align-items:flex-start;padding-top:10vh">
+  <div class="modal spotlight-modal" style="max-width:580px;padding:0;overflow:hidden">
+    <div class="spotlight-search-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" id="spotlight-input" placeholder="Cari nama penghuni, kamar, no HP, plat motor, pengeluaran…" autocomplete="off" />
+      <button type="button" class="modal-x" id="spotlight-close" style="font-size:0.85rem">✕</button>
+    </div>
+    <div class="spotlight-body" id="spotlight-results">
+      <div style="text-align:center;padding:24px 16px;color:var(--text-3);font-size:0.85rem">
+        Ketik nama anak kost, kamar, nomor HP, atau pengeluaran untuk mencari cepat...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== MODAL: REKAP LAPORAN KEUANGAN BULANAN ====== -->
+<div class="modal-overlay" id="modal-laporan-bulanan">
+  <div class="modal" style="max-width:680px;padding:0;overflow:hidden">
+    <div class="modal-head" style="padding:16px 20px;border-bottom:1px solid var(--border)">
+      <h2 class="modal-title">📊 Rekap Laporan Keuangan Bulanan</h2>
+      <button type="button" class="modal-x" id="modal-laporan-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-laporan-body" style="padding:20px;max-height:75vh;overflow-y:auto">
+      <!-- Generated via JS -->
+    </div>
+    <div class="modal-foot" style="padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between">
+      <button type="button" class="btn-ghost" id="btn-tutup-laporan">Tutup</button>
+      <button type="button" class="btn-primary" id="btn-print-laporan" onclick="window.print()">🖨️ Cetak / Unduh PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== FLOATING ACTION BUTTON (MOBILE / SPEED DIAL) ====== -->
+<div class="fab-container" id="fab-container">
+  <div class="fab-menu" id="fab-menu">
+    <button type="button" class="fab-item" id="fab-tambah-penghuni" title="Tambah Penghuni">
+      <span class="fab-item-icon">👤</span>
+      <span>Tambah Penghuni</span>
+    </button>
+    <button type="button" class="fab-item" id="fab-catat-bayar" title="Catat Pembayaran Sewa">
+      <span class="fab-item-icon">💰</span>
+      <span>Catat Bayar Sewa</span>
+    </button>
+    <button type="button" class="fab-item" id="fab-catat-pengeluaran" title="Catat Pengeluaran Operasional">
+      <span class="fab-item-icon">💸</span>
+      <span>Catat Pengeluaran</span>
+    </button>
+    <button type="button" class="fab-item" id="fab-cari-cepat" title="Pencarian Cepat">
+      <span class="fab-item-icon">🔍</span>
+      <span>Cari Cepat (Ctrl+K)</span>
+    </button>
+  </div>
+  <button type="button" class="fab-main" id="fab-main" aria-label="Aksi Cepat" title="Menu Aksi Cepat">
+    <svg class="fab-icon-plus" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
 </div>
 
 <!-- ====== TOAST ====== -->
