@@ -18,6 +18,7 @@
   --bg-hover:    #242628;
 
   --surface:                   #121414;
+  --surface-2:                 #1a1c1c;
   --surface-dim:               #0c0f0f;
   --surface-bright:            #282a2b;
   --surface-container-lowest:  #0c0f0f;
@@ -101,6 +102,7 @@
   --bg-3:        #f1f5f9;
   --bg-elevated: #e2e8f0;
   --bg-hover:    #cbd5e1;
+  --surface-2:   #f1f5f9;
 
   --border:      #e2e8f0;
   --border-2:    #cbd5e1;

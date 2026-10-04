@@ -675,10 +675,11 @@ function switchKost(targetKostId) {
   if (btn) btn.classList.remove('open');
 
   // 6. Refresh halaman yang sedang aktif
+  renderPengaturan();
   const activePage = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
   navigateTo(activePage);
 
-  toast(`🏢 Beralih ke ${S.kost.nama} (${target.kost.kota || target.kost.alamat.split(',')[0]})`, 'success');
+  toast(`🏢 Beralih ke ${S.kost.nama} (${target.kost.kota || (target.kost.alamat ? target.kost.alamat.split(',')[0] : 'Indonesia')})`, 'success');
 }
 window.switchKost = switchKost;
 
@@ -910,7 +911,16 @@ const LS = {
     }
   },
   saveSession(u) { localStorage.setItem('sk3_session', JSON.stringify(u)); },
-  loadSession()  { const v = localStorage.getItem('sk3_session'); return v ? JSON.parse(v) : null; },
+  loadSession()  {
+    try {
+      const v = localStorage.getItem('sk3_session');
+      return v ? JSON.parse(v) : null;
+    } catch (e) {
+      console.warn('Failed to parse session:', e);
+      localStorage.removeItem('sk3_session');
+      return null;
+    }
+  },
   clearSession() { localStorage.removeItem('sk3_session'); }
 };
 
@@ -926,22 +936,34 @@ async function hashPw(pw) {
 // ── UTILS ────────────────────────────────────────────────────
 const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 const rp   = n  => 'Rp ' + (Number(n)||0).toLocaleString('id-ID');
-const fmtD = s  => s ? new Date(s).toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}) : '–';
-const init = n  => (n||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const fmtD = s  => {
+  if (!s) return '–';
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? '–' : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+};
+const init = n  => (n || '?').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || '?';
 const esc  = s  => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]));
 const ageOf = tgl => {
   if (!tgl) return null;
-  const d=new Date(tgl), now=new Date();
-  let a=now.getFullYear()-d.getFullYear();
-  if(now.getMonth()<d.getMonth()||(now.getMonth()===d.getMonth()&&now.getDate()<d.getDate())) a--;
-  return a;
+  const d = new Date(tgl);
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  let a = now.getFullYear() - d.getFullYear();
+  if (now.getMonth() < d.getMonth() || (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())) a--;
+  return a >= 0 ? a : null;
 };
 const durasi = tgl => {
   if (!tgl) return '–';
-  const hari=Math.floor((Date.now()-new Date(tgl))/86400000);
-  if(hari<30) return hari+' hari';
-  if(hari<365) return Math.floor(hari/30)+' bulan';
-  return Math.floor(hari/365)+' tahun '+Math.floor((Math.floor(hari/30))%12)+' bulan';
+  const d = new Date(tgl);
+  if (isNaN(d.getTime())) return '–';
+  const diff = Date.now() - d.getTime();
+  if (diff < 0) return 'Mulai segera';
+  const hari = Math.floor(diff / 86400000);
+  if (hari < 30) return hari + ' hari';
+  if (hari < 365) return Math.floor(hari / 30) + ' bulan';
+  const th = Math.floor(hari / 365);
+  const sisaBln = Math.floor((hari % 365) / 30);
+  return th + ' tahun' + (sisaBln > 0 ? ' ' + sisaBln + ' bulan' : '');
 };
 function thisMonth() {
   const d = new Date();
@@ -958,16 +980,20 @@ window.rp = rp;
 // Terbilang Rupiah Helper (untuk Kwitansi Resmi)
 function terbilang(n) {
   n = Math.floor(Math.abs(Number(n) || 0));
+  if (n === 0) return 'Nol';
   const huruf = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
-  if (n < 12) return huruf[n];
-  if (n < 20) return terbilang(n - 10) + ' Belas';
-  if (n < 100) return terbilang(Math.floor(n / 10)) + ' Puluh ' + terbilang(n % 10);
-  if (n < 200) return 'Seratus ' + terbilang(n - 100);
-  if (n < 1000) return terbilang(Math.floor(n / 100)) + ' Ratus ' + terbilang(n % 100);
-  if (n < 2000) return 'Seribu ' + terbilang(n - 1000);
-  if (n < 1000000) return terbilang(Math.floor(n / 1000)) + ' Ribu ' + terbilang(n % 1000);
-  if (n < 1000000000) return terbilang(Math.floor(n / 1000000)) + ' Juta ' + terbilang(n % 1000000);
-  return terbilang(Math.floor(n / 1000000000)) + ' Miliar ' + terbilang(n % 1000000000);
+  function convert(num) {
+    if (num < 12) return huruf[num];
+    if (num < 20) return convert(num - 10) + ' Belas';
+    if (num < 100) return convert(Math.floor(num / 10)) + ' Puluh ' + convert(num % 10);
+    if (num < 200) return 'Seratus ' + convert(num - 100);
+    if (num < 1000) return convert(Math.floor(num / 100)) + ' Ratus ' + convert(num % 100);
+    if (num < 2000) return 'Seribu ' + convert(num - 1000);
+    if (num < 1000000) return convert(Math.floor(num / 1000)) + ' Ribu ' + convert(num % 1000);
+    if (num < 1000000000) return convert(Math.floor(num / 1000000)) + ' Juta ' + convert(num % 1000000);
+    return convert(Math.floor(num / 1000000000)) + ' Miliar ' + convert(num % 1000000000);
+  }
+  return convert(n).trim().replace(/\s+/g, ' ');
 }
 
 // NIK Masking Helper (Melindungi Privasi UU PDP)
@@ -1002,7 +1028,7 @@ function toast(msg, type='ok') {
 
 function confirm_dlg(title, msg, cb, btnLabel='Ya, Lanjutkan') {
   $('confirm-title').textContent = title;
-  $('confirm-message').textContent = msg;
+  $('confirm-message').innerHTML = msg;
   $('confirm-ok').textContent = btnLabel;
   confirmCb = cb;
   openModal('modal-confirm');
@@ -2030,6 +2056,7 @@ function enterApp() {
   document.title = (S.kost?.nama || 'SiKost') + ' – Manajemen Kost Modern';
   updatePropertySwitcherUI();
   setupPropertySwitcherEvents();
+  renderPengaturan();
   const urlPage = new URLSearchParams(window.location.search).get('page') || (location.hash ? location.hash.replace('#', '') : '');
   const firstPage = PAGE_TITLES[urlPage] ? urlPage : 'dashboard';
   navigateTo(firstPage);
@@ -2062,9 +2089,11 @@ function buildSidebar() {
   $('sidebar-nav').querySelectorAll('.nav-item').forEach(el =>
     el.addEventListener('click', e => { e.preventDefault(); navigateTo(el.dataset.page); })
   );
-  $('sb-role-badge').textContent = 'Manager';
-  $('sb-role-badge').className   = 'brand-role';
-  $('sb-kost-name').textContent  = S.kost.nama || 'SiKost';
+  if ($('sb-role-badge')) {
+    $('sb-role-badge').textContent = (currentUser?.role === 'penghuni') ? 'Penghuni' : 'Manager';
+    $('sb-role-badge').className   = 'brand-role';
+  }
+  if ($('sb-kost-name')) $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
   updateSidebarBadges();
 }
 
@@ -2091,9 +2120,17 @@ function updateSidebarBadges() {
 }
 
 function renderUserChip() {
-  $('user-name').textContent  = currentUser.nama  || '–';
-  $('user-email').textContent = currentUser.email || '–';
-  $('user-avatar-fallback').textContent = init(currentUser.nama);
+  if (!currentUser) return;
+  if ($('user-name'))  $('user-name').textContent  = currentUser.nama  || '–';
+  if ($('user-email')) $('user-email').textContent = currentUser.email || '–';
+  const av = $('user-avatar-fallback');
+  if (av) {
+    if (currentUser.avatar) {
+      av.innerHTML = `<img src="${currentUser.avatar}" alt="${currentUser.nama || ''}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" />`;
+    } else {
+      av.textContent = init(currentUser.nama);
+    }
+  }
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────
@@ -2589,25 +2626,31 @@ function renderCharts() {
 
   // Chart Status Hunian
   if (CHARTS.status) CHARTS.status.destroy();
-  CHARTS.status = new Chart($('chart-status'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Aktif', 'Tidak Aktif'],
-      datasets: [{ data: [aktif, nonAktif], backgroundColor: ['#10b981', '#64748b'], borderWidth: 0, hoverOffset: 6 }]
-    },
-    options: donut
-  });
+  const ctxStatus = $('chart-status');
+  if (ctxStatus) {
+    CHARTS.status = new Chart(ctxStatus, {
+      type: 'doughnut',
+      data: {
+        labels: ['Aktif', 'Tidak Aktif'],
+        datasets: [{ data: [aktif, nonAktif], backgroundColor: ['#10b981', '#64748b'], borderWidth: 0, hoverOffset: 6 }]
+      },
+      options: donut
+    });
+  }
 
   // Chart Kendaraan
   if (CHARTS.kendaraan) CHARTS.kendaraan.destroy();
-  CHARTS.kendaraan = new Chart($('chart-kendaraan'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Motor', 'Mobil', 'Motor & Mobil', 'Tidak Ada'],
-      datasets: [{ data: [motor, mobil, both, noKen], backgroundColor: ['#6366f1', '#a855f7', '#f59e0b', '#64748b'], borderWidth: 0, hoverOffset: 6 }]
-    },
-    options: donut
-  });
+  const ctxKen = $('chart-kendaraan');
+  if (ctxKen) {
+    CHARTS.kendaraan = new Chart(ctxKen, {
+      type: 'doughnut',
+      data: {
+        labels: ['Motor', 'Mobil', 'Motor & Mobil', 'Tidak Ada'],
+        datasets: [{ data: [motor, mobil, both, noKen], backgroundColor: ['#6366f1', '#a855f7', '#f59e0b', '#64748b'], borderWidth: 0, hoverOffset: 6 }]
+      },
+      options: donut
+    });
+  }
 }
 
 // ── PENGHUNI RENDER ───────────────────────────────────────────
@@ -2943,7 +2986,10 @@ $('form-penghuni').addEventListener('submit', async function(e) {
   LS.save();
   closeModal('modal-penghuni');
   renderPenghuni();
-  if ($('page-dashboard').classList.contains('active')) renderDashboard();
+  if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+  if ($('page-kamar')?.classList.contains('active')) renderKamar();
+  if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
+  updateSidebarBadges();
 
   await DB.savePenghuni(d);
 });
@@ -2954,7 +3000,10 @@ window.hapusPenghuni = function(id) {
     S.penghuni = S.penghuni.filter(x => x.id !== id);
     LS.save();
     renderPenghuni();
-    if ($('page-dashboard').classList.contains('active')) renderDashboard();
+    if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+    if ($('page-kamar')?.classList.contains('active')) renderKamar();
+    if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
+    updateSidebarBadges();
     toast('Penghuni dihapus.');
     await DB.deletePenghuni(id);
   }, 'Hapus');
@@ -3291,14 +3340,21 @@ window.setFloorFilter = function(fl) {
 window.quickPayTenant = async function(pid, bln = thisMonth()) {
   const p = S.penghuni.find(x => x.id === pid);
   if (!p) return;
-  const [y, mo] = bln.split('-');
-  const blnLabel = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  const safeBln = bln || thisMonth();
+  const [y, mo] = safeBln.split('-');
+  let blnLabel = safeBln;
+  if (y && mo) {
+    const d = new Date(parseInt(y, 10), parseInt(mo, 10) - 1, 1);
+    if (!isNaN(d.getTime())) {
+      blnLabel = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    }
+  }
 
   confirm_dlg(
     'Konfirmasi Pembayaran Cepat ⚡',
     `Tandai pembayaran sewa bulan <strong>${blnLabel}</strong> untuk <strong>${p.nama}</strong> (Kamar ${p.kamar || ''}) sebesar <strong>${rp(p.sewa)}</strong> telah <strong>LUNAS</strong>?`,
     async () => {
-      await tandaiBayar(pid, bln, p.sewa || 0);
+      await tandaiBayar(pid, safeBln, p.sewa || 0);
       renderDashboard();
       renderKamar();
       renderPembayaran();
@@ -3323,6 +3379,13 @@ $('form-kamar').addEventListener('submit', async function(e) {
   e.preventDefault();
   const no = $('field-no-kamar').value.trim(); if (!no) { toast('Nomor kamar wajib!','err'); return; }
   const id = $('field-kamar-id').value || uid();
+
+  const isDuplicate = S.kamar.some(k => k.no.toLowerCase() === no.toLowerCase() && k.id !== id);
+  if (isDuplicate) {
+    toast(`Nomor kamar "${no}" sudah digunakan! Gunakan nomor lain.`, 'err');
+    return;
+  }
+
   const d = {
     id, no,
     lantai: $('field-lantai-kamar').value.trim() || '1',
@@ -3333,7 +3396,10 @@ $('form-kamar').addEventListener('submit', async function(e) {
   const i = S.kamar.findIndex(k => k.id === id);
   if (i !== -1) { S.kamar[i] = d; toast('Kamar diperbarui!'); }
   else { S.kamar.push(d); toast('Kamar ditambahkan!'); }
-  LS.save(); closeModal('modal-kamar'); renderKamar();
+  LS.save();
+  closeModal('modal-kamar');
+  renderKamar();
+  if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
   await DB.saveKamar(d);
 });
 
@@ -3351,9 +3417,22 @@ window.editKamar = function(id) {
 
 window.hapusKamar = function(id) {
   const k = S.kamar.find(x => x.id === id);
-  confirm_dlg('Hapus Kamar', `Hapus kamar ${k?.no||id}?`, async () => {
+  if (!k) return;
+  const occupants = S.penghuni.filter(p => p.kamar === k.no && p.status === 'aktif');
+  let confirmMsg = `Hapus kamar ${k.no || id}?`;
+  if (occupants.length > 0) {
+    confirmMsg = `Kamar <strong>${k.no}</strong> saat ini dihuni oleh <strong>${occupants.map(o => o.nama).join(', ')}</strong>. Menghapus kamar ini akan mengosongkan nomor kamar penghuni tersebut. Lanjutkan?`;
+  }
+  confirm_dlg('Hapus Kamar', confirmMsg, async () => {
+    if (occupants.length > 0) {
+      occupants.forEach(p => { p.kamar = ''; });
+    }
     S.kamar = S.kamar.filter(x => x.id !== id);
-    LS.save(); renderKamar(); toast('Kamar dihapus.');
+    LS.save();
+    renderKamar();
+    if ($('page-penghuni')?.classList.contains('active')) renderPenghuni();
+    if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+    toast('Kamar dihapus.');
     await DB.deleteKamar(id);
   }, 'Hapus');
 };
@@ -3468,9 +3547,10 @@ function renderPembayaran() {
           <button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}')">📱 WA</button>
         </div>`;
     } else {
+      const sewaClean = Number(String(p.sewa || '0').replace(/\D/g, '')) || 0;
       aksiCell = `
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="btn-primary btn-sm" onclick="tandaiBayar('${p.id}','${bln}',${p.sewa||0})">✅ Tandai Lunas</button>
+          <button class="btn-primary btn-sm" onclick="tandaiBayar('${p.id}','${bln}',${sewaClean})">✅ Tandai Lunas</button>
           <button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}')">📱 WA</button>
         </div>`;
     }
@@ -3495,9 +3575,26 @@ window.kirimWaTagihan = function(pid, bln) {
   if (!p) return;
   if (!p.hp) { toast('Nomor HP penghuni belum diisi!', 'err'); return; }
 
-  const cleanHp = p.hp.replace(/\D/g, '').replace(/^0/, '62');
-  const [y, mo] = bln.split('-');
-  const blnLabel = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  let cleanHp = p.hp.replace(/\D/g, '');
+  if (cleanHp.startsWith('0')) {
+    cleanHp = '62' + cleanHp.slice(1);
+  } else if (!cleanHp.startsWith('62') && cleanHp.length >= 9) {
+    cleanHp = '62' + cleanHp;
+  }
+  if (cleanHp.length < 8) {
+    toast('Nomor HP penghuni tidak valid!', 'err');
+    return;
+  }
+
+  const safeBln = bln || thisMonth();
+  const [y, mo] = safeBln.split('-');
+  let blnLabel = safeBln;
+  if (y && mo) {
+    const d = new Date(parseInt(y, 10), parseInt(mo, 10) - 1, 1);
+    if (!isNaN(d.getTime())) {
+      blnLabel = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    }
+  }
 
   // Sertakan info rekening bank & nomor kamar secara otomatis
   let rekInfo = '';
@@ -3534,14 +3631,22 @@ window.tandaiBayar = async function(pid, bln, jumlah) {
     pb = { id: uid(), penghuniId: pid, bulan: bln, jumlah, status: 'lunas', tglBayar: new Date().toISOString(), verifiedAt: new Date().toISOString() };
     S.pembayaran.push(pb);
   }
-  LS.save(); renderPembayaran(); toast('Pembayaran dicatat Lunas! 💰');
+  LS.save();
+  renderPembayaran();
+  if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+  if ($('page-kamar')?.classList.contains('active')) renderKamar();
+  toast('Pembayaran dicatat Lunas! 💰');
   await DB.savePembayaran(pb);
   updateSidebarBadges();
 };
 
 window.batalBayar = async function(pid, bln) {
   S.pembayaran = S.pembayaran.filter(pb => !(pb.penghuniId === pid && pb.bulan === bln));
-  LS.save(); renderPembayaran(); toast('Status pembayaran direset.');
+  LS.save();
+  renderPembayaran();
+  if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+  if ($('page-kamar')?.classList.contains('active')) renderKamar();
+  toast('Status pembayaran direset.');
   await DB.deletePembayaran(pid, bln);
   updateSidebarBadges();
 };
@@ -3551,7 +3656,11 @@ window.setujuiBayar = async function(pbId) {
   if (!pb) return;
   pb.status = 'lunas';
   pb.verifiedAt = new Date().toISOString();
-  LS.save(); renderPembayaran(); toast('Pembayaran disetujui & lunas! ✅');
+  LS.save();
+  renderPembayaran();
+  if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+  if ($('page-kamar')?.classList.contains('active')) renderKamar();
+  toast('Pembayaran disetujui & lunas! ✅');
   await DB.savePembayaran(pb);
   updateSidebarBadges();
 };
@@ -3559,7 +3668,11 @@ window.setujuiBayar = async function(pbId) {
 window.tolakBayar = async function(pbId) {
   confirm_dlg('Tolak Pembayaran', 'Tolak konfirmasi transfer ini?', async () => {
     S.pembayaran = S.pembayaran.filter(x => x.id !== pbId);
-    LS.save(); renderPembayaran(); toast('Konfirmasi pembayaran ditolak.');
+    LS.save();
+    renderPembayaran();
+    if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+    if ($('page-kamar')?.classList.contains('active')) renderKamar();
+    toast('Konfirmasi pembayaran ditolak.');
     if (sbClient) {
       try { await sbClient.from('pembayaran').delete().eq('id', pbId); } catch {}
     }
@@ -3575,9 +3688,16 @@ window.showKwitansi = function(penghuniId, bulan) {
   const pb = S.pembayaran.find(x => x.penghuniId === penghuniId && x.bulan === bulan);
   if (!p || !pb) return;
 
-  const [y, mo] = bulan.split('-');
-  const blnLabel = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-  const invoiceNo = `KW-${bulan.replace('-', '')}-${(p.kamar || '00').padStart(3, '0')}`;
+  const safeBln = bulan || thisMonth();
+  const [y, mo] = safeBln.split('-');
+  let blnLabel = safeBln;
+  if (y && mo) {
+    const d = new Date(parseInt(y, 10), parseInt(mo, 10) - 1, 1);
+    if (!isNaN(d.getTime())) {
+      blnLabel = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    }
+  }
+  const invoiceNo = `KW-${safeBln.replace('-', '')}-${String(p.kamar || '00').padStart(3, '0')}`;
   const tglBayar = pb.tglBayar ? fmtD(pb.tglBayar) : fmtD(new Date());
 
   activeKwitansiData = { p, pb, blnLabel, invoiceNo, tglBayar };
@@ -3662,7 +3782,16 @@ $('btn-wa-kwitansi').addEventListener('click', () => {
   if (!activeKwitansiData) return;
   const { p, pb, blnLabel, invoiceNo, tglBayar } = activeKwitansiData;
   if (!p.hp) { toast('Nomor HP penghuni tidak tersedia!', 'err'); return; }
-  const cleanHp = p.hp.replace(/\D/g, '').replace(/^0/, '62');
+  let cleanHp = p.hp.replace(/\D/g, '');
+  if (cleanHp.startsWith('0')) {
+    cleanHp = '62' + cleanHp.slice(1);
+  } else if (!cleanHp.startsWith('62') && cleanHp.length >= 9) {
+    cleanHp = '62' + cleanHp;
+  }
+  if (cleanHp.length < 8) {
+    toast('Nomor HP penghuni tidak valid!', 'err');
+    return;
+  }
   const text = `Halo Kak ${p.nama}, terima kasih! Pembayaran sewa kamar ${p.kamar || ''} di ${S.kost.nama || 'Kost'} untuk bulan *${blnLabel}* sebesar *${rp(pb.jumlah)}* telah kami terima dan tercatat *LUNAS* pada ${tglBayar}. (No. Bukti: ${invoiceNo}). 🙏`;
   window.open(`https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`, '_blank');
 });
@@ -3934,15 +4063,18 @@ function exportPengeluaranCsv() {
     ]);
   });
 
-  const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + rows.map(e => e.join(',')).join('\n');
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
+  const csvContent = '\uFEFF' + rows.map(e => e.join(',')).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
   const filename = `Pengeluaran_${(S.kost.nama || 'SiKost').replace(/\s+/g, '_')}_${thisMonth()}.csv`;
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', filename);
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  setTimeout(() => {
+    if (link.parentNode) document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  }, 500);
   toast(`Laporan pengeluaran berhasil diunduh (${filename})! 📥`, 'success');
 }
 window.exportPengeluaranCsv = exportPengeluaranCsv;
@@ -4308,37 +4440,45 @@ function renderPengaturan() {
 let debouncedCloudKostTimer = null;
 
 async function saveAllPengaturan(sourceForm = '') {
-  // 1. Profil Kost
-  if ($('set-nama-kost') && $('set-nama-kost').value.trim()) {
-    S.kost.nama = $('set-nama-kost').value.trim();
-  }
-  if ($('set-pemilik') && $('set-pemilik').value.trim()) {
-    S.kost.pemilik = $('set-pemilik').value.trim();
-  }
-  if ($('set-kota-kost')) {
-    S.kost.kota = $('set-kota-kost').value.trim() || (S.kost.alamat ? S.kost.alamat.split(',')[0].trim() : 'Indonesia');
-  }
-  if ($('set-alamat')) {
-    S.kost.alamat = $('set-alamat').value.trim();
-  }
-  if ($('set-hp-pemilik')) {
-    S.kost.hp = $('set-hp-pemilik').value.trim();
-  }
-  if ($('set-total-kamar') && $('set-total-kamar').value) {
-    S.kost.totalKamar = Number($('set-total-kamar').value) || S.kost.totalKamar || 8;
-  }
-  if ($('set-tempo-default') && $('set-tempo-default').value) {
-    S.kost.tempoDefault = Math.max(1, Math.min(31, Number($('set-tempo-default').value) || 5));
-  }
+  // Hanya baca nilai dari input jika form pengaturan aktif atau field sudah terisi (mencegah overwrite nilai kosong saat logout dari dashboard)
+  const isSettingsActive = $('page-pengaturan')?.classList.contains('active');
+  const hasInputValues = $('set-nama-kost') && $('set-nama-kost').value.trim() !== '';
 
-  // 2. Bank & QRIS
-  if ($('set-bank-nama'))     S.kost.bankNama     = $('set-bank-nama').value.trim();
-  if ($('set-bank-rekening')) S.kost.bankRekening = $('set-bank-rekening').value.trim();
-  if ($('set-bank-atas-nama'))S.kost.bankAtasNama = $('set-bank-atas-nama').value.trim();
-  if ($('set-qris-url'))      S.kost.qrisUrl      = $('set-qris-url').value.trim();
+  if (isSettingsActive || (sourceForm !== 'logout' && hasInputValues)) {
+    // 1. Profil Kost
+    if ($('set-nama-kost') && $('set-nama-kost').value.trim()) {
+      S.kost.nama = $('set-nama-kost').value.trim();
+    }
+    if ($('set-pemilik') && $('set-pemilik').value.trim()) {
+      S.kost.pemilik = $('set-pemilik').value.trim();
+    }
+    if ($('set-kota-kost') && $('set-kota-kost').value.trim()) {
+      S.kost.kota = $('set-kota-kost').value.trim();
+    }
+    if ($('set-alamat') && $('set-alamat').value.trim()) {
+      S.kost.alamat = $('set-alamat').value.trim();
+    }
+    if ($('set-hp-pemilik') && $('set-hp-pemilik').value.trim()) {
+      S.kost.hp = $('set-hp-pemilik').value.trim();
+    }
+    if ($('set-total-kamar') && $('set-total-kamar').value) {
+      S.kost.totalKamar = Number($('set-total-kamar').value) || S.kost.totalKamar || 8;
+    }
+    if ($('set-tempo-default') && $('set-tempo-default').value) {
+      S.kost.tempoDefault = Math.max(1, Math.min(31, Number($('set-tempo-default').value) || 5));
+    }
 
-  // 3. WA Template
-  if ($('set-wa-template'))   S.kost.waTemplate   = $('set-wa-template').value.trim();
+    // 2. Bank & QRIS
+    if ($('set-bank-nama'))     S.kost.bankNama     = $('set-bank-nama').value.trim();
+    if ($('set-bank-rekening')) S.kost.bankRekening = $('set-bank-rekening').value.trim();
+    if ($('set-bank-atas-nama'))S.kost.bankAtasNama = $('set-bank-atas-nama').value.trim();
+    if ($('set-qris-url'))      S.kost.qrisUrl      = $('set-qris-url').value.trim();
+
+    // 3. WA Template
+    if ($('set-wa-template') && $('set-wa-template').value.trim()) {
+      S.kost.waTemplate = $('set-wa-template').value.trim();
+    }
+  }
 
   S.kost.updatedAt = Date.now();
   localStorage.setItem('sk3_kost_updated_at', S.kost.updatedAt.toString());
@@ -4569,6 +4709,7 @@ if (formEditCabang) {
       if ($('topbar-prop-loc'))  $('topbar-prop-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
       if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama || 'SiKost';
       document.title = (S.kost.nama || 'SiKost') + ' – Manajemen Kost Modern';
+      renderPengaturan();
       DB.saveKost();
     }
 
@@ -4666,7 +4807,21 @@ $('input-restore').addEventListener('change', function() {
         S.pengeluaran = d.pengeluaran || [];
         S.keluhan     = d.keluhan || [];
         S.kost        = d.kost || S.kost;
-        LS.save(); renderPengaturan(); toast('Data berhasil di-restore!');
+        if (S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
+          S.propertiesData[S.activeKostId] = {
+            kost: { ...S.kost },
+            penghuni: [...S.penghuni],
+            kamar: [...S.kamar],
+            pembayaran: [...S.pembayaran],
+            pengeluaran: [...S.pengeluaran],
+            keluhan: [...S.keluhan]
+          };
+        }
+        LS.save();
+        updateSidebarBadges();
+        updatePropertySwitcherUI();
+        renderPengaturan();
+        toast('Data berhasil di-restore!');
       }, 'Lanjutkan');
     } catch { toast('File JSON tidak valid.','err'); }
   };
@@ -4676,7 +4831,17 @@ $('input-restore').addEventListener('change', function() {
 $('btn-hapus-semua').addEventListener('click', () => {
   confirm_dlg('Hapus Semua Data Operasional', 'Hapus SEMUA data penghuni, kamar, pembayaran, pengeluaran, dan tiket keluhan?', () => {
     S.penghuni = []; S.kamar = []; S.pembayaran = []; S.pengeluaran = []; S.keluhan = [];
-    LS.save(); toast('Semua data operasional telah dikosongkan.'); renderPengaturan();
+    if (S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
+      S.propertiesData[S.activeKostId].penghuni = [];
+      S.propertiesData[S.activeKostId].kamar = [];
+      S.propertiesData[S.activeKostId].pembayaran = [];
+      S.propertiesData[S.activeKostId].pengeluaran = [];
+      S.propertiesData[S.activeKostId].keluhan = [];
+    }
+    LS.save();
+    updateSidebarBadges();
+    toast('Semua data operasional telah dikosongkan.');
+    renderPengaturan();
   }, 'Ya, Hapus Semua');
 });
 
@@ -4685,6 +4850,8 @@ if (btnSeed) {
   btnSeed.addEventListener('click', () => {
     confirm_dlg('Muat Data Contoh / Demo', 'Ini akan memuat data 8 kamar, 6 anak kost aktif, riwayat pembayaran, pengeluaran operasional, tiket keluhan, dan info rekening contoh. Lanjutkan?', () => {
       seedDemoData(true);
+      updatePropertySwitcherUI();
+      updateSidebarBadges();
       renderPengaturan();
       toast('Data demo lengkap berhasil dimuat! 🎉');
     }, 'Ya, Muat Data Demo');
@@ -5009,8 +5176,15 @@ function renderSpotlightResults(q) {
 
 // ── REKAP LAPORAN KEUANGAN BULANAN ────────────────────────────
 window.openLaporanBulanan = function(targetBln = thisMonth()) {
-  const [y, mo] = targetBln.split('-');
-  const blnLabel = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+  const safeBln = targetBln || thisMonth();
+  const [y, mo] = safeBln.split('-');
+  let blnLabel = safeBln;
+  if (y && mo) {
+    const d = new Date(parseInt(y, 10), parseInt(mo, 10) - 1, 1);
+    if (!isNaN(d.getTime())) {
+      blnLabel = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    }
+  }
 
   const aktif = S.penghuni.filter(p => p.status === 'aktif');
   const payments = S.pembayaran.filter(pb => pb.bulan === targetBln && pb.status === 'lunas');
@@ -5134,9 +5308,25 @@ function setupNewFeatureEvents() {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
       openSpotlight();
+      return;
     }
     if (e.key === 'Escape') {
       closeSpotlight();
+      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+      const dd = $('property-dropdown-menu');
+      if (dd && dd.style.display !== 'none') {
+        dd.style.display = 'none';
+        $('btn-property-switch')?.classList.remove('open');
+      }
+      $('fab-main')?.classList.remove('active');
+      $('fab-menu')?.classList.remove('open');
+    }
+  });
+
+  // Global Backdrop Click to Close Any Modal Overlay
+  document.addEventListener('click', e => {
+    if (e.target.classList && e.target.classList.contains('modal-overlay') && e.target.classList.contains('open')) {
+      e.target.classList.remove('open');
     }
   });
 
