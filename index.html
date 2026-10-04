@@ -24,42 +24,6 @@
 </head>
 <body>
 
-<!-- ========== SCREEN: SETUP PERTAMA ========== -->
-<div id="screen-setup" class="login-screen" style="display:none">
-  <div class="ambient-orb purple"></div>
-  <div class="ambient-orb green"></div>
-  <div class="login-card">
-    <div class="login-brand">
-      <div class="login-logo">🏠</div>
-      <h1 class="login-title">Selamat Datang di SiKost</h1>
-      <p class="login-sub">Buat akun Manager pertama untuk memulai</p>
-    </div>
-    <form id="form-setup" autocomplete="off">
-      <div class="fg" style="margin-bottom:12px">
-        <label>Nama Lengkap</label>
-        <input type="text" id="setup-nama" class="fc" placeholder="Nama Anda" required autocomplete="off" />
-      </div>
-      <div class="fg" style="margin-bottom:12px">
-        <label>Email</label>
-        <input type="email" id="setup-email" class="fc" placeholder="email@anda.com" required autocomplete="off" />
-      </div>
-      <div class="fg" style="margin-bottom:12px">
-        <label>Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="setup-pw" class="fc" placeholder="Min. 6 karakter" required autocomplete="new-password" />
-          <button type="button" class="pw-eye" data-target="setup-pw">👁</button>
-        </div>
-      </div>
-      <div class="fg" style="margin-bottom:20px">
-        <label>Nama Kost</label>
-        <input type="text" id="setup-kost" class="fc" placeholder="Kost Makmur Jaya" />
-      </div>
-      <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:12px">
-        Buat Akun &amp; Mulai
-      </button>
-    </form>
-  </div>
-</div>
 
 <!-- ========== SCREEN: LOGIN / REGISTER ========== -->
 <div id="screen-login" class="login-screen" style="display:flex">
@@ -511,7 +475,7 @@
             <!-- Rekening & QRIS (FITUR BARU) -->
             <div class="stab-content" id="stab-bank">
               <h2 class="settings-title">Rekening Pembayaran &amp; QRIS</h2>
-              <p class="text-muted" style="margin-bottom:16px">Informasi rekening ini akan otomatis tampil di portal anak kost dan pesan penagihan WhatsApp.</p>
+              <p class="text-muted" style="margin-bottom:16px">Informasi rekening ini akan digunakan pada kwitansi resmi digital dan pesan penagihan WhatsApp.</p>
               <form id="form-bank" class="settings-form">
                 <div class="fg"><label>Nama Bank / E-Wallet</label><input type="text" id="set-bank-nama" class="fc" placeholder="Contoh: BCA, Mandiri, BRI, GoPay" /></div>
                 <div class="fg"><label>Nomor Rekening / No. Akun</label><input type="text" id="set-bank-rekening" class="fc" placeholder="Contoh: 1234567890" /></div>

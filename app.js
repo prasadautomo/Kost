@@ -12,7 +12,6 @@ let S = {
   pembayaran: [],
   pengeluaran:[], // [{id, tanggal, kategori, jumlah, keterangan, buktiNota, createdBy}]
   keluhan:    [], // [{id, penghuniId, kamar, judul, kategori, deskripsi, foto, status, responManager, tglLapor, tglSelesai}]
-  pengumuman: [], // [{id, judul, isi, tanggal, prioritas, createdBy}]
   akun:       [],
   kost: {
     nama: 'Kost Griya Harmoni',
@@ -390,9 +389,7 @@ function generateInitialMultiKostData() {
     { id: 'klh_1_1', penghuniId: 'p_rizky', kamar: '103', judul: 'Kran kamar mandi menetes terus', kategori: 'Air/Plumbing', deskripsi: 'Kran air di kamar mandi tidak bisa ditutup rapat, menetes semalaman.', status: 'selesai', responManager: 'Kran sudah diganti dengan yang baru oleh tukang ledeng tgl 7.', tglLapor: `${bln}-06T10:00:00Z`, tglSelesai: `${bln}-07T14:00:00Z` },
     { id: 'klh_1_2', penghuniId: 'p_dimas', kamar: '101', judul: 'Remote AC baterai habis & AC kurang dingin', kategori: 'AC', deskripsi: 'Remote AC tidak merespon saat ditekan.', status: 'diproses', responManager: 'Teknisi AC dijadwalkan cuci AC besok.', tglLapor: `${bln}-10T12:30:00Z`, tglSelesai: null }
   ];
-  const pengumuman1 = [
-    { id: 'ann_1_1', judul: 'Pembersihan Tandon Air Rutin Hari Minggu', isi: 'Pengurasan tandon air utama Minggu pagi pukul 08.00–11.00 WIB. Mohon tampung air secukupnya.', tanggal: `${bln}-05`, prioritas: 'penting', createdBy: 'Gavin Utomo' }
-  ];
+
 
   // CABANG 2: Kost Graha Asri Dago (Bandung)
   const kost2 = {
@@ -438,9 +435,7 @@ function generateInitialMultiKostData() {
   const keluhan2 = [
     { id: 'klh_2_1', penghuniId: 'p_bdg_chandra', kamar: 'B-01', judul: 'Lampu koridor lantai 2 redup', kategori: 'Listrik', deskripsi: 'Lampu LED koridor depan kamar B-01 berkedip', status: 'selesai', responManager: 'Diganti bohlam LED Philips 14W.', tglLapor: `${bln}-04T18:00:00Z`, tglSelesai: `${bln}-05T10:00:00Z` }
   ];
-  const pengumuman2 = [
-    { id: 'ann_2_1', judul: 'Pengecekan Akses Smart Gate Dago', isi: 'Setiap penghuni diimbau memperbarui kartu akses RFID gerbang sebelum tgl 15.', tanggal: `${bln}-02`, prioritas: 'biasa', createdBy: 'Gavin Utomo' }
-  ];
+
 
   // CABANG 3: Kost Puri Indah Tebet (Jakarta Selatan)
   const kost3 = {
@@ -486,9 +481,7 @@ function generateInitialMultiKostData() {
   const keluhan3 = [
     { id: 'klh_3_1', penghuniId: 'p_jkt_haris', kamar: '201', judul: 'Suhu air water heater kurang panas', kategori: 'Fasilitas Kamar', deskripsi: 'Pemanas air otomatis mati setelah 2 menit', status: 'selesai', responManager: 'Termostat water heater diservis dan normal kembali.', tglLapor: `${bln}-05T20:00:00Z`, tglSelesai: `${bln}-06T15:00:00Z` }
   ];
-  const pengumuman3 = [
-    { id: 'ann_3_1', judul: 'Pergantian Kartu Akses Lift & Gerbang', isi: 'Dimohon mengambil kartu akses RFID baru di pos security lobi.', tanggal: `${bln}-04`, prioritas: 'penting', createdBy: 'Gavin Utomo' }
-  ];
+
 
   // CABANG 4: Kost Surya Kencana Gubeng (Surabaya)
   const kost4 = {
@@ -534,9 +527,7 @@ function generateInitialMultiKostData() {
   const keluhan4 = [
     { id: 'klh_4_1', penghuniId: 'p_sby_ilham', kamar: 'U-01', judul: 'Galon air dispenser lantai 2 habis', kategori: 'Fasilitas Bersama', deskripsi: 'Dispenser air minum lantai 2 sudah kosong', status: 'selesai', responManager: 'Galon baru sudah diantarkan dan dipasang.', tglLapor: `${bln}-06T09:00:00Z`, tglSelesai: `${bln}-06T11:00:00Z` }
   ];
-  const pengumuman4 = [
-    { id: 'ann_4_1', judul: 'Pembersihan Filter AC Berkala Surabaya', isi: 'Teknisi pendingin ruangan akan mengecek filter AC seluruh kamar hari Sabtu.', tanggal: `${bln}-03`, prioritas: 'biasa', createdBy: 'Gavin Utomo' }
-  ];
+
 
   // CABANG 5: Kost Cendana Residence (Malang)
   const kost5 = {
@@ -582,9 +573,7 @@ function generateInitialMultiKostData() {
   const keluhan5 = [
     { id: 'klh_5_1', penghuniId: 'p_mlg_salsabila', kamar: '05', judul: 'Gantungan jemuran balkon perlu diperkuat', kategori: 'Balkon', deskripsi: 'Tali kawat jemuran di balkon kamar 05 kendur', status: 'selesai', responManager: 'Kawat jemuran diganti kawat baja baru.', tglLapor: `${bln}-05T14:00:00Z`, tglSelesai: `${bln}-06T10:00:00Z` }
   ];
-  const pengumuman5 = [
-    { id: 'ann_5_1', judul: 'Pemberlakuan Jam Tenang Ujian Akhir Mahasiswa', isi: 'Diharapkan menjaga ketenangan dan volume suara mulai pukul 21.00 WIB.', tanggal: `${bln}-05`, prioritas: 'penting', createdBy: 'Gavin Utomo' }
-  ];
+
 
   const properties = [
     { id: 'kost_1', nama: kost1.nama, kota: kost1.kota, alamat: kost1.alamat, hp: kost1.hp, pemilik: kost1.pemilik, totalKamar: kost1.totalKamar },
@@ -595,11 +584,11 @@ function generateInitialMultiKostData() {
   ];
 
   const propertiesData = {
-    kost_1: { kost: kost1, kamar: kamar1, penghuni: penghuni1, pembayaran: pembayaran1, pengeluaran: pengeluaran1, keluhan: keluhan1, pengumuman: pengumuman1 },
-    kost_2: { kost: kost2, kamar: kamar2, penghuni: penghuni2, pembayaran: pembayaran2, pengeluaran: pengeluaran2, keluhan: keluhan2, pengumuman: pengumuman2 },
-    kost_3: { kost: kost3, kamar: kamar3, penghuni: penghuni3, pembayaran: pembayaran3, pengeluaran: pengeluaran3, keluhan: keluhan3, pengumuman: pengumuman3 },
-    kost_4: { kost: kost4, kamar: kamar4, penghuni: penghuni4, pembayaran: pembayaran4, pengeluaran: pengeluaran4, keluhan: keluhan4, pengumuman: pengumuman4 },
-    kost_5: { kost: kost5, kamar: kamar5, penghuni: penghuni5, pembayaran: pembayaran5, pengeluaran: pengeluaran5, keluhan: keluhan5, pengumuman: pengumuman5 }
+    kost_1: { kost: kost1, kamar: kamar1, penghuni: penghuni1, pembayaran: pembayaran1, pengeluaran: pengeluaran1, keluhan: keluhan1 },
+    kost_2: { kost: kost2, kamar: kamar2, penghuni: penghuni2, pembayaran: pembayaran2, pengeluaran: pengeluaran2, keluhan: keluhan2 },
+    kost_3: { kost: kost3, kamar: kamar3, penghuni: penghuni3, pembayaran: pembayaran3, pengeluaran: pengeluaran3, keluhan: keluhan3 },
+    kost_4: { kost: kost4, kamar: kamar4, penghuni: penghuni4, pembayaran: pembayaran4, pengeluaran: pengeluaran4, keluhan: keluhan4 },
+    kost_5: { kost: kost5, kamar: kamar5, penghuni: penghuni5, pembayaran: pembayaran5, pengeluaran: pengeluaran5, keluhan: keluhan5 }
   };
 
   return { properties, propertiesData };
@@ -621,7 +610,6 @@ function seedDemoData(force = false) {
   S.pembayaran = [...cur.pembayaran];
   S.pengeluaran = [...cur.pengeluaran];
   S.keluhan = [...cur.keluhan];
-  S.pengumuman = [...cur.pengumuman];
 
   S.akun = [
     { id: 'akun_mgr_gavin', nama: 'Gavin Utomo (Owner)', email: 'gavinutomo4@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null },
@@ -646,8 +634,7 @@ function switchKost(targetKostId) {
       kamar: [...S.kamar],
       pembayaran: [...S.pembayaran],
       pengeluaran: [...S.pengeluaran],
-      keluhan: [...S.keluhan],
-      pengumuman: [...S.pengumuman]
+      keluhan: [...S.keluhan]
     };
   }
 
@@ -660,7 +647,6 @@ function switchKost(targetKostId) {
   S.pembayaran = [...target.pembayaran];
   S.pengeluaran = [...target.pengeluaran];
   S.keluhan = [...target.keluhan];
-  S.pengumuman = [...target.pengumuman];
 
   // 3. Simpan state terisolasi
   LS.save();
@@ -825,8 +811,7 @@ const LS = {
           kamar: [...S.kamar],
           pembayaran: [...S.pembayaran],
           pengeluaran: [...S.pengeluaran],
-          keluhan: [...S.keluhan],
-          pengumuman: [...S.pengumuman]
+          keluhan: [...S.keluhan]
         };
       }
 
@@ -840,7 +825,6 @@ const LS = {
       localStorage.setItem('sk3_pembayaran',  JSON.stringify(S.pembayaran));
       localStorage.setItem('sk3_pengeluaran', JSON.stringify(S.pengeluaran));
       localStorage.setItem('sk3_keluhan',     JSON.stringify(S.keluhan));
-      localStorage.setItem('sk3_pengumuman',  JSON.stringify(S.pengumuman));
       localStorage.setItem('sk3_akun',        JSON.stringify(S.akun));
       localStorage.setItem('sk3_kost',        JSON.stringify(S.kost));
     } catch (err) {
@@ -868,7 +852,6 @@ const LS = {
           S.pembayaran = cur.pembayaran || [];
           S.pengeluaran = cur.pengeluaran || [];
           S.keluhan = cur.keluhan || [];
-          S.pengumuman = cur.pengumuman || [];
         }
       } catch (e) {
         console.warn('Load multi-kost failed, fallback to seed:', e);
@@ -914,14 +897,14 @@ const durasi = tgl => {
   if(hari<365) return Math.floor(hari/30)+' bulan';
   return Math.floor(hari/365)+' tahun '+Math.floor((Math.floor(hari/30))%12)+' bulan';
 };
-const thisMonth = () => {
+function thisMonth() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-};
-const todayYMD = () => {
+}
+function todayYMD() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
+}
 window.thisMonth = thisMonth;
 window.todayYMD = todayYMD;
 window.rp = rp;
@@ -995,10 +978,10 @@ document.addEventListener('click', e => {
 
 // ── SCREEN ROUTING ────────────────────────────────────────────
 function showScreen(name) {
-  ['screen-setup','screen-login','screen-app'].forEach(id => {
-    const el=$(id); if(el) el.style.display='none';
+  ['screen-login', 'screen-app'].forEach(id => {
+    const el = $(id); if (el) el.style.display = 'none';
   });
-  const target=$(name); if(target) target.style.display='flex';
+  const target = $(name); if (target) target.style.display = 'flex';
 }
 
 // ── MAPPERS (JS State <-> Supabase DB) ────────────────────────
@@ -1158,18 +1141,7 @@ const DB = {
         tglSelesai: x.tgl_selesai
       }));
 
-      // 6. Pengumuman
-      const { data: annList } = await sbClient.from('pengumuman').select('*').order('created_at', { ascending: false });
-      if (annList && annList.length > 0) S.pengumuman = annList.map(x => ({
-        id: x.id,
-        judul: x.judul,
-        isi: x.isi,
-        tanggal: x.tanggal,
-        prioritas: x.prioritas || 'info',
-        createdBy: x.created_by
-      }));
-
-      // 7. Kost Pengaturan
+      // 6. Kost Pengaturan
       const { data: kRow } = await sbClient.from('kost_pengaturan').select('*').limit(1).maybeSingle();
       if (kRow) {
         S.kost = {
@@ -1294,26 +1266,7 @@ const DB = {
         });
       } catch (e) { console.warn(e); }
     }
-  },
-  async savePengumuman(ann) {
-    if (sbClient) {
-      try {
-        await sbClient.from('pengumuman').upsert({
-          id: ann.id,
-          judul: ann.judul,
-          isi: ann.isi,
-          tanggal: ann.tanggal,
-          prioritas: ann.prioritas || 'info',
-          created_by: ann.createdBy || currentUser?.nama
-        });
-      } catch (e) { console.warn(e); }
-    }
-  },
-  async deletePengumuman(id) {
-    if (sbClient) {
-      try { await sbClient.from('pengumuman').delete().eq('id', id); } catch (e) { console.warn(e); }
-    }
-  },
+
   async saveKost() {
     if (sbClient) {
       try {
@@ -1347,7 +1300,6 @@ const DB = {
       for (const pb of S.pembayaran) await this.savePembayaran(pb);
       for (const exp of S.pengeluaran) await this.savePengeluaran(exp);
       for (const klh of S.keluhan) await this.saveKeluhan(klh);
-      for (const ann of S.pengumuman) await this.savePengumuman(ann);
 
       if (!silent) toast('Semua data lokal berhasil diunggah ke Supabase Cloud! 🎉');
       await this.fetchData(true);
@@ -1451,11 +1403,10 @@ const btnTriggerLiveOauth          = $('btn-trigger-live-oauth');
 function createGoogleAccountCard(acc, isInline = false) {
   const card = document.createElement('div');
   card.className = 'google-acc-card';
-  const isMgr = (acc.role === 'manager');
-  const inisial = isMgr ? '👑' : (acc.nama ? acc.nama.charAt(0).toUpperCase() : '👤');
+  const inisial = '👑';
 
   card.innerHTML = `
-    <div class="google-acc-avatar ${isMgr ? 'mgr' : ''}">
+    <div class="google-acc-avatar mgr">
       <span>${inisial}</span>
       <div class="google-badge-dot">
         <svg viewBox="0 0 24 24" style="width:10px;height:10px"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
@@ -1467,7 +1418,7 @@ function createGoogleAccountCard(acc, isInline = false) {
         <span>${esc(acc.email)}</span>
       </div>
     </div>
-    <span class="google-acc-role ${isMgr ? 'mgr' : 'tnt'}">${isMgr ? 'Manager 👑' : (acc.kamar ? 'Kamar ' + esc(acc.kamar) + ' 🔑' : 'Penghuni 👤')}</span>
+    <span class="google-acc-role mgr">Manager 👑</span>
   `;
 
   card.addEventListener('click', () => {
@@ -1969,16 +1920,6 @@ function setupPropertySwitcherEvents() {
 
 function loginWithAkun(akun) {
   currentUser = akun;
-  if (akun.role === 'penghuni' && akun.penghuniId && S.propertiesData) {
-    for (const [propId, pData] of Object.entries(S.propertiesData)) {
-      if (pData.penghuni && pData.penghuni.some(p => p.id === akun.penghuniId)) {
-        if (S.activeKostId !== propId) {
-          switchKost(propId);
-        }
-        break;
-      }
-    }
-  }
   LS.saveSession(akun);
   enterApp();
 }
@@ -2897,7 +2838,8 @@ function renderPembayaran() {
   const months = []; const now = new Date();
   for (let i = 0; i < 12; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(d.toISOString().slice(0, 7));
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    months.push(ym);
   }
   const cur = sel.value || months[0];
   sel.innerHTML = months.map(m => {
@@ -3738,18 +3680,12 @@ window.openResponKeluhan = function(id) {
 
 $('modal-keluhan-manager-close').addEventListener('click', () => closeModal('modal-keluhan-manager'));
 
-// ── FITUR PENGUMUMAN DIHAPUS (KHUSUS MANAGER) ────────────────
-function renderPengumuman() {}
-
-
-function renderTenant() {}
-
 // ── PROFIL AKUN ───────────────────────────────────────────────
 function renderProfil() {
   $('profil-info').innerHTML = `
     <div class="profil-row"><span class="profil-key">Nama</span><span class="profil-val">${currentUser.nama}</span></div>
     <div class="profil-row"><span class="profil-key">Email</span><span class="profil-val">${currentUser.email}</span></div>
-    <div class="profil-row"><span class="profil-key">Role</span><span class="profil-val">${currentUser.role==='manager'?'Manager (Akses Penuh)':'Penghuni'}</span></div>
+    <div class="profil-row"><span class="profil-key">Role</span><span class="profil-val">Manager (Akses Penuh)</span></div>
   `;
 }
 
@@ -3857,7 +3793,6 @@ $('btn-backup').addEventListener('click', () => {
     pembayaran: S.pembayaran,
     pengeluaran: S.pengeluaran,
     keluhan: S.keluhan,
-    pengumuman: S.pengumuman,
     kost: S.kost,
     backupDate: new Date().toISOString()
   };
@@ -3878,7 +3813,6 @@ $('input-restore').addEventListener('change', function() {
         S.pembayaran  = d.pembayaran || [];
         S.pengeluaran = d.pengeluaran || [];
         S.keluhan     = d.keluhan || [];
-        S.pengumuman  = d.pengumuman || [];
         S.kost        = d.kost || S.kost;
         LS.save(); renderPengaturan(); toast('Data berhasil di-restore!');
       }, 'Lanjutkan');
@@ -3889,7 +3823,7 @@ $('input-restore').addEventListener('change', function() {
 
 $('btn-hapus-semua').addEventListener('click', () => {
   confirm_dlg('Hapus Semua Data Operasional', 'Hapus SEMUA data penghuni, kamar, pembayaran, pengeluaran, dan tiket keluhan?', () => {
-    S.penghuni = []; S.kamar = []; S.pembayaran = []; S.pengeluaran = []; S.keluhan = []; S.pengumuman = [];
+    S.penghuni = []; S.kamar = []; S.pembayaran = []; S.pengeluaran = []; S.keluhan = [];
     LS.save(); toast('Semua data operasional telah dikosongkan.'); renderPengaturan();
   }, 'Ya, Hapus Semua');
 });
@@ -4147,21 +4081,7 @@ if ('serviceWorker' in navigator) {
     });
   }
 
-  const btnDemoTnt = $('btn-demo-tnt');
-  if (btnDemoTnt) {
-    btnDemoTnt.addEventListener('click', () => {
-      seedDemoData(false);
-      let tnt = S.akun.find(a => a.role === 'penghuni');
-      if (!tnt) {
-        const p = S.penghuni[0];
-        tnt = { id: 'akun_tnt', nama: p?.nama || 'Dimas Prasetyo', email: 'dimas@sikost.id', role: 'penghuni', penghuniId: p?.id || null };
-        S.akun.push(tnt);
-        LS.save();
-      }
-      loginWithAkun(tnt);
-      toast(`Selamat datang di Portal Anak Kost, ${tnt.nama}! 🪪`);
-    });
-  }
+
 
   // Coba inisialisasi Supabase
   const hasSb = initSupabase();
