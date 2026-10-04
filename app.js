@@ -1474,22 +1474,26 @@ const btnTriggerLiveOauth          = $('btn-trigger-live-oauth');
 function createGoogleAccountCard(acc, isInline = false) {
   const card = document.createElement('div');
   card.className = 'google-acc-card';
-  const inisial = '👑';
+  const rawParts = (acc.nama || 'User').replace(/\(.*?\)/g, '').trim().split(/\s+/);
+  const inisial = rawParts.length > 1 ? (rawParts[0][0] + rawParts[1][0]).toUpperCase() : rawParts[0].slice(0, 2).toUpperCase();
 
   card.innerHTML = `
-    <div class="google-acc-avatar mgr">
-      <span>${inisial}</span>
-      <div class="google-badge-dot">
-        <svg viewBox="0 0 24 24" style="width:10px;height:10px"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+    <div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">
+      <div class="google-acc-avatar mgr">
+        <span>${inisial}</span>
+        <span class="avatar-online-dot"></span>
+      </div>
+      <div class="google-acc-meta">
+        <div class="google-acc-name">${esc(acc.nama)}</div>
+        <div class="google-acc-sub">
+          <span>${esc(acc.email)}</span>
+        </div>
       </div>
     </div>
-    <div class="google-acc-meta">
-      <div class="google-acc-name">${esc(acc.nama)}</div>
-      <div class="google-acc-sub">
-        <span>${esc(acc.email)}</span>
-      </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span class="google-acc-role mgr">Manager 👑</span>
+      <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-3)">arrow_forward</span>
     </div>
-    <span class="google-acc-role mgr">Manager 👑</span>
   `;
 
   card.addEventListener('click', () => {
@@ -2206,10 +2210,10 @@ function renderDashActionCenter() {
   container.innerHTML = `
     <div class="dash-action-header">
       <div class="dash-action-title-group">
-        <div class="dash-action-icon-badge">⚡</div>
+        <span class="action-pulse-beacon"></span>
         <div>
-          <h2 class="dash-action-heading">Fokus &amp; Tugas Hari Ini</h2>
-          <div class="dash-action-subtitle">Ringkasan cepat tindakan operasional yang memerlukan perhatian Anda</div>
+          <h2 class="dash-action-heading">Tindakan Mendesak Hari Ini</h2>
+          <div class="dash-action-subtitle">${totalActions} agenda operasional membutuhkan perhatian segera</div>
         </div>
       </div>
       <div class="dash-action-tabs">
@@ -2231,59 +2235,68 @@ function renderDashActionCenter() {
       ${displayItems.map(item => {
         if (item.type === 'tagihan') {
           const { p, statusLabel, badgeClass } = item;
+          const isLate = badgeClass === 'badge-red';
           return `
-            <div class="action-card" style="border-left:4px solid ${badgeClass === 'badge-red' ? 'var(--red)' : 'var(--orange)'}">
+            <div class="action-card">
               <div class="action-card-top">
                 <div class="action-card-main">
-                  <div class="action-card-icon">👤</div>
-                  <div>
-                    <div class="action-card-title">${p.nama} (Kamar ${p.kamar || '–'})</div>
-                    <div class="action-card-sub">Tagihan: <strong>${rp(p.sewa)}</strong></div>
+                  <div class="action-room-badge ${isLate ? 'danger' : 'warning'}">${p.kamar || '–'}</div>
+                  <div style="min-width:0">
+                    <div class="action-card-title">${p.nama}</div>
+                    <div class="action-card-sub">Tagihan: <strong style="color:var(--text)">${rp(p.sewa)}</strong></div>
                   </div>
                 </div>
                 <span class="badge ${badgeClass}">${statusLabel}</span>
               </div>
               <div class="action-card-actions">
-                <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${p.id}', '${curMonth}')" title="Kirim WA Pengingat">📱 Kirim WA</button>
-                <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${p.id}', '${curMonth}')" title="Tandai langsung lunas">⚡ 1-Klik Lunas</button>
+                <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${p.id}', '${curMonth}')" title="Kirim WA Pengingat">
+                  <span class="material-symbols-outlined" style="font-size:14px">chat</span> WA
+                </button>
+                <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${p.id}', '${curMonth}')" title="Tandai langsung lunas">
+                  <span class="material-symbols-outlined" style="font-size:14px">check_circle</span> 1-Klik Lunas
+                </button>
               </div>
             </div>
           `;
         } else if (item.type === 'keluhan') {
           const { k } = item;
           return `
-            <div class="action-card" style="border-left:4px solid var(--purple)">
+            <div class="action-card">
               <div class="action-card-top">
                 <div class="action-card-main">
-                  <div class="action-card-icon">🛠️</div>
-                  <div>
+                  <div class="action-room-badge purple">${k.kamar || '–'}</div>
+                  <div style="min-width:0">
                     <div class="action-card-title">${k.judul || 'Keluhan Fasilitas'}</div>
-                    <div class="action-card-sub">Kamar ${k.kamar || '–'} · ${fmtD(k.tglLapor)}</div>
+                    <div class="action-card-sub">${fmtD(k.tglLapor)} · Menunggu penanganan</div>
                   </div>
                 </div>
                 <span class="badge badge-purple">Menunggu</span>
               </div>
               <div class="action-card-actions">
-                <button type="button" class="btn-primary btn-sm" onclick="openResponKeluhan('${k.id}')">Tindak Lanjut →</button>
+                <button type="button" class="btn-primary btn-sm" onclick="openResponKeluhan('${k.id}')">
+                  <span class="material-symbols-outlined" style="font-size:14px">build</span> Tindak Lanjut →
+                </button>
               </div>
             </div>
           `;
         } else if (item.type === 'kamar_kosong') {
           const { k } = item;
           return `
-            <div class="action-card" style="border-left:4px solid var(--text-4)">
+            <div class="action-card">
               <div class="action-card-top">
                 <div class="action-card-main">
-                  <div class="action-card-icon">🛏️</div>
-                  <div>
+                  <div class="action-room-badge primary">${k.no}</div>
+                  <div style="min-width:0">
                     <div class="action-card-title">Kamar ${k.no} (${k.tipe || 'Standar'})</div>
-                    <div class="action-card-sub">Lantai ${k.lantai || '1'} · ${rp(k.harga || 0)}/bln</div>
+                    <div class="action-card-sub">Lt. ${k.lantai || '1'} · <strong style="color:var(--accent-light)">${rp(k.harga || 0)}/bln</strong></div>
                   </div>
                 </div>
                 <span class="badge badge-gray">Siap Huni</span>
               </div>
               <div class="action-card-actions">
-                <button type="button" class="btn-primary btn-sm" onclick="openModalPenghuniWithRoom('${k.no}')">+ Isi Penghuni</button>
+                <button type="button" class="btn-primary btn-sm" onclick="openModalPenghuniWithRoom('${k.no}')">
+                  <span class="material-symbols-outlined" style="font-size:14px">person_add</span> + Isi Penghuni
+                </button>
               </div>
             </div>
           `;
@@ -2305,9 +2318,9 @@ function renderDashboard() {
   const greet = h < 11 ? 'Selamat pagi' : h < 15 ? 'Selamat siang' : h < 18 ? 'Selamat sore' : 'Selamat malam';
   $('dash-greeting').textContent = greet + ', ' + (currentUser?.nama?.split(' ')[0] || '') + ' 👋';
   $('dash-date').textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  if ($('dash-kost-name-badge')) $('dash-kost-name-badge').textContent = (S.kost?.nama || 'Kost Griya Harmoni') + ' • ' + (S.kost?.totalKamar || S.kamar?.length || 8) + ' Unit';
 
   renderDashActionCenter();
-
 
   const aktif = S.penghuni.filter(p => p.status === 'aktif');
   const kamarTerisi = [...new Set(aktif.map(p => p.kamar).filter(Boolean))].length;
@@ -2325,37 +2338,111 @@ function renderDashboard() {
   // Laba Bersih (Net Profit)
   const labaBersih = terkumpul - totalPengeluaran;
 
+  const totalKamar = S.kost.totalKamar || 8;
+  const okupansiPersen = totalKamar > 0 ? Math.round((kamarTerisi / totalKamar) * 100) : 0;
+
   // 6 Kartu KPI Utama: Penghuni, Kamar, Target Sewa, Pemasukan, Pengeluaran, Laba Bersih
   $('kpi-row').innerHTML = `
     <div class="kpi">
-      <div class="kpi-label">Total Penghuni <span style="font-size:1.1rem">👥</span></div>
-      <div class="kpi-value">${S.penghuni.length}</div>
-      <div class="kpi-sub">${aktif.length} aktif saat ini</div>
+      <div class="kpi-top">
+        <span class="kpi-label">Total Penghuni</span>
+        <div class="kpi-icon-badge" style="background:rgba(99,102,241,0.14);color:var(--accent-light)">
+          <span class="material-symbols-outlined" style="font-size:18px">group</span>
+        </div>
+      </div>
+      <div class="kpi-val-group">
+        <div class="kpi-value">${S.penghuni.length}</div>
+      </div>
+      <div class="kpi-footer">
+        <span class="kpi-sub">${aktif.length} aktif saat ini</span>
+        <span class="badge" style="background:rgba(16,185,129,0.12);color:var(--green);font-size:0.7rem;padding:2px 8px">Terdata</span>
+      </div>
     </div>
+
     <div class="kpi">
-      <div class="kpi-label">Kamar Terisi <span style="font-size:1.1rem">🛏</span></div>
-      <div class="kpi-value">${kamarTerisi}</div>
-      <div class="kpi-sub">dari ${S.kost.totalKamar || '?'} total kamar</div>
+      <div class="kpi-top">
+        <span class="kpi-label">Kamar Terisi</span>
+        <div class="kpi-icon-badge" style="background:rgba(16,185,129,0.14);color:var(--green)">
+          <span class="material-symbols-outlined" style="font-size:18px">hotel</span>
+        </div>
+      </div>
+      <div class="kpi-val-group">
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <div class="kpi-value" style="color:var(--green)">${kamarTerisi}</div>
+          <span style="font-size:0.8rem;color:var(--text-3)">/${totalKamar} Unit (${okupansiPersen}%)</span>
+        </div>
+        <div class="kpi-progress-bar">
+          <div class="kpi-progress-fill" style="width:${okupansiPersen}%"></div>
+        </div>
+      </div>
+      <div class="kpi-footer">
+        <span class="kpi-sub">dari ${totalKamar} total kamar</span>
+        <span class="kpi-sub" style="color:var(--text-3)">${Math.max(0, totalKamar - kamarTerisi)} Kosong</span>
+      </div>
     </div>
+
     <div class="kpi">
-      <div class="kpi-label">Pendapatan / Bulan <span style="font-size:1.1rem">🎯</span></div>
-      <div class="kpi-value" style="font-size:1.05rem">${rp(targetPendapatan)}</div>
-      <div class="kpi-sub">target bulanan</div>
+      <div class="kpi-top">
+        <span class="kpi-label">Pendapatan / Bulan</span>
+        <div class="kpi-icon-badge" style="background:rgba(245,158,11,0.14);color:var(--orange)">
+          <span class="material-symbols-outlined" style="font-size:18px">flag</span>
+        </div>
+      </div>
+      <div class="kpi-val-group">
+        <div class="kpi-value" style="color:var(--orange);font-size:1.45rem">${rp(targetPendapatan)}</div>
+      </div>
+      <div class="kpi-footer">
+        <span class="kpi-sub">target bulanan</span>
+        <span class="badge" style="background:rgba(245,158,11,0.12);color:var(--orange);font-size:0.7rem;padding:2px 8px">Target</span>
+      </div>
     </div>
+
     <div class="kpi" data-page="pembayaran" style="cursor:pointer" title="Lihat riwayat pembayaran sewa">
-      <div class="kpi-label">Terkumpul Bulan Ini <span style="font-size:1.1rem">💰</span></div>
-      <div class="kpi-value" style="font-size:1.05rem;color:var(--green)">${rp(terkumpul)}</div>
-      <div class="kpi-sub">${lunasList.length} dari ${aktif.length} penghuni lunas →</div>
+      <div class="kpi-top">
+        <span class="kpi-label">Terkumpul Bulan Ini</span>
+        <div class="kpi-icon-badge" style="background:rgba(16,185,129,0.14);color:var(--green)">
+          <span class="material-symbols-outlined" style="font-size:18px">payments</span>
+        </div>
+      </div>
+      <div class="kpi-val-group">
+        <div class="kpi-value" style="font-size:1.45rem;color:var(--green)">${rp(terkumpul)}</div>
+      </div>
+      <div class="kpi-footer">
+        <span class="kpi-sub">${lunasList.length} dari ${aktif.length} penghuni lunas</span>
+        <span class="material-symbols-outlined" style="font-size:16px;color:var(--green)">arrow_forward</span>
+      </div>
     </div>
+
     <div class="kpi" data-page="pengeluaran" style="cursor:pointer" title="Kelola catatan pengeluaran operasional">
-      <div class="kpi-label">Pengeluaran Bulan Ini <span style="font-size:1.1rem">💸</span></div>
-      <div class="kpi-value" style="font-size:1.05rem;color:var(--red)">${rp(totalPengeluaran)}</div>
-      <div class="kpi-sub">${expBulanIni.length} pengeluaran tercatat →</div>
+      <div class="kpi-top">
+        <span class="kpi-label">Pengeluaran Bulan Ini</span>
+        <div class="kpi-icon-badge" style="background:rgba(244,63,94,0.14);color:var(--red)">
+          <span class="material-symbols-outlined" style="font-size:18px">receipt_long</span>
+        </div>
+      </div>
+      <div class="kpi-val-group">
+        <div class="kpi-value" style="font-size:1.45rem;color:var(--red)">${rp(totalPengeluaran)}</div>
+      </div>
+      <div class="kpi-footer">
+        <span class="kpi-sub">${expBulanIni.length} pengeluaran tercatat</span>
+        <span class="material-symbols-outlined" style="font-size:16px;color:var(--red)">arrow_forward</span>
+      </div>
     </div>
+
     <div class="kpi" data-page="pengeluaran" style="cursor:pointer" title="Rincian laba bersih operasional">
-      <div class="kpi-label">Laba Bersih <span style="font-size:1.1rem">📈</span></div>
-      <div class="kpi-value" style="font-size:1.05rem;color:${labaBersih >= 0 ? 'var(--accent-light, #818cf8)' : 'var(--red)'}">${rp(labaBersih)}</div>
-      <div class="kpi-sub">${labaBersih >= 0 ? 'Surplus operasional' : 'Defisit operasional'} →</div>
+      <div class="kpi-top">
+        <span class="kpi-label">Laba Bersih</span>
+        <div class="kpi-icon-badge" style="background:rgba(99,102,241,0.14);color:var(--accent-light)">
+          <span class="material-symbols-outlined" style="font-size:18px">trending_up</span>
+        </div>
+      </div>
+      <div class="kpi-val-group">
+        <div class="kpi-value" style="font-size:1.45rem;color:${labaBersih >= 0 ? 'var(--accent-light, #818cf8)' : 'var(--red)'}">${rp(labaBersih)}</div>
+      </div>
+      <div class="kpi-footer">
+        <span class="kpi-sub">${labaBersih >= 0 ? 'Surplus operasional' : 'Defisit operasional'}</span>
+        <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent-light)">arrow_forward</span>
+      </div>
     </div>
   `;
 

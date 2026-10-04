@@ -84,7 +84,9 @@
     <div class="login-card-col">
       <div class="login-card">
         <div class="login-brand">
-          <div class="login-logo">🏠</div>
+          <div class="login-logo">
+            <span class="material-symbols-outlined" style="font-size:32px;color:var(--accent-light)">apartment</span>
+          </div>
           <h1 class="login-title" id="login-kost-title">Kost Griya Harmoni</h1>
           <p class="login-sub" id="login-kost-sub">Portal Khusus Pemilik &amp; Pengelola Kost</p>
         </div>
@@ -100,8 +102,12 @@
           <span>Masuk dengan Google (1-Klik)</span>
         </button>
 
+        <div class="login-divider">
+          <span>PILIH PROFIL PENGELOLA TERSIMPAN</span>
+        </div>
+
         <!-- Quick 1-Click Google Account List -->
-        <div id="inline-google-accounts-list" style="margin-top:16px;display:flex;flex-direction:column;gap:8px"></div>
+        <div id="inline-google-accounts-list" style="display:flex;flex-direction:column;gap:8px"></div>
 
         <div class="login-card-footer-sec">
           <div style="display:flex;align-items:center;gap:6px;color:var(--text-3);font-size:0.75rem">
@@ -224,8 +230,24 @@
       <!-- PAGE: DASHBOARD (Manager) -->
       <section class="page" id="page-dashboard">
         <div class="page-heading">
-          <h1 id="dash-greeting">Selamat datang 👋</h1>
-          <p class="text-muted" id="dash-date">–</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <h1 id="dash-greeting" style="margin:0">Selamat datang 👋</h1>
+                <span class="badge" style="background:var(--surface-container);color:var(--accent-light);border:1px solid var(--border-2);font-weight:600;padding:4px 12px;border-radius:999px;font-size:0.75rem;display:inline-flex;align-items:center;gap:6px">
+                  <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block"></span>
+                  <span id="dash-kost-name-badge">Kost Griya Harmoni • Multi-Branch</span>
+                </span>
+              </div>
+              <p class="text-muted" id="dash-date" style="margin-top:4px">–</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <button type="button" class="btn-primary" onclick="openModalCatatPengeluaran()" title="Catat Pengeluaran Cepat">
+                <span class="material-symbols-outlined" style="font-size:16px">add</span>
+                <span>Catat Pengeluaran</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Action Center: Fokus & Tugas Hari Ini -->

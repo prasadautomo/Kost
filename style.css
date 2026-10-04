@@ -221,6 +221,26 @@ em {
   font-weight: bold;
 }
 
+/* Material Symbols Icon Alignment (Google Stitch) */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -643,38 +663,49 @@ em {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 11px 14px;
+  padding: 12px 14px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--surface-container);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--t);
   text-align: left;
   width: 100%;
 }
 .google-acc-card:hover {
-  background: var(--surface-hover);
-  border-color: #4285F4;
+  background: var(--surface-container-high);
+  border-color: rgba(66, 133, 244, 0.5);
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(66, 133, 244, 0.2);
 }
 .google-acc-avatar {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   flex-shrink: 0;
   position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 .google-acc-avatar.mgr {
   background: linear-gradient(135deg, #10b981, #059669);
+}
+.avatar-online-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid var(--surface-container);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
 }
 .google-badge-dot {
   position: absolute;
@@ -694,9 +725,9 @@ em {
   min-width: 0;
 }
 .google-acc-name {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.92rem;
-  color: var(--text-1);
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -710,21 +741,22 @@ em {
   margin-top: 1px;
 }
 .google-acc-role {
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 999px;
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 .google-acc-role.mgr {
   background: rgba(16, 185, 129, 0.15);
   color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(16, 185, 129, 0.35);
 }
 .google-acc-role.tnt {
   background: rgba(59, 130, 246, 0.15);
   color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.35);
 }
 
 .login-divider {
@@ -1467,6 +1499,99 @@ em {
   color: var(--text-4);
   margin-top: 6px;
   font-weight: 500;
+}
+
+/* KPI Card Internal Architecture (Stitch Frame 2) */
+.kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.kpi-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.kpi-val-group {
+  margin: 6px 0 10px;
+}
+.kpi-progress-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-container-highest);
+  overflow: hidden;
+  margin-top: 8px;
+}
+.kpi-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.kpi-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 0.74rem;
+  color: var(--text-3);
+}
+
+/* Action Center Unit Room Badges (Stitch Frame 2) */
+.action-room-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+.action-room-badge.primary {
+  background: rgba(99, 102, 241, 0.2);
+  color: var(--accent-light);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+.action-room-badge.warning {
+  background: rgba(245, 158, 11, 0.18);
+  color: var(--orange);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+.action-room-badge.danger {
+  background: rgba(244, 63, 94, 0.18);
+  color: var(--red);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+}
+.action-room-badge.purple {
+  background: rgba(168, 85, 247, 0.18);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+}
+.action-room-badge.neutral {
+  background: var(--surface-container-high);
+  color: var(--text-2);
+  border: 1px solid var(--border-2);
+}
+
+.action-pulse-beacon {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 10px var(--red);
+  animation: pulseDot 2s infinite ease-in-out;
+  display: inline-block;
 }
 
 /* ─── GRID LAYOUTS ─────────────────────────────────────────── */
@@ -2617,19 +2742,19 @@ textarea.fc {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--bg-2);
+  background: var(--surface-container-low);
   border: 1px solid var(--border);
   padding: 6px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   color: var(--text);
   cursor: pointer;
   transition: all var(--t);
   font-family: inherit;
 }
 .btn-property-switch:hover {
-  background: var(--bg-3);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  background: var(--surface-container);
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.12);
 }
 
 .prop-icon-badge {
@@ -2862,40 +2987,44 @@ textarea.fc {
    SIKOST v4.2 ENHANCEMENTS: SPOTLIGHT, ACTION CENTER, FAB, ROOM MATRIX
    ============================================================ */
 
-/* Topbar Spotlight Search Button */
+/* Topbar Spotlight Search Button (Stitch Frame 2 & 8) */
 .topbar-search-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: var(--bg-2);
+  gap: 10px;
+  background: var(--surface-container-low);
   border: 1px solid var(--border);
   color: var(--text-3);
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: var(--radius);
   cursor: pointer;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   transition: all var(--t);
+  min-width: 240px;
+  justify-content: space-between;
 }
 .topbar-search-btn:hover {
-  border-color: var(--border-glow);
-  background: var(--bg-hover);
+  border-color: rgba(99, 102, 241, 0.45);
+  background: var(--surface-container);
   color: var(--text);
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.15);
 }
 .search-kbd {
-  background: var(--bg-3);
+  background: var(--surface-container-highest);
   border: 1px solid var(--border-2);
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 0.7rem;
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 0.68rem;
   font-family: var(--font-mono);
-  color: var(--text-2);
+  font-weight: 700;
+  color: var(--text-3);
 }
 @media (max-width: 680px) {
   .search-hint-text, .search-kbd {
     display: none;
   }
   .topbar-search-btn {
+    min-width: auto;
     padding: 8px;
     border-radius: 50%;
   }
