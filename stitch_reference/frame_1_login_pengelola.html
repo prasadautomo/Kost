@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KostHub Manager - Masuk ke Portal Pengelola</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-container": "#421600",
+            "on-secondary": "#303030",
+            "secondary-fixed-dim": "#c6c6c6",
+            "surface-dim": "#121414",
+            "primary-fixed-dim": "#b1c5ff",
+            "on-error-container": "#ffdad6",
+            "surface-container-high": "#282a2b",
+            "on-primary-container": "#7289c5",
+            "primary-container": "#002056",
+            "on-primary-fixed": "#001946",
+            "surface": "#121414",
+            "outline": "#8e909b",
+            "surface-container-highest": "#333535",
+            "surface-container-lowest": "#0c0f0f",
+            "surface-container-low": "#1a1c1c",
+            "on-tertiary-fixed": "#351000",
+            "on-primary": "#132e64",
+            "error-container": "#93000a",
+            "primary-fixed": "#dae2ff",
+            "on-primary-fixed-variant": "#2d457b",
+            "on-secondary-fixed-variant": "#474747",
+            "inverse-surface": "#e2e2e2",
+            "outline-variant": "#44464f",
+            "secondary-container": "#474747",
+            "on-surface": "#e2e2e2",
+            "primary": "#b1c5ff",
+            "surface-container": "#1e2020",
+            "inverse-on-surface": "#2f3131",
+            "on-secondary-fixed": "#1b1b1b",
+            "tertiary": "#ffb694",
+            "error": "#ffb4ab",
+            "on-tertiary-fixed-variant": "#733515",
+            "background": "#121414",
+            "secondary-fixed": "#e2e2e2",
+            "surface-variant": "#333535",
+            "surface-bright": "#37393a",
+            "on-secondary-container": "#b5b5b5",
+            "inverse-primary": "#465d95",
+            "on-surface-variant": "#c5c6d1",
+            "on-tertiary-container": "#c57751",
+            "on-tertiary": "#562001",
+            "on-error": "#690005",
+            "surface-tint": "#b1c5ff",
+            "tertiary-fixed-dim": "#ffb694",
+            "on-background": "#e2e2e2",
+            "tertiary-fixed": "#ffdbcc",
+            "secondary": "#c6c6c6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "margin": "1.5rem",
+            "space-lg": "1.5rem",
+            "space-xl": "2rem",
+            "gutter": "1rem",
+            "space-sm": "0.5rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "label-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-surface-container-lowest text-on-surface min-h-screen flex flex-col justify-center selection:bg-primary selection:text-primary-container antialiased">
+<!-- Main Container -->
+<main class="w-full min-h-screen flex flex-col lg:flex-row relative overflow-hidden">
+<!-- LEFT SIDE: Branding, Visual, & Live Metrics Showcase -->
+<div class="hidden lg:flex lg:w-7/12 flex-col justify-between p-space-xl relative border-r border-outline-variant bg-surface-container-lowest overflow-hidden">
+<!-- Ambient Graphic Glow -->
+<div class="absolute -top-40 -left-40 w-96 h-96 bg-primary-container/40 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute bottom-0 right-0 w-80 h-80 bg-surface-container-high/30 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Top Brand Tagline -->
+<div class="relative z-10">
+<div class="inline-flex items-center gap-space-sm px-space-md py-space-xs rounded-full bg-surface-container border border-outline-variant text-primary mb-space-lg">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span class="font-label-md text-label-md tracking-wide">Portal Resmi Pengelola Kost</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight max-w-xl">
+          Sistem Manajemen Kost Modern &amp; Otomatis
+        </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-space-sm max-w-lg">
+          Kendalikan operasional properti hunian sewa, sinkronisasi tagihan penghuni, dan pembukuan kas harian tanpa friksi.
+        </p>
+</div>
+<!-- Center Feature Showcase: Architectural Preview & KPI Badges -->
+<div class="relative z-10 my-space-lg">
+<div class="relative rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low shadow-2xl">
+<!-- Room Preview Image with Contextual Prompt -->
+<div class="h-72 w-full relative">
+<img class="w-full h-full object-cover opacity-85" data-alt="A modern luxury boutique boarding house suite interior illuminated by warm natural daylight and sleek architectural linear LEDs. The room features polished concrete floors, minimalist walnut timber cabinetry, and ergonomic furniture in a moody, high-contrast dark ambiance. Corporate hospitality atmosphere showcasing clean lines, tidy bedding, and professional interior architecture suitable for premium urban living." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDg1rpJvsE-QFP1ZaZU5_0waWzZFstimqJCftSqvXRzfYz4icpyut7DukZH8NW3QuqvFvZ9KZs2D_W_2R8LArRFersyqLb5kK3RGIgCvC59iarzhiErXdBtlQO5qEEqdHvma38948BTJLj3wY7RzL3O578bJcVZ7rDtwDS9y-EIq1AfFMipC0xrTa0eRDke9uC3yssldhCJK_uclfEhZk4EiqhcYOFZ5chiOvG-I1Pig5vr3Upr5VN-ig"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/40 to-transparent"></div>
+<div class="absolute top-space-md left-space-md bg-surface-container-lowest/80 backdrop-blur-md px-space-md py-space-xs rounded border border-outline-variant flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface">Kost Singgah Nyaman — Flagship Center</span>
+</div>
+</div>
+<!-- Bottom Metric Cards -->
+<div class="p-space-lg grid grid-cols-3 gap-space-md bg-surface-container-low/95 border-t border-outline-variant">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">bed</span> Unit Terisi
+              </span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface mt-space-xs">64 Unit</span>
+<span class="font-label-sm text-label-sm text-primary">100% Okupansi Penuh</span>
+</div>
+<div class="flex flex-col border-l border-outline-variant pl-space-md">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary">sentiment_satisfied</span> Kepuasan
+              </span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface mt-space-xs">98%</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Dari 142 Review</span>
+</div>
+<div class="flex flex-col border-l border-outline-variant pl-space-md">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">payments</span> Kas Bulan Ini
+              </span>
+<span class="font-headline-md text-headline-md font-bold text-primary mt-space-xs">Tepat Waktu</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Auto-reconciliation</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Left Footer Quote / System Assurance -->
+<div class="relative z-10 flex items-center justify-between text-on-surface-variant pt-space-md border-t border-outline-variant/60">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">format_image_left</span>
+<span class="font-label-md text-label-md">Audit keuangan terenkripsi &amp; data residen tersimpan aman</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">v2.4.0-enterprise</span>
+</div>
+</div>
+<!-- RIGHT SIDE: Modern Clean Login Form -->
+<div class="w-full lg:w-5/12 flex flex-col justify-center items-center p-space-md md:p-space-xl bg-surface">
+<div class="w-full max-w-md flex flex-col">
+<!-- Mobile-Only Brand Header -->
+<div class="lg:hidden mb-space-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-container border border-outline-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">apartment</span>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">KostHub Manager</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Portal Khusus Pemilik &amp; Pengelola</p>
+</div>
+</div>
+</div>
+<!-- Login Card Form Structure -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-space-lg md:p-space-xl shadow-lg">
+<!-- Brand Badge in Card -->
+<div class="hidden lg:flex items-center gap-space-sm mb-space-md">
+<div class="w-9 h-9 rounded-lg bg-primary-container border border-outline-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">apartment</span>
+</div>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface tracking-tight">KostHub Manager</span>
+</div>
+<!-- Headline & Context -->
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">
+            Selamat Datang Kembali, Juragan
+          </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-xs mb-space-lg">
+            Kelola 64 kamar, pembukuan kas, dan sewa dalam satu pintu.
+          </p>
+<!-- Primary SSO Action: Google Workspace SSO -->
+<button class="w-full h-11 px-space-md bg-surface-container-high hover:bg-surface-container-highest border border-outline text-on-surface rounded-lg font-label-lg text-label-lg flex items-center justify-center gap-space-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer" type="button">
+<!-- Google Official Logo Vector -->
+<svg class="w-5 h-5 flex-shrink-0" viewbox="0 0 24 24">
+<path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" fill="#4285F4"></path>
+<path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z" fill="#34A853"></path>
+<path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z" fill="#FBBC05"></path>
+<path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#EA4335"></path>
+</svg>
+<span class="font-medium">Lanjutkan dengan Google Workspace (Manager SSO)</span>
+</button>
+<!-- Quick Account Switcher (Profil Pengelola Tersimpan) -->
+<div class="mt-space-md p-space-md rounded-lg bg-surface-container border border-outline-variant hover:border-outline transition-colors duration-150">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-label-lg border border-primary/30">
+                    BS
+                  </div>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full ring-2 ring-surface-container"></span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface">Budi Santoso</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate max-w-[190px]">budi@kostsinggahnyaman.id</span>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-sm text-[10px] text-primary">Kost Singgah Nyaman</span>
+<span class="text-outline text-[10px]">•</span>
+<span class="font-label-sm text-[10px] text-outline">Aktif 1 jam lalu</span>
+</div>
+</div>
+</div>
+<!-- 1-Click Login CTA -->
+<button class="px-space-sm py-1.5 bg-primary-container hover:bg-primary-container/80 text-primary border border-primary/40 rounded font-label-sm text-label-sm font-semibold transition-colors duration-150 flex items-center gap-1 cursor-pointer" title="Masuk langsung dengan sesi tersimpan" type="button">
+<span>Masuk</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Divider -->
+<div class="relative flex items-center justify-center my-space-lg">
+<div class="border-t border-outline-variant w-full"></div>
+<span class="bg-surface-container-low px-space-md text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+              atau via email pengelola
+            </span>
+</div>
+<!-- Alternative Form: Email & Password -->
+<form class="space-y-space-md" onsubmit="event.preventDefault();">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-space-xs" for="email">
+                Alamat Email Pengelola
+              </label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-outline">mail</span>
+<input class="w-full h-11 pl-10 pr-space-md bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-150" id="email" name="email" placeholder="nama@propertikost.com" required="" type="email" value="budi@kostsinggahnyaman.id"/>
+</div>
+</div>
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<label class="block font-label-md text-label-md text-on-surface" for="password">
+                  Kata Sandi
+                </label>
+<a class="font-label-sm text-label-sm text-primary hover:underline" href="#">
+                  Lupa kata sandi?
+                </a>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-outline">lock</span>
+<input class="w-full h-11 pl-10 pr-10 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all duration-150" id="password" name="password" placeholder="••••••••••••" required="" type="password"/>
+<button aria-label="Lihat kata sandi" class="absolute right-3 top-2.5 text-outline hover:text-on-surface" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- Submit Primary Button -->
+<button class="w-full h-11 bg-primary text-on-primary hover:bg-primary-fixed font-label-lg text-label-lg font-semibold rounded-lg transition-colors duration-150 flex items-center justify-center gap-space-sm mt-space-md cursor-pointer shadow-sm" type="submit">
+<span>Masuk via Email</span>
+<span class="material-symbols-outlined text-[18px]">login</span>
+</button>
+</form>
+<!-- Card Footer: SSL Security Badge & WhatsApp Support -->
+<div class="mt-space-lg pt-space-md border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-space-sm text-on-surface-variant font-label-sm text-label-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-green-400 text-[16px]">lock</span>
+<span>Enkripsi Bank-Grade SSL 256-bit</span>
+</div>
+<a class="flex items-center gap-space-xs text-on-surface hover:text-primary transition-colors duration-150" href="https://wa.me/" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[16px] text-green-400">chat</span>
+<span>Bantuan Support WhatsApp</span>
+</a>
+</div>
+</div>
+<!-- Outside Card Helper Links -->
+<div class="mt-space-md text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Belum mendaftarkan unit kost Anda? 
+            <a class="text-primary font-semibold hover:underline" href="#">Daftar Kemitraan Baru</a>
+</p>
+</div>
+</div>
+</div>
+</main>
+</body></html>

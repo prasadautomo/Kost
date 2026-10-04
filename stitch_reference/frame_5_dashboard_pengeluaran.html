@@ -1,0 +1,867 @@
+<!DOCTYPE html><html class="dark" lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>KostHub Manager - Manajemen Pengeluaran &amp; Beban Operasional</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface-variant": "#c5c6d1",
+            "surface-dim": "#121414",
+            "on-primary-fixed": "#001946",
+            "inverse-primary": "#465d95",
+            "tertiary-fixed-dim": "#ffb694",
+            "surface-tint": "#b1c5ff",
+            "primary": "#b1c5ff",
+            "error": "#ffb4ab",
+            "on-primary": "#132e64",
+            "secondary-container": "#474747",
+            "secondary-fixed-dim": "#c6c6c6",
+            "surface-container": "#1e2020",
+            "inverse-on-surface": "#2f3131",
+            "on-background": "#e2e2e2",
+            "surface-container-low": "#1a1c1c",
+            "on-secondary-fixed": "#1b1b1b",
+            "surface-container-high": "#282a2b",
+            "on-tertiary-fixed-variant": "#733515",
+            "surface-variant": "#333535",
+            "secondary-fixed": "#e2e2e2",
+            "on-primary-fixed-variant": "#2d457b",
+            "on-tertiary-fixed": "#351000",
+            "surface": "#121414",
+            "surface-bright": "#37393a",
+            "on-secondary-fixed-variant": "#474747",
+            "outline": "#8e909b",
+            "tertiary": "#ffb694",
+            "on-secondary-container": "#b5b5b5",
+            "error-container": "#93000a",
+            "outline-variant": "#44464f",
+            "surface-container-lowest": "#0c0f0f",
+            "inverse-surface": "#e2e2e2",
+            "primary-container": "#002056",
+            "on-error": "#690005",
+            "on-primary-container": "#7289c5",
+            "tertiary-fixed": "#ffdbcc",
+            "background": "#121414",
+            "on-secondary": "#303030",
+            "primary-fixed": "#dae2ff",
+            "surface-container-highest": "#333535",
+            "primary-fixed-dim": "#b1c5ff",
+            "on-tertiary-container": "#c57751",
+            "on-error-container": "#ffdad6",
+            "secondary": "#c6c6c6",
+            "tertiary-container": "#421600",
+            "on-tertiary": "#562001",
+            "on-surface": "#e2e2e2"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-xl": "2rem",
+            "margin": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1.5rem",
+            "gutter": "1rem",
+            "space-md": "1rem"
+          },
+          "fontFamily": {
+            "headline-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "label-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "label-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+            "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+            "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background antialiased flex min-h-screen selection:bg-primary selection:text-on-primary">
+<!-- Side Navigation Bar (Shared Component Anchor) -->
+<aside class="w-64 h-screen fixed left-0 top-0 flex flex-col justify-between p-space-md border-r border-outline-variant bg-surface-container-low z-30">
+<div class="flex flex-col gap-space-lg">
+<!-- Property Brand Selector Header -->
+<div class="flex items-center gap-space-sm px-space-xs py-space-sm border-b border-outline-variant pb-space-md">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-primary font-headline-sm font-semibold border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-xl">apartment</span>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="text-label-lg font-label-lg font-semibold text-on-surface truncate">Kost Singgah Nyaman</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+            64 Unit Aktif
+          </span>
+</div>
+</div>
+<!-- Navigation Tabs Cluster -->
+<nav class="flex flex-col gap-1">
+<!-- Dashboard -->
+<a class="flex items-center gap-space-sm px-space-md py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="">Dashboard</span>
+</a>
+<!-- Matriks Kamar -->
+<a class="flex items-center gap-space-sm px-space-md py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">bed</span>
+<span class="">Matriks Kamar</span>
+</a>
+<!-- Pembayaran & Kas -->
+<a class="flex items-center gap-space-sm px-space-md py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+<span class="">Pembayaran &amp; Kas</span>
+</a>
+<!-- Pengeluaran (ACTIVE STATE) -->
+<a class="flex items-center gap-space-sm px-space-md py-2.5 bg-primary-container text-on-primary-container rounded-lg font-semibold transition-all duration-150 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="text-primary font-semibold">Pengeluaran</span>
+</a>
+<!-- Komplain & Maintenance -->
+<a class="flex items-center gap-space-sm px-space-md py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">build</span>
+<span class="">Komplain &amp; Maintenance</span>
+</a>
+<!-- Pengaturan Kost -->
+<a class="flex items-center gap-space-sm px-space-md py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="">Pengaturan Kost</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Actions / Footer Cluster -->
+<div class="flex flex-col gap-space-md border-t border-outline-variant pt-space-md">
+<!-- Quick CTA -->
+<button class="w-full flex items-center justify-center gap-2 bg-surface-container-high hover:bg-surface-variant text-on-surface py-2 px-space-md rounded-lg text-label-md font-label-md border border-outline-variant transition-colors duration-150">
+<span class="material-symbols-outlined text-[18px] text-primary">assessment</span>
+<span class="">Laporan Kas</span>
+</button>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-space-sm px-space-md py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]">support</span>
+<span class="">Pusat Bantuan</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-2 text-error hover:bg-error-container/20 rounded-lg transition-all duration-150 ease-in-out text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+<span class="">Keluar</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Layout wrapper -->
+<div class="flex-1 flex flex-col pl-64 min-w-0">
+<!-- TopNavBar (Shared Component Anchor) -->
+<header class="w-full h-16 sticky top-0 z-20 flex justify-between items-center px-space-lg bg-surface-container-lowest border-b border-outline-variant">
+<!-- Left side: Brand text + Global Search -->
+<div class="flex items-center gap-space-lg flex-1 max-w-xl">
+<span class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight whitespace-nowrap">KostHub Manager</span>
+<!-- Search bar on left -->
+<div class="relative w-full max-w-sm hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-9 pr-space-md py-1.5 text-body-sm font-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-150" placeholder="Cari transaksi, beban, no. nota, vendor..." type="text">
+</div>
+</div>
+<!-- Right side: Notifications, Help, Profile & Trailing Action -->
+<div class="flex items-center gap-space-md">
+<!-- Icon Actions -->
+<div class="flex items-center gap-1 border-r border-outline-variant pr-space-md">
+<button aria-label="Notifikasi" class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-tertiary"></span>
+</button>
+<button aria-label="Bantuan" class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150">
+<span class="material-symbols-outlined text-[22px]">help</span>
+</button>
+</div>
+<!-- Trailing Primary Action -->
+<button class="flex items-center gap-1.5 bg-primary text-on-primary hover:bg-primary-fixed-dim px-space-md py-2 rounded-lg text-label-md font-label-md font-semibold transition-all duration-150 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span class="">Tambah Kamar</span>
+</button>
+<!-- User Profile Avatar -->
+<div class="flex items-center gap-2 pl-space-xs cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up professional portrait of an Indonesian male property manager wearing minimalist dark attire with focused expression in a modern moody office environment, illuminated with cool ambient dark blue lights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKUfDJX-1WFodABON3VPHpTKuRhYWkxYIXaIZEta2DnUbIOxRNu9wDkr0Pso3T7u-0pHKn9gpxQqlWqOuIeB7ZgM9nI49MjPCer2Sr1W3lp0OE5tQT1OoTzTDGi-gHbcslEBolDMaNe5yahZbiy_HEp3FtrGOTsowtwkrspcf4QDn4nbi0UeCDc9C_93Ar-h3sWeejMUaBvNBMGywyo4NCO7so0g2p2ZnLeWDR4D2UEsVQQPMenOc8yQ">
+</div>
+<span class="material-symbols-outlined text-outline text-[16px]">expand_more</span>
+</div>
+</div>
+</header>
+<!-- Page Content Container -->
+<main class="flex-1 p-space-lg flex flex-col gap-space-lg bg-surface">
+<!-- Section 1: Page Header & Quick Controls -->
+<section class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md pb-space-sm border-b border-outline-variant">
+<div>
+<div class="flex items-center gap-2 text-label-sm font-label-sm text-on-surface-variant mb-1">
+<span class="">Finansial Kost</span>
+<span class="material-symbols-outlined text-[12px]">chevron_right</span>
+<span class="text-primary font-medium">Beban Operasional</span>
+</div>
+<h1 class="text-headline-md font-headline-md font-bold text-on-surface tracking-tight">Manajemen Pengeluaran &amp; Beban Operasional</h1>
+<p class="text-body-md font-body-md text-on-surface-variant mt-0.5">Pantau arus kas keluar, tagihan rutin utilitas, dan efisiensi pengeluaran properti.</p>
+</div>
+<!-- Filter Controls & Primary Action -->
+<div class="flex flex-wrap items-center gap-2.5">
+<!-- Property Selector Dropdown -->
+<div class="relative">
+<select class="appearance-none bg-surface-container-low border border-outline-variant rounded-lg pl-3 pr-8 py-2 text-label-md font-label-md text-on-surface focus:outline-none focus:border-primary cursor-pointer">
+<option>Kost Singgah Nyaman (Semua 64 Unit)</option>
+<option>Gedung A (32 Unit)</option>
+<option>Gedung B (32 Unit)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none">arrow_drop_down</span>
+</div>
+<!-- Date Filter Pills -->
+<div class="inline-flex bg-surface-container-low p-1 rounded-lg border border-outline-variant">
+<button class="px-3 py-1 text-label-sm font-label-sm rounded bg-primary-container text-primary font-semibold">Bulan Ini: Mei 2025</button>
+<button class="px-3 py-1 text-label-sm font-label-sm rounded text-on-surface-variant hover:text-on-surface">Kuartal Ini</button>
+<button class="px-3 py-1 text-label-sm font-label-sm rounded text-on-surface-variant hover:text-on-surface">Tahun 2025</button>
+<button class="px-2 py-1 text-label-sm font-label-sm rounded text-on-surface-variant hover:text-on-surface flex items-center">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+</button>
+</div>
+<!-- Export Report Button -->
+<button class="flex items-center gap-1.5 bg-surface-container-high hover:bg-surface-variant text-on-surface border border-outline-variant px-3 py-2 rounded-lg text-label-md font-label-md transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span class="">Ekspor (PDF/Excel)</span>
+</button>
+<!-- + Catat Beban Baru Button -->
+<button class="flex items-center gap-1.5 bg-primary hover:bg-primary-fixed-dim text-on-primary font-semibold px-space-md py-2 rounded-lg text-label-md font-label-md shadow-sm transition-all duration-150">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span class="">+ Catat Beban Baru</span>
+</button>
+</div>
+</section>
+<!-- Section 2: Summary KPI Cards -->
+<section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md"><!-- Card 1: Total Pengeluaran -->
+<div class="p-space-lg rounded-xl bg-surface-container border border-outline-variant/60 flex flex-col justify-between hover:border-primary/40 transition-colors">
+  <div class="flex items-center justify-between">
+    <span class="text-label-md font-label-md text-on-surface-variant font-medium">Total Pengeluaran</span>
+    <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+      <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+    </div>
+  </div>
+  <div class="my-3">
+    <div class="text-[28px] font-headline-lg font-bold text-on-surface tracking-tight">Rp 18.200.000</div>
+    <div class="flex items-center gap-1.5 mt-1.5">
+      <span class="inline-flex items-center text-label-sm font-label-sm text-primary font-semibold">
+        <span class="material-symbols-outlined text-[14px]">trending_down</span>
+        -4.3%
+      </span>
+      <span class="text-label-sm font-label-sm text-outline">vs bulan lalu</span>
+    </div>
+  </div>
+  <div class="pt-2.5 border-t border-outline-variant/40 flex items-center justify-between text-label-sm font-label-sm">
+    <span class="text-outline">Rasio Operasional</span>
+    <span class="font-medium text-on-surface">18.5% dari Pemasukan</span>
+  </div>
+</div>
+
+<!-- Card 2: Beban Utilitas & Listrik -->
+<div class="p-space-lg rounded-xl bg-surface-container border border-outline-variant/60 flex flex-col justify-between hover:border-tertiary/40 transition-colors">
+  <div class="flex items-center justify-between">
+    <span class="text-label-md font-label-md text-on-surface-variant font-medium">Utilitas &amp; Listrik</span>
+    <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-tertiary">
+      <span class="material-symbols-outlined text-[20px]">bolt</span>
+    </div>
+  </div>
+  <div class="my-3">
+    <div class="text-[28px] font-headline-lg font-bold text-on-surface tracking-tight">Rp 7.450.000</div>
+    <div class="flex items-center gap-1.5 mt-1.5">
+      <span class="text-label-sm font-label-sm text-tertiary font-medium">41% porsi beban</span>
+      <span class="text-label-sm font-label-sm text-outline">• Stabil</span>
+    </div>
+  </div>
+  <div class="pt-2.5 border-t border-outline-variant/40 flex items-center justify-between text-label-sm font-label-sm truncate">
+    <span class="text-outline">Cakupan</span>
+    <span class="font-medium text-on-surface truncate">PLN, PDAM, Biznet</span>
+  </div>
+</div>
+
+<!-- Card 3: Pemeliharaan & Servis -->
+<div class="p-space-lg rounded-xl bg-surface-container border border-outline-variant/60 flex flex-col justify-between hover:border-primary/40 transition-colors">
+  <div class="flex items-center justify-between">
+    <span class="text-label-md font-label-md text-on-surface-variant font-medium">Pemeliharaan &amp; Servis</span>
+    <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-primary-fixed">
+      <span class="material-symbols-outlined text-[20px]">handyman</span>
+    </div>
+  </div>
+  <div class="my-3">
+    <div class="text-[28px] font-headline-lg font-bold text-on-surface tracking-tight">Rp 4.850.000</div>
+    <div class="flex items-center gap-1.5 mt-1.5">
+      <span class="text-label-sm font-label-sm text-on-surface font-medium">3 Pekerjaan aktif</span>
+      <span class="text-label-sm font-label-sm text-outline">bulan ini</span>
+    </div>
+  </div>
+  <div class="pt-2.5 border-t border-outline-variant/40 flex items-center justify-between text-label-sm font-label-sm truncate">
+    <span class="text-outline">Rincian</span>
+    <span class="font-medium text-on-surface truncate">Servis AC, Pompa Air</span>
+  </div>
+</div>
+
+<!-- Card 4: Gaji & Operasional -->
+<div class="p-space-lg rounded-xl bg-surface-container border border-outline-variant/60 flex flex-col justify-between hover:border-primary/40 transition-colors">
+  <div class="flex items-center justify-between">
+    <span class="text-label-md font-label-md text-on-surface-variant font-medium">Gaji Staf &amp; Honor</span>
+    <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+      <span class="material-symbols-outlined text-[20px]">badge</span>
+    </div>
+  </div>
+  <div class="my-3">
+    <div class="text-[28px] font-headline-lg font-bold text-on-surface tracking-tight">Rp 5.900.000</div>
+    <div class="flex items-center gap-1.5 mt-1.5">
+      <span class="text-label-sm font-label-sm text-primary font-medium">Lunas 100%</span>
+      <span class="text-label-sm font-label-sm text-outline">• Periode Mei</span>
+    </div>
+  </div>
+  <div class="pt-2.5 border-t border-outline-variant/40 flex items-center justify-between text-label-sm font-label-sm">
+    <span class="text-outline">Karyawan</span>
+    <span class="font-medium text-on-surface">2 Penjaga + 1 Cleaning</span>
+  </div>
+</div></section>
+<!-- Section 3: Visual Analytics (2-Column Grid) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-space-md"><!-- Left: Expense Category Distribution -->
+<div class="lg:col-span-6 p-space-lg rounded-xl bg-surface-container border border-outline-variant/60 flex flex-col justify-between">
+  <div class="flex items-center justify-between mb-space-sm">
+    <div>
+      <h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold text-[18px]">Distribusi Kategori Pengeluaran</h2>
+      <p class="text-body-sm font-body-sm text-outline mt-0.5">Alokasi anggaran berdasarkan fungsi operasional bulan ini</p>
+    </div>
+    <button class="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant transition-colors">
+      <span class="material-symbols-outlined text-[20px]">more_vert</span>
+    </button>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-12 gap-space-lg items-center py-3">
+    <!-- Clean Crisp Donut Chart -->
+    <div class="sm:col-span-5 flex justify-center relative">
+      <svg class="w-40 h-40 transform -rotate-90" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" fill="none" r="48" stroke="#121414" stroke-width="12"></circle>
+        <!-- Utilitas (41%): #ffb694 -->
+        <circle cx="60" cy="60" fill="none" r="48" stroke="#ffb694" stroke-dasharray="123.6 301.6" stroke-dashoffset="0" stroke-width="12"></circle>
+        <!-- Gaji (32%): #b1c5ff -->
+        <circle cx="60" cy="60" fill="none" r="48" stroke="#b1c5ff" stroke-dasharray="96.5 301.6" stroke-dashoffset="-123.6" stroke-width="12"></circle>
+        <!-- Maintenance (22%): #7289c5 -->
+        <circle cx="60" cy="60" fill="none" r="48" stroke="#7289c5" stroke-dasharray="66.3 301.6" stroke-dashoffset="-220.1" stroke-width="12"></circle>
+        <!-- Amenities (5%): #c6c6c6 -->
+        <circle cx="60" cy="60" fill="none" r="48" stroke="#c6c6c6" stroke-dasharray="15.2 301.6" stroke-dashoffset="-286.4" stroke-width="12"></circle>
+      </svg>
+      <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+        <span class="text-[11px] font-label-sm text-outline uppercase tracking-wider">Total</span>
+        <span class="text-[18px] font-bold text-on-surface">18.2M</span>
+      </div>
+    </div>
+    <!-- Breakdown List -->
+    <div class="sm:col-span-7 flex flex-col gap-2">
+      <div class="flex items-center justify-between text-body-sm font-body-sm p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+          <span class="text-on-surface font-medium">Utilitas &amp; Listrik</span>
+        </div>
+        <div class="text-right flex items-center gap-2">
+          <span class="font-semibold text-on-surface">Rp 7.450.000</span>
+          <span class="text-label-sm font-label-sm text-outline w-10 text-right">41%</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-body-sm font-body-sm p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+          <span class="text-on-surface font-medium">Gaji &amp; SDM</span>
+        </div>
+        <div class="text-right flex items-center gap-2">
+          <span class="font-semibold text-on-surface">Rp 5.900.000</span>
+          <span class="text-label-sm font-label-sm text-outline w-10 text-right">32%</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-body-sm font-body-sm p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-on-primary-container"></span>
+          <span class="text-on-surface font-medium">Maintenance &amp; Servis</span>
+        </div>
+        <div class="text-right flex items-center gap-2">
+          <span class="font-semibold text-on-surface">Rp 4.850.000</span>
+          <span class="text-label-sm font-label-sm text-outline w-10 text-right">22%</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-body-sm font-body-sm p-2 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+          <span class="text-on-surface font-medium">Amenities &amp; Operasional</span>
+        </div>
+        <div class="text-right flex items-center gap-2">
+          <span class="font-semibold text-on-surface">Rp 910.000</span>
+          <span class="text-label-sm font-label-sm text-outline w-10 text-right">5%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mt-space-sm pt-space-sm border-t border-outline-variant/50 flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+    <span class="flex items-center gap-1.5">
+      <span class="w-2 h-2 rounded-full bg-primary"></span>
+      <span class="">Efisiensi Energi: <strong class="text-on-surface font-medium">Terkontrol Baik</strong></span>
+    </span>
+    <a class="text-primary hover:underline inline-flex items-center gap-0.5" href="#">
+      <span class="">Analisis Audit</span>
+      <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+    </a>
+  </div>
+</div>
+
+<!-- Right: Trend vs Monthly Budget Tracker -->
+<div class="lg:col-span-6 p-space-lg rounded-xl bg-surface-container border border-outline-variant/60 flex flex-col justify-between">
+  <div class="flex items-center justify-between mb-space-sm">
+    <div>
+      <h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold text-[18px]">Tren Pengeluaran vs Anggaran</h2>
+      <p class="text-body-sm font-body-sm text-outline mt-0.5">Pagu Anggaran Maksimal: <strong class="text-on-surface font-medium">Rp 20.000.000</strong> / Bulan</p>
+    </div>
+    <div class="px-2.5 py-1 rounded bg-primary-container text-primary border border-primary/30 text-label-sm font-label-sm font-semibold flex items-center gap-1.5">
+      <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+      <span class="">91% Terpakai</span>
+    </div>
+  </div>
+
+  <!-- Simplified Remaining Quota Banner -->
+  <div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/40 flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+      <div class="p-2 rounded-lg bg-surface-container-high text-primary">
+        <span class="material-symbols-outlined text-[20px]">savings</span>
+      </div>
+      <div>
+        <span class="text-[11px] font-label-sm text-outline block uppercase tracking-wider">Sisa Kuota Anggaran:</span>
+        <span class="text-headline-sm font-headline-sm font-bold text-primary text-[18px]">Rp 1.800.000</span>
+      </div>
+    </div>
+    <div class="text-right">
+      <span class="text-[11px] font-label-sm text-outline block uppercase tracking-wider">Proyeksi Akhir Bulan</span>
+      <span class="text-label-md font-label-md font-semibold text-on-surface">Rp 19.100.000</span>
+    </div>
+  </div>
+
+  <!-- 6-Month Visual Bar Chart -->
+  <div class="space-y-3">
+    <div class="flex items-end justify-between h-36 pt-4 px-2 border-b border-outline-variant/60 gap-3">
+      <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+        <div class="w-full bg-surface-container-high rounded-t relative flex flex-col justify-end" style="height: 82%;">
+          <div class="w-full bg-secondary/50 rounded-t group-hover:bg-secondary transition-all" style="height: 100%;"></div>
+          <span class="hidden group-hover:block absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-container-highest px-1.5 py-0.5 rounded text-[10px] text-on-surface whitespace-nowrap z-20">Rp 16.4M</span>
+        </div>
+        <span class="text-label-sm font-label-sm text-outline">Des</span>
+      </div>
+      <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+        <div class="w-full bg-surface-container-high rounded-t relative flex flex-col justify-end" style="height: 94%;">
+          <div class="w-full bg-secondary/50 rounded-t group-hover:bg-secondary transition-all" style="height: 100%;"></div>
+          <span class="hidden group-hover:block absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-container-highest px-1.5 py-0.5 rounded text-[10px] text-on-surface whitespace-nowrap z-20">Rp 18.8M</span>
+        </div>
+        <span class="text-label-sm font-label-sm text-outline">Jan</span>
+      </div>
+      <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+        <div class="w-full bg-surface-container-high rounded-t relative flex flex-col justify-end" style="height: 86%;">
+          <div class="w-full bg-secondary/50 rounded-t group-hover:bg-secondary transition-all" style="height: 100%;"></div>
+          <span class="hidden group-hover:block absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-container-highest px-1.5 py-0.5 rounded text-[10px] text-on-surface whitespace-nowrap z-20">Rp 17.2M</span>
+        </div>
+        <span class="text-label-sm font-label-sm text-outline">Feb</span>
+      </div>
+      <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+        <div class="w-full bg-surface-container-high rounded-t relative flex flex-col justify-end" style="height: 97%;">
+          <div class="w-full bg-secondary/50 rounded-t group-hover:bg-secondary transition-all" style="height: 100%;"></div>
+          <span class="hidden group-hover:block absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-container-highest px-1.5 py-0.5 rounded text-[10px] text-on-surface whitespace-nowrap z-20">Rp 19.4M</span>
+        </div>
+        <span class="text-label-sm font-label-sm text-outline">Mar</span>
+      </div>
+      <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+        <div class="w-full bg-surface-container-high rounded-t relative flex flex-col justify-end" style="height: 95%;">
+          <div class="w-full bg-secondary/50 rounded-t group-hover:bg-secondary transition-all" style="height: 100%;"></div>
+          <span class="hidden group-hover:block absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-container-highest px-1.5 py-0.5 rounded text-[10px] text-on-surface whitespace-nowrap z-20">Rp 19.0M</span>
+        </div>
+        <span class="text-label-sm font-label-sm text-outline">Apr</span>
+      </div>
+      <!-- Mei Current -->
+      <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+        <div class="w-full bg-primary-container rounded-t relative flex flex-col justify-end border border-primary/40" style="height: 91%;">
+          <div class="w-full bg-primary rounded-t" style="height: 100%;"></div>
+          <span class="absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-container-highest px-1.5 py-0.5 rounded text-[10px] text-primary font-bold whitespace-nowrap z-20">Rp 18.2M</span>
+        </div>
+        <span class="text-label-sm font-label-sm font-bold text-primary">Mei</span>
+      </div>
+    </div>
+    <div class="flex items-center justify-between text-label-sm font-label-sm text-outline">
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-primary inline-block"></span> Realisasi Berjalan</span>
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-secondary/60 inline-block"></span> Bulan Lalu</span>
+      <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-outline inline-block"></span> Plafon Rp 20M</span>
+    </div>
+  </div>
+</div></section>
+<!-- Section 4: Upcoming & Recurring Bills (Tagihan Rutin & Jatuh Tempo) -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-[22px]">notification_important</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface font-semibold">Jadwal Tagihan Rutin &amp; Jatuh Tempo</h2>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">3 Tagihan Menunggu Tindakan Bulan Ini</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md"><!-- Bill 1: PLN -->
+<div class="p-space-lg rounded-xl bg-surface-container border border-outline-variant/60 hover:border-tertiary/50 transition-colors flex flex-col justify-between gap-4">
+  <div class="flex items-start justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-tertiary">
+        <span class="material-symbols-outlined text-[22px]">flash_on</span>
+      </div>
+      <div>
+        <h3 class="text-label-md font-label-md font-semibold text-on-surface">Listrik PLN Pascabayar</h3>
+        <span class="text-label-sm font-label-sm text-outline">ID: 5382-9901-2290</span>
+      </div>
+    </div>
+    <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-tertiary-container text-tertiary border border-on-tertiary-container/40">H-2</span>
+  </div>
+  <div class="flex items-baseline justify-between pt-2 border-t border-outline-variant/40">
+    <div>
+      <span class="text-label-sm font-label-sm text-outline block">Jatuh Tempo: 20 Mei</span>
+      <span class="text-headline-sm font-headline-sm font-bold text-on-surface">Rp 4.200.000</span>
+    </div>
+    <button class="bg-primary text-on-primary hover:bg-primary-fixed-dim px-space-md py-1.5 rounded-lg text-label-sm font-label-sm font-semibold transition-all shadow-sm">
+      Bayar Sekarang
+    </button>
+  </div>
+</div>
+
+<!-- Bill 2: Biznet WiFi -->
+<div class="p-space-lg rounded-xl bg-surface-container border border-outline-variant/60 hover:border-primary/50 transition-colors flex flex-col justify-between gap-4">
+  <div class="flex items-start justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+        <span class="material-symbols-outlined text-[22px]">router</span>
+      </div>
+      <div>
+        <h3 class="text-label-md font-label-md font-semibold text-on-surface">Biznet Dedicated 200 Mbps</h3>
+        <span class="text-label-sm font-label-sm text-outline">WiFi Bisnis Kost</span>
+      </div>
+    </div>
+    <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-primary-container text-primary border border-primary/30">Auto-Debit</span>
+  </div>
+  <div class="flex items-baseline justify-between pt-2 border-t border-outline-variant/40">
+    <div>
+      <span class="text-label-sm font-label-sm text-outline block">Jatuh Tempo: 25 Mei</span>
+      <span class="text-headline-sm font-headline-sm font-bold text-on-surface">Rp 1.250.000</span>
+    </div>
+    <span class="bg-surface-container-high text-on-surface border border-outline-variant/60 px-space-md py-1.5 rounded-lg text-label-sm font-label-sm inline-flex items-center gap-1.5 font-medium">
+      <span class="material-symbols-outlined text-[15px] text-primary">check_circle</span>
+      <span class="">Auto-Debit Aktif</span>
+    </span>
+  </div>
+</div>
+
+<!-- Bill 3: Iuran Lingkungan -->
+<div class="p-space-lg rounded-xl bg-surface-container border border-outline-variant/60 hover:border-outline transition-colors flex flex-col justify-between gap-4">
+  <div class="flex items-start justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
+        <span class="material-symbols-outlined text-[22px]">delete_sweep</span>
+      </div>
+      <div>
+        <h3 class="text-label-md font-label-md font-semibold text-on-surface">Iuran Sampah &amp; Keamanan</h3>
+        <span class="text-label-sm font-label-sm text-outline">RT 04 / RW 07 Kebayoran</span>
+      </div>
+    </div>
+    <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-on-surface-variant">Rutin</span>
+  </div>
+  <div class="flex items-baseline justify-between pt-2 border-t border-outline-variant/40">
+    <div>
+      <span class="text-label-sm font-label-sm text-outline block">Jatuh Tempo: 30 Mei</span>
+      <span class="text-headline-sm font-headline-sm font-bold text-on-surface">Rp 450.000</span>
+    </div>
+    <button class="bg-surface-container-high hover:bg-surface-variant text-on-surface border border-outline-variant/60 px-space-md py-1.5 rounded-lg text-label-sm font-label-sm font-medium transition-all">
+      Tandai Lunas
+    </button>
+  </div>
+</div></div>
+</section>
+<!-- Section 5: Detailed Expense Table (Tabel Riwayat Pengeluaran & Mutasi Keluar) -->
+<section class="p-space-lg rounded-xl bg-surface-container-low border border-outline-variant flex flex-col gap-space-md"><!-- Table Header & Controls -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+  <div>
+    <h2 class="text-headline-sm font-headline-sm font-semibold text-on-surface text-[20px]">Riwayat Mutasi Pengeluaran</h2>
+    <p class="text-body-sm font-body-sm text-outline mt-0.5">Seluruh pembukuan biaya operasional beserta lampiran nota dan vendor</p>
+  </div>
+  <!-- Search Expense inside table -->
+  <div class="relative w-full md:w-80">
+    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+    <input class="w-full bg-surface-container border border-outline-variant/60 rounded-lg pl-9 pr-space-md py-2 text-body-sm font-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Cari vendor, nota, kategori..." type="text">
+  </div>
+</div>
+
+<!-- Filter Category Tabs: Cleaner Segmented Line -->
+<div class="flex items-center gap-2 overflow-x-auto pb-1 border-b border-outline-variant/60">
+  <button class="px-3.5 py-2 text-label-md font-label-md font-semibold text-primary border-b-2 border-primary transition-all">Semua Kategori</button>
+  <button class="px-3.5 py-2 text-label-md font-label-md text-outline hover:text-on-surface transition-colors">Utilitas</button>
+  <button class="px-3.5 py-2 text-label-md font-label-md text-outline hover:text-on-surface transition-colors">Pemeliharaan &amp; Servis</button>
+  <button class="px-3.5 py-2 text-label-md font-label-md text-outline hover:text-on-surface transition-colors">Gaji &amp; SDM</button>
+  <button class="px-3.5 py-2 text-label-md font-label-md text-outline hover:text-on-surface transition-colors">Keperluan Kost</button>
+  <button class="px-3.5 py-2 text-label-md font-label-md text-outline hover:text-on-surface transition-colors">Pajak &amp; Legal</button>
+</div>
+
+<!-- Expense Data Table with Generous Padding -->
+<div class="overflow-x-auto">
+  <table class="w-full text-left border-collapse">
+    <thead>
+      <tr class="border-b border-outline-variant/60 text-label-sm font-label-sm text-outline uppercase tracking-wider">
+        <th class="py-3.5 px-4">Waktu</th>
+        <th class="py-3.5 px-4">Kategori &amp; Deskripsi</th>
+        <th class="py-3.5 px-4">Penerima / Vendor</th>
+        <th class="py-3.5 px-4">Unit / Lokasi</th>
+        <th class="py-3.5 px-4">Metode</th>
+        <th class="py-3.5 px-4 text-right">Nominal</th>
+        <th class="py-3.5 px-4 text-center">Bukti</th>
+        <th class="py-3.5 px-4 text-center">Aksi</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-outline-variant/40 text-body-sm font-body-sm">
+      <!-- Row 1: Servis AC -->
+      <tr class="hover:bg-surface-container transition-colors">
+        <td class="py-4 px-4 whitespace-nowrap">
+          <div class="font-medium text-on-surface">18 Mei 2025</div>
+          <div class="text-label-sm font-label-sm text-outline">14:20 WIB</div>
+        </td>
+        <td class="py-4 px-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-primary border border-outline-variant/40">Maintenance</span>
+            <span class="font-semibold text-on-surface">Servis &amp; Cuci AC (6 Unit)</span>
+          </div>
+          <div class="text-body-sm font-body-sm text-outline mt-0.5">Pembersihan berkala &amp; freon R32</div>
+        </td>
+        <td class="py-4 px-4 whitespace-nowrap text-on-surface">Teknisi AC Sejuk Mandiri</td>
+        <td class="py-4 px-4 whitespace-nowrap text-on-surface-variant">
+          <span class="inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-outline">door_front</span>
+            <span class="">Kamar 102, 105, 204, 208, 301, 304</span>
+          </span>
+        </td>
+        <td class="py-4 px-4 whitespace-nowrap">
+          <span class="px-2.5 py-1 rounded bg-surface-container text-on-surface text-[12px] border border-outline-variant/40">BCA Transfer</span>
+        </td>
+        <td class="py-4 px-4 text-right whitespace-nowrap font-bold text-tertiary">
+          -Rp 1.450.000
+        </td>
+        <td class="py-4 px-4 text-center whitespace-nowrap">
+          <a class="inline-flex items-center gap-1 text-primary hover:underline text-label-sm font-label-sm" href="#">
+            <span class="material-symbols-outlined text-[16px]">receipt</span>
+            <span class="">Struk.pdf</span>
+          </a>
+        </td>
+        <td class="py-4 px-4 text-center whitespace-nowrap">
+          <button class="p-1.5 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+            <span class="material-symbols-outlined text-[18px]">more_vert</span>
+          </button>
+        </td>
+      </tr>
+      <!-- Row 2: Pompa Air -->
+      <tr class="hover:bg-surface-container transition-colors">
+        <td class="py-4 px-4 whitespace-nowrap">
+          <div class="font-medium text-on-surface">15 Mei 2025</div>
+          <div class="text-label-sm font-label-sm text-outline">09:15 WIB</div>
+        </td>
+        <td class="py-4 px-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-primary border border-outline-variant/40">Maintenance</span>
+            <span class="font-semibold text-on-surface">Pompa Pendorong Air Shimizu</span>
+          </div>
+          <div class="text-body-sm font-body-sm text-outline mt-0.5">Penggantian unit pompa torn Lt. 3</div>
+        </td>
+        <td class="py-4 px-4 whitespace-nowrap text-on-surface">Toko Bangunan &amp; Teknik Jaya</td>
+        <td class="py-4 px-4 whitespace-nowrap text-on-surface-variant">
+          <span class="inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-outline">water_drop</span>
+            <span class="">Rooftop / Torn Air</span>
+          </span>
+        </td>
+        <td class="py-4 px-4 whitespace-nowrap">
+          <span class="px-2.5 py-1 rounded bg-surface-container text-on-surface text-[12px] border border-outline-variant/40">QRIS Usaha</span>
+        </td>
+        <td class="py-4 px-4 text-right whitespace-nowrap font-bold text-tertiary">
+          -Rp 1.850.000
+        </td>
+        <td class="py-4 px-4 text-center whitespace-nowrap">
+          <a class="inline-flex items-center gap-1 text-primary hover:underline text-label-sm font-label-sm" href="#">
+            <span class="material-symbols-outlined text-[16px]">image</span>
+            <span class="">Nota.jpg</span>
+          </a>
+        </td>
+        <td class="py-4 px-4 text-center whitespace-nowrap">
+          <button class="p-1.5 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+            <span class="material-symbols-outlined text-[18px]">more_vert</span>
+          </button>
+        </td>
+      </tr>
+      <!-- Row 3: Belanja Perlengkapan -->
+      <tr class="hover:bg-surface-container transition-colors">
+        <td class="py-4 px-4 whitespace-nowrap">
+          <div class="font-medium text-on-surface">12 Mei 2025</div>
+          <div class="text-label-sm font-label-sm text-outline">16:45 WIB</div>
+        </td>
+        <td class="py-4 px-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-secondary border border-outline-variant/40">Keperluan</span>
+            <span class="font-semibold text-on-surface">Restock Sabun, Pel &amp; Trash Bag</span>
+          </div>
+          <div class="text-body-sm font-body-sm text-outline mt-0.5">Logistik kebersihan rutin 1 bulan</div>
+        </td>
+        <td class="py-4 px-4 whitespace-nowrap text-on-surface">Grosir Sumber Bersih Jakarta</td>
+        <td class="py-4 px-4 whitespace-nowrap text-on-surface-variant">
+          <span class="inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-outline">cleaning_services</span>
+            <span class="">Seluruh Gedung Kost</span>
+          </span>
+        </td>
+        <td class="py-4 px-4 whitespace-nowrap">
+          <span class="px-2.5 py-1 rounded bg-surface-container text-on-surface text-[12px] border border-outline-variant/40">Petty Cash</span>
+        </td>
+        <td class="py-4 px-4 text-right whitespace-nowrap font-bold text-tertiary">
+          -Rp 910.000
+        </td>
+        <td class="py-4 px-4 text-center whitespace-nowrap">
+          <a class="inline-flex items-center gap-1 text-primary hover:underline text-label-sm font-label-sm" href="#">
+            <span class="material-symbols-outlined text-[16px]">receipt</span>
+            <span class="">Struk_kas.pdf</span>
+          </a>
+        </td>
+        <td class="py-4 px-4 text-center whitespace-nowrap">
+          <button class="p-1.5 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+            <span class="material-symbols-outlined text-[18px]">more_vert</span>
+          </button>
+        </td>
+      </tr>
+      <!-- Row 4: Gaji Staf -->
+      <tr class="hover:bg-surface-container transition-colors">
+        <td class="py-4 px-4 whitespace-nowrap">
+          <div class="font-medium text-on-surface">01 Mei 2025</div>
+          <div class="text-label-sm font-label-sm text-outline">08:00 WIB</div>
+        </td>
+        <td class="py-4 px-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-on-primary-container border border-outline-variant/40">Gaji &amp; SDM</span>
+            <span class="font-semibold text-on-surface">Gaji Pokok 3 Staf Operasional</span>
+          </div>
+          <div class="text-body-sm font-body-sm text-outline mt-0.5">2 Penjaga Kost &amp; 1 Cleaning Service</div>
+        </td>
+        <td class="py-4 px-4 whitespace-nowrap text-on-surface">Pak Joko, Budi, &amp; Ibu Sri</td>
+        <td class="py-4 px-4 whitespace-nowrap text-on-surface-variant">
+          <span class="inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-outline">apartment</span>
+            <span class="">Operasional 24 Jam</span>
+          </span>
+        </td>
+        <td class="py-4 px-4 whitespace-nowrap">
+          <span class="px-2.5 py-1 rounded bg-surface-container text-on-surface text-[12px] border border-outline-variant/40">BCA Payroll</span>
+        </td>
+        <td class="py-4 px-4 text-right whitespace-nowrap font-bold text-tertiary">
+          -Rp 5.900.000
+        </td>
+        <td class="py-4 px-4 text-center whitespace-nowrap">
+          <a class="inline-flex items-center gap-1 text-primary hover:underline text-label-sm font-label-sm" href="#">
+            <span class="material-symbols-outlined text-[16px]">description</span>
+            <span class="">Slip_Gaji.zip</span>
+          </a>
+        </td>
+        <td class="py-4 px-4 text-center whitespace-nowrap">
+          <button class="p-1.5 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+            <span class="material-symbols-outlined text-[18px]">more_vert</span>
+          </button>
+        </td>
+      </tr>
+      <!-- Row 5: Pengecatan Koridor -->
+      <tr class="hover:bg-surface-container transition-colors">
+        <td class="py-4 px-4 whitespace-nowrap">
+          <div class="font-medium text-on-surface">28 Apr 2025</div>
+          <div class="text-label-sm font-label-sm text-outline">13:10 WIB</div>
+        </td>
+        <td class="py-4 px-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-primary border border-outline-variant/40">Maintenance</span>
+            <span class="font-semibold text-on-surface">Cat Dinding Dulux &amp; Kuas</span>
+          </div>
+          <div class="text-body-sm font-body-sm text-outline mt-0.5">Peremajaan cat dinding koridor Lt. 2</div>
+        </td>
+        <td class="py-4 px-4 whitespace-nowrap text-on-surface">Mitra10 Arteri Simprug</td>
+        <td class="py-4 px-4 whitespace-nowrap text-on-surface-variant">
+          <span class="inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-outline">format_paint</span>
+            <span class="">Koridor Lt. 2 Barat</span>
+          </span>
+        </td>
+        <td class="py-4 px-4 whitespace-nowrap">
+          <span class="px-2.5 py-1 rounded bg-surface-container text-on-surface text-[12px] border border-outline-variant/40">BCA Transfer</span>
+        </td>
+        <td class="py-4 px-4 text-right whitespace-nowrap font-bold text-tertiary">
+          -Rp 1.550.000
+        </td>
+        <td class="py-4 px-4 text-center whitespace-nowrap">
+          <a class="inline-flex items-center gap-1 text-primary hover:underline text-label-sm font-label-sm" href="#">
+            <span class="material-symbols-outlined text-[16px]">receipt</span>
+            <span class="">Faktur_M10.pdf</span>
+          </a>
+        </td>
+        <td class="py-4 px-4 text-center whitespace-nowrap">
+          <button class="p-1.5 rounded hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors">
+            <span class="material-symbols-outlined text-[18px]">more_vert</span>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Table Pagination Footer: Clean, simplified spacing -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm pt-space-sm border-t border-outline-variant/60 text-label-sm font-label-sm text-outline">
+  <span class="">Menampilkan <strong class="text-on-surface font-medium">1 - 5</strong> dari <strong class="text-on-surface font-medium">28</strong> transaksi Mei 2025</span>
+  <div class="flex items-center gap-1.5">
+    <button class="p-1.5 rounded border border-outline-variant/60 hover:bg-surface-container-high text-outline disabled:opacity-50 transition-colors" disabled="">
+      <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+    </button>
+    <button class="w-8 h-8 rounded bg-primary-container text-primary font-semibold border border-primary/30 flex items-center justify-center">1</button>
+    <button class="w-8 h-8 rounded hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors">2</button>
+    <button class="w-8 h-8 rounded hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors">3</button>
+    <span class="px-1 text-outline">...</span>
+    <button class="w-8 h-8 rounded hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors">6</button>
+    <button class="p-1.5 rounded border border-outline-variant/60 hover:bg-surface-container-high text-on-surface transition-colors">
+      <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+    </button>
+  </div>
+</div></section>
+</main>
+</div>
+
+
+</body></html>

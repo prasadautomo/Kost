@@ -1,0 +1,298 @@
+{
+  "screenshot": {
+    "name": "projects/13806641063080340578/files/17516377387938466087",
+    "downloadUrl": "https://lh3.googleusercontent.com/aida/AEtjO1WKkMFgI5XAS2Apcx6vnSNra8qoSrmkdC5lLpk5H6xAkTZPE3I6Y1Qs1eNAeB-Dn8BJQQARt9w0X2xDY7BCmy3zVjVaKwrbiuAk5yrqMqFjPzX_INCcoUmu0G8JzBqWoDkNhRhHyzeU0sT7grYQR0itXdLfjlt5bDnDZn3imyJ7-tuJoPLfbiDOQUVHSZUh2nhsHyaMygdyzIkEUVo4-QR7o6gvBsYujtz6wgFpGUutOL663cWLeKIGhEY"
+  },
+  "htmlCode": {
+    "name": "projects/13806641063080340578/files/8075666056326743892",
+    "downloadUrl": "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ8Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpbCiVodG1sXzAwMDY1ZDA1MjUzMDVkOTQwMzM4NWVlYmM4MzI4YzcwEgsSBxCupumNwgwYAZIBJAoKcHJvamVjdF9pZBIWQhQxMzgwNjY0MTA2MzA4MDM0MDU3OA&filename=&opi=89354086",
+    "mimeType": "text/html"
+  },
+  "id": "6ea843b493f84b109d58c2cb11da0fba",
+  "generatedBy": "figaro_agent",
+  "width": "2560",
+  "height": "3098",
+  "title": "Frame 3: Matriks Kamar Interaktif (Room Matrix & Floor Plan)",
+  "prompt": "Create 'Frame 3: Matriks Kamar Interaktif (Room Matrix Grid)' for KostHub Manager (desktop web app, dark mode SaaS). \n\nFeatures to include:\n1. Header & Top Bar: Same KostHub Manager top nav with search bar, notification, and profile.\n2. Sidebar Navigation: Fixed dark sidebar with 'Matriks Kamar' as active/selected item.\n3. Subheader / Action Bar:\n   - Page title 'Matriks Kamar & Status Okupansi' with subtitle 'Pantau ketersediaan, status sewa kamar per lantai, dan check-in penghuni.'\n   - Floor filter tabs: 'Semua Lantai', 'Lantai 1 (24 Kamar)', 'Lantai 2 (24 Kamar)', 'Lantai 3 (16 Kamar)'.\n   - Status Legend badges with live counters: Terisi (Hijau emerald, 59 Kamar), Kosong / Siap Huni (Merah/Oranye aksen hangat, 5 Kamar), Dalam Perbaikan / Maintenance (Kuning ambar, 1 Kamar).\n   - Action buttons: Filter Tipe Kamar (Deluxe, Single, VIP), Search nomor kamar / nama penghuni, and Primary Button '+ Tambah / Isi Kamar'.\n4. Main Interactive Room Grid Section:\n   - Grouped clearly by floors: 'Lantai 1 - Sayap Barat & Timur', 'Lantai 2 - Executive & Balcon', etc.\n   - Room Cards:\n     * Green/Active occupied rooms showing: Room number (e.g. '101', '102'), occupant name ('Rian Pratama'), rental type ('Bulanan', 'Rp 2.200.000'), due date ('Jatuh tempo: 15 Juni'), key tags ('AC + KM Luar' or 'Deluxe King'), and quick action button ('Detail').\n     * Red/Empty available rooms showing: Room number (e.g. '105', '212'), status badge 'KOSONG / SIAP HUNI', room type ('Deluxe AC 3x4m - Rp 2.200.000/bln'), and prominent accent action button '+ Isi Kamar' or 'Check-in Baru'.\n     * Yellow maintenance room (e.g. '208'): 'Perbaikan AC (Sedang Ditangani Teknisi)', due completion date.\n   - Hover / Quick inspect mini overlay or drawer teaser on one room card showing quick tenant info and instant 'Chat WA' or 'Lihat Kontrak'.\n5. Bottom Summary Bar / Mini Analytics: Quick occupancy stats bar (92.2% Okupansi, 5 Siap Huni, Estimasi Potensi Revenue Tambahan Rp 9.500.000 jika penuh).\n\nMaintain exact dark mode SaaS aesthetic matching Frame 2 and Frame 5 with {{DATA:DESIGN_SYSTEM:DESIGN_SYSTEM_2}}.",
+  "name": "projects/13806641063080340578/screens/6ea843b493f84b109d58c2cb11da0fba",
+  "theme": {
+    "colorMode": "DARK",
+    "font": "INTER",
+    "roundness": "ROUND_FOUR",
+    "customColor": "#002056",
+    "headlineFont": "INTER",
+    "bodyFont": "INTER",
+    "labelFont": "INTER",
+    "namedColors": {
+      "on_primary_fixed": "#001946",
+      "secondary": "#c6c6c6",
+      "surface_bright": "#37393a",
+      "primary_container": "#002056",
+      "tertiary_fixed_dim": "#ffb694",
+      "error": "#ffb4ab",
+      "error_container": "#93000a",
+      "on_primary_fixed_variant": "#2d457b",
+      "secondary_fixed": "#e2e2e2",
+      "surface_variant": "#333535",
+      "surface_dim": "#121414",
+      "on_tertiary_fixed": "#351000",
+      "on_surface_variant": "#c5c6d1",
+      "outline": "#8e909b",
+      "on_tertiary_container": "#c57751",
+      "tertiary_container": "#421600",
+      "on_primary": "#132e64",
+      "on_primary_container": "#7289c5",
+      "tertiary_fixed": "#ffdbcc",
+      "primary_fixed": "#dae2ff",
+      "outline_variant": "#44464f",
+      "surface_container_lowest": "#0c0f0f",
+      "inverse_surface": "#e2e2e2",
+      "tertiary": "#ffb694",
+      "secondary_fixed_dim": "#c6c6c6",
+      "on_error": "#690005",
+      "on_secondary_fixed_variant": "#474747",
+      "secondary_container": "#474747",
+      "inverse_on_surface": "#2f3131",
+      "surface_tint": "#b1c5ff",
+      "surface_container_low": "#1a1c1c",
+      "on_error_container": "#ffdad6",
+      "surface_container_highest": "#333535",
+      "on_secondary_container": "#b5b5b5",
+      "on_background": "#e2e2e2",
+      "surface_container_high": "#282a2b",
+      "on_surface": "#e2e2e2",
+      "on_secondary": "#303030",
+      "primary": "#b1c5ff",
+      "surface": "#121414",
+      "inverse_primary": "#465d95",
+      "on_secondary_fixed": "#1b1b1b",
+      "background": "#121414",
+      "on_tertiary": "#562001",
+      "on_tertiary_fixed_variant": "#733515",
+      "primary_fixed_dim": "#b1c5ff",
+      "surface_container": "#1e2020"
+    },
+    "colorVariant": "FIDELITY",
+    "overridePrimaryColor": "#002056",
+    "overrideSecondaryColor": "#000000",
+    "overrideTertiaryColor": "#521d00",
+    "overrideNeutralColor": "#ffffff",
+    "spacingScale": 2,
+    "typography": {
+      "body-md": {
+        "fontFamily": "Inter",
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "lineHeight": "20px"
+      },
+      "label-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "lineHeight": "20px"
+      },
+      "headline-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "32px",
+        "fontWeight": "600",
+        "lineHeight": "40px"
+      },
+      "label-sm": {
+        "fontFamily": "Inter",
+        "fontSize": "11px",
+        "fontWeight": "500",
+        "lineHeight": "14px"
+      },
+      "headline-md": {
+        "fontFamily": "Inter",
+        "fontSize": "24px",
+        "fontWeight": "600",
+        "lineHeight": "32px"
+      },
+      "headline-sm": {
+        "fontFamily": "Inter",
+        "fontSize": "20px",
+        "fontWeight": "600",
+        "lineHeight": "28px"
+      },
+      "label-md": {
+        "fontFamily": "Inter",
+        "fontSize": "12px",
+        "fontWeight": "500",
+        "lineHeight": "16px"
+      },
+      "body-sm": {
+        "fontFamily": "Inter",
+        "fontSize": "12px",
+        "fontWeight": "400",
+        "lineHeight": "16px"
+      },
+      "body-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "lineHeight": "24px"
+      }
+    },
+    "spacing": {
+      "space-md": "1rem",
+      "space-xl": "2rem",
+      "margin": "1.5rem",
+      "gutter": "1rem",
+      "space-sm": "0.5rem",
+      "space-xs": "0.25rem",
+      "space-lg": "1.5rem"
+    },
+    "headlineFontFamily": "Inter",
+    "bodyFontFamily": "Inter",
+    "labelFontFamily": "Inter"
+  },
+  "deviceType": "DESKTOP",
+  "screenType": "DESIGN",
+  "screenMetadata": {
+    "agentType": "PRO_AGENT",
+    "status": "COMPLETE",
+    "displayMode": "HTML"
+  },
+  "designSystem": {
+    "name": "assets/7413594048384039481",
+    "designSystem": {
+      "displayName": "Fidelity Dark System",
+      "styleGuidelines": "## Brand & Style\n\nThe design system adopts a **Corporate / Modern** aesthetic tailored for a high-contrast dark mode environment. It projects reliability, precision, and authority through deep, commanding blues and stark structural contrasts. The experience is engineered for clarity and focus, minimizing distractions while maximizing data legibility.\n\n## Layout & Spacing\n\nThe layout model is built on a responsive fluid grid system utilizing a standard 1rem (16px) gutter and 1.5rem (24px) outer margins. Component spacing follows a predictable multiplier scale (`space-xs` through `space-xl`), ensuring balanced rhythm and whitespace across all screen sizes.\n\n## Elevation & Depth\n\nElevation in this dark-themed system relies primarily on **low-contrast outlines** and stark surface contrast rather than heavy drop shadows. Surfaces are distinguished by subtle shifts against the absolute black background, bounded by crisp white or tinted borders to clearly define interactive containers and structural boundaries.\n\n## Components\n\n- **Buttons**: Feature soft rounded corners, utilizing the primary deep blue (`#002056`) or neutral outlines depending on hierarchy, paired with high-contrast white label text.\n- **Chips**: Compact tagging elements utilizing subtle neutral borders and Inter label typography.\n- **Lists**: Clean structural rows separated by low-opacity dividers for dense information displays.\n- **Checkboxes & Radio Buttons**: Crisp geometric indicators utilizing the primary color for selected states against dark surfaces.\n- **Input Fields**: Form controls featuring soft rounded borders, clear focus rings, and high-contrast placeholder/input text.\n- **Cards**: Structural containers built on absolute black backgrounds with subtle borders and generous internal padding.",
+      "theme": {
+        "colorMode": "DARK",
+        "font": "INTER",
+        "roundness": "ROUND_FOUR",
+        "customColor": "#002056",
+        "headlineFont": "INTER",
+        "bodyFont": "INTER",
+        "labelFont": "INTER",
+        "namedColors": {
+          "background": "#121414",
+          "on_secondary_container": "#b5b5b5",
+          "surface_container_high": "#282a2b",
+          "secondary_fixed_dim": "#c6c6c6",
+          "on_tertiary_container": "#c57751",
+          "secondary": "#c6c6c6",
+          "primary_fixed": "#dae2ff",
+          "on_surface_variant": "#c5c6d1",
+          "secondary_container": "#474747",
+          "surface_container_highest": "#333535",
+          "outline_variant": "#44464f",
+          "tertiary_container": "#421600",
+          "on_surface": "#e2e2e2",
+          "on_primary_fixed_variant": "#2d457b",
+          "on_secondary": "#303030",
+          "outline": "#8e909b",
+          "on_tertiary_fixed": "#351000",
+          "on_primary_fixed": "#001946",
+          "surface_tint": "#b1c5ff",
+          "on_primary_container": "#7289c5",
+          "error_container": "#93000a",
+          "secondary_fixed": "#e2e2e2",
+          "surface_dim": "#121414",
+          "surface_variant": "#333535",
+          "on_tertiary_fixed_variant": "#733515",
+          "tertiary_fixed_dim": "#ffb694",
+          "error": "#ffb4ab",
+          "primary_container": "#002056",
+          "surface_bright": "#37393a",
+          "on_tertiary": "#562001",
+          "primary_fixed_dim": "#b1c5ff",
+          "surface_container": "#1e2020",
+          "inverse_primary": "#465d95",
+          "on_error": "#690005",
+          "surface_container_lowest": "#0c0f0f",
+          "on_background": "#e2e2e2",
+          "on_primary": "#132e64",
+          "on_secondary_fixed": "#1b1b1b",
+          "tertiary": "#ffb694",
+          "inverse_on_surface": "#2f3131",
+          "inverse_surface": "#e2e2e2",
+          "on_secondary_fixed_variant": "#474747",
+          "primary": "#b1c5ff",
+          "surface": "#121414",
+          "on_error_container": "#ffdad6",
+          "tertiary_fixed": "#ffdbcc",
+          "surface_container_low": "#1a1c1c"
+        },
+        "designMd": "---\nname: Fidelity Dark System\ncolors:\n  surface: '#121414'\n  surface-dim: '#121414'\n  surface-bright: '#37393a'\n  surface-container-lowest: '#0c0f0f'\n  surface-container-low: '#1a1c1c'\n  surface-container: '#1e2020'\n  surface-container-high: '#282a2b'\n  surface-container-highest: '#333535'\n  on-surface: '#e2e2e2'\n  on-surface-variant: '#c5c6d1'\n  inverse-surface: '#e2e2e2'\n  inverse-on-surface: '#2f3131'\n  outline: '#8e909b'\n  outline-variant: '#44464f'\n  surface-tint: '#b1c5ff'\n  primary: '#b1c5ff'\n  on-primary: '#132e64'\n  primary-container: '#002056'\n  on-primary-container: '#7289c5'\n  inverse-primary: '#465d95'\n  secondary: '#c6c6c6'\n  on-secondary: '#303030'\n  secondary-container: '#474747'\n  on-secondary-container: '#b5b5b5'\n  tertiary: '#ffb694'\n  on-tertiary: '#562001'\n  tertiary-container: '#421600'\n  on-tertiary-container: '#c57751'\n  error: '#ffb4ab'\n  on-error: '#690005'\n  error-container: '#93000a'\n  on-error-container: '#ffdad6'\n  primary-fixed: '#dae2ff'\n  primary-fixed-dim: '#b1c5ff'\n  on-primary-fixed: '#001946'\n  on-primary-fixed-variant: '#2d457b'\n  secondary-fixed: '#e2e2e2'\n  secondary-fixed-dim: '#c6c6c6'\n  on-secondary-fixed: '#1b1b1b'\n  on-secondary-fixed-variant: '#474747'\n  tertiary-fixed: '#ffdbcc'\n  tertiary-fixed-dim: '#ffb694'\n  on-tertiary-fixed: '#351000'\n  on-tertiary-fixed-variant: '#733515'\n  background: '#121414'\n  on-background: '#e2e2e2'\n  surface-variant: '#333535'\ntypography:\n  headline-lg:\n    fontFamily: Inter\n    fontSize: 32px\n    fontWeight: '600'\n    lineHeight: 40px\n  headline-md:\n    fontFamily: Inter\n    fontSize: 24px\n    fontWeight: '600'\n    lineHeight: 32px\n  headline-sm:\n    fontFamily: Inter\n    fontSize: 20px\n    fontWeight: '600'\n    lineHeight: 28px\n  body-lg:\n    fontFamily: Inter\n    fontSize: 16px\n    fontWeight: '400'\n    lineHeight: 24px\n  body-md:\n    fontFamily: Inter\n    fontSize: 14px\n    fontWeight: '400'\n    lineHeight: 20px\n  body-sm:\n    fontFamily: Inter\n    fontSize: 12px\n    fontWeight: '400'\n    lineHeight: 16px\n  label-lg:\n    fontFamily: Inter\n    fontSize: 14px\n    fontWeight: '500'\n    lineHeight: 20px\n  label-md:\n    fontFamily: Inter\n    fontSize: 12px\n    fontWeight: '500'\n    lineHeight: 16px\n  label-sm:\n    fontFamily: Inter\n    fontSize: 11px\n    fontWeight: '500'\n    lineHeight: 14px\nrounded:\n  sm: 0.125rem\n  DEFAULT: 0.25rem\n  md: 0.375rem\n  lg: 0.5rem\n  xl: 0.75rem\n  full: 9999px\nspacing:\n  gutter: 1rem\n  margin: 1.5rem\n  space-xs: 0.25rem\n  space-sm: 0.5rem\n  space-md: 1rem\n  space-lg: 1.5rem\n  space-xl: 2rem\n---\n\n# Fidelity Dark System Design System\n\n## Brand & Style\nThe design system adopts a **Corporate / Modern** aesthetic tailored for a high-contrast dark mode environment. It projects reliability, precision, and authority through deep, commanding blues and stark structural contrasts. The experience is engineered for clarity and focus, minimizing distractions while maximizing data legibility.\n\n## Colors\nThe color palette is built for a dark mode paradigm, anchoring the visual hierarchy with deep navy and absolute black surfaces, contrasted against pure white typography and structural elements.\n\n- **Primary (`#002056`)**: Deep corporate blue used for key interactive states, structural emphasis, and primary focal points.\n- **Secondary (`#000000`)**: Absolute black utilized for background depth, container framing, and grounding the interface.\n- **Tertiary (`#521d00`)**: A rich, dark amber-brown accent used selectively for warnings, highlights, or specialized status indicators.\n- **Neutral (`#ffffff`)**: Pure white reserved for high-priority text, icons, and crisp border elements to ensure maximum accessibility in dark environments.\n\n## Typography\nThe system uses **Inter** exclusively across all text roles (headlines, body, and labels). Inter provides exceptional legibility at small sizes and a neutral, professional tone suited for complex data-dense interfaces. Type scales proportionally to maintain strict visual hierarchy across desktop and mobile form factors.\n\n## Layout & Spacing\nThe layout model is built on a responsive fluid grid system utilizing a standard 1rem (16px) gutter and 1.5rem (24px) outer margins. Component spacing follows a predictable multiplier scale (`space-xs` through `space-xl`), ensuring balanced rhythm and whitespace across all screen sizes.\n\n## Elevation & Depth\nElevation in this dark-themed system relies primarily on **low-contrast outlines** and stark surface contrast rather than heavy drop shadows. Surfaces are distinguished by subtle shifts against the absolute black background, bounded by crisp white or tinted borders to clearly define interactive containers and structural boundaries.\n\n## Shapes\nThe shape language uses a **Soft** roundedness configuration, providing subtle 0.25rem border radii on base UI components, scaling up to 0.5rem and 0.75rem for larger containers. This maintains a clean, modern, and professional aesthetic without excessive curves.\n\n## Components\n- **Buttons**: Feature soft rounded corners, utilizing the primary deep blue or neutral outlines depending on hierarchy, paired with high-contrast white label text.\n- **Chips**: Compact tagging elements utilizing subtle neutral borders and Inter label typography.\n- **Lists**: Clean structural rows separated by low-opacity dividers for dense information displays.\n- **Checkboxes & Radio Buttons**: Crisp geometric indicators utilizing the primary color for selected states against dark surfaces.\n- **Input Fields**: Form controls featuring soft rounded borders, clear focus rings, and high-contrast placeholder/input text.\n- **Cards**: Structural containers built on absolute black backgrounds with subtle borders and generous internal padding.",
+        "colorVariant": "FIDELITY",
+        "overridePrimaryColor": "#002056",
+        "overrideSecondaryColor": "#000000",
+        "overrideTertiaryColor": "#521d00",
+        "overrideNeutralColor": "#ffffff",
+        "spacingScale": 2,
+        "typography": {
+          "label-md": {
+            "fontFamily": "Inter",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "lineHeight": "16px"
+          },
+          "headline-sm": {
+            "fontFamily": "Inter",
+            "fontSize": "20px",
+            "fontWeight": "600",
+            "lineHeight": "28px"
+          },
+          "body-md": {
+            "fontFamily": "Inter",
+            "fontSize": "14px",
+            "fontWeight": "400",
+            "lineHeight": "20px"
+          },
+          "body-lg": {
+            "fontFamily": "Inter",
+            "fontSize": "16px",
+            "fontWeight": "400",
+            "lineHeight": "24px"
+          },
+          "headline-lg": {
+            "fontFamily": "Inter",
+            "fontSize": "32px",
+            "fontWeight": "600",
+            "lineHeight": "40px"
+          },
+          "headline-md": {
+            "fontFamily": "Inter",
+            "fontSize": "24px",
+            "fontWeight": "600",
+            "lineHeight": "32px"
+          },
+          "label-lg": {
+            "fontFamily": "Inter",
+            "fontSize": "14px",
+            "fontWeight": "500",
+            "lineHeight": "20px"
+          },
+          "body-sm": {
+            "fontFamily": "Inter",
+            "fontSize": "12px",
+            "fontWeight": "400",
+            "lineHeight": "16px"
+          },
+          "label-sm": {
+            "fontFamily": "Inter",
+            "fontSize": "11px",
+            "fontWeight": "500",
+            "lineHeight": "14px"
+          }
+        },
+        "spacing": {
+          "gutter": "1rem",
+          "space-xl": "2rem",
+          "space-md": "1rem",
+          "margin": "1.5rem",
+          "space-lg": "1.5rem",
+          "space-sm": "0.5rem",
+          "space-xs": "0.25rem"
+        },
+        "headlineFontFamily": "Inter",
+        "bodyFontFamily": "Inter",
+        "labelFontFamily": "Inter"
+      }
+    },
+    "version": "2"
+  }
+}

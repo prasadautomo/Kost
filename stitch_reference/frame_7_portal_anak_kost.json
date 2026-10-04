@@ -1,0 +1,297 @@
+{
+  "screenshot": {
+    "name": "projects/13806641063080340578/screens/c5a9f51a125e416c9f87175ff1cbfa88/fileEntries/screenshot",
+    "downloadUrl": "https://lh3.googleusercontent.com/aida/AEtjO1Vn1GS1UjXyHPPVpHJx2BdLF7QjeMwhX__nDBlUrZTl8qj4LnSzEUoxSyPNKcoTB_WbVuvLFJVW--kPcfKB4z85wCoXsld4sHNliRwqkhm2m6H8s-yy9rOOmZDTHSs37PZgjhN2zQ-lvlPODX7VUuk0BNPTo-l-WeD-7JUduGY8GAAIYTFNCzZc4qNSaszL9tJzA3tiQT2K3CX_qEuBluf06DvsUrRzAkU-LKblXcqk-Q8GbKGKDNzOD1FK"
+  },
+  "htmlCode": {
+    "name": "projects/13806641063080340578/screens/c5a9f51a125e416c9f87175ff1cbfa88/fileEntries/html",
+    "downloadUrl": "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ8Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpbCiVodG1sXzAwMDY1ZDA1MzE1MzQ3MWUwNTNiNGVkMGUzMjY5MjhjEgsSBxCupumNwgwYAZIBJAoKcHJvamVjdF9pZBIWQhQxMzgwNjY0MTA2MzA4MDM0MDU3OA&filename=&opi=89354086",
+    "mimeType": "text/html"
+  },
+  "id": "c5a9f51a125e416c9f87175ff1cbfa88",
+  "generatedBy": "figaro_agent",
+  "width": "780",
+  "height": "2690",
+  "title": "Frame 7: Portal Anak Kost (Mobile Tenant View)",
+  "prompt": "Frame 7: Portal Anak Kost / Mobile Tenant View (Tampilan Layar HP untuk Penghuni Kost).\nFormat HP Mobile (~390px), Dark mode modern bersih, kontras tegas tidak kusam, navigasi simpel.\nHeader:\n- Salam hangat: \"Halo, Dimas Saputra 👋\", Kost Singgah Nyaman - Kamar 106 (Executive Queen - Lt. 1).\n- Status penghuni: Badge Hijau \"Aktif Huni (Bulan ke-5)\".\nKonten Utama:\n1. Kartu Tagihan Bulan Ini:\n   - Nominal: Rp 2.400.000 (Sewa Kamar + Parkir Mobil Avanza B 1928 NY).\n   - Status: \"Jatuh Tempo: 20 Juni 2025 (5 Hari Lagi)\" dengan badge amber terang.\n   - Tombol Aksi Cepat: Tombol \"Bayar Sekarang via QRIS / Transfer\" (warna emerald kontras) dan tombol \"Lihat Rincian Kwitansi\".\n2. Quick Actions:\n   - Icon grid simpel: \"Lapor Kerusakan / AC\", \"Izin Tamu Menginap\", \"Perpanjang Sewa\", \"Aturan Kost & WiFi\".\n3. Form Lapor Keluhan Cepat (Maintenance):\n   - Input kategori keluhan (AC Bocor / Lampu Putus / Air Keruh / WiFi Lemot).\n   - Deskripsi singkat & tombol upload foto bukti.\n   - Riwayat keluhan sebelumnya: \"Servis AC Kamar 106 - Status: Selesai pada 12 Mei\".\n4. Info Kendaraan Terdaftar:\n   - Toyota Avanza Hitam (Plat B 1928 NY) - Slot Parkir Mobil: B-02.\nBottom Navigation Bar: Home / Tagihan / Lapor / Akun.",
+  "name": "projects/13806641063080340578/screens/c5a9f51a125e416c9f87175ff1cbfa88",
+  "theme": {
+    "colorMode": "DARK",
+    "font": "INTER",
+    "roundness": "ROUND_FOUR",
+    "customColor": "#002056",
+    "headlineFont": "INTER",
+    "bodyFont": "INTER",
+    "labelFont": "INTER",
+    "namedColors": {
+      "on_primary_fixed_variant": "#2d457b",
+      "background": "#121414",
+      "on_secondary": "#303030",
+      "tertiary_fixed_dim": "#ffb694",
+      "secondary": "#c6c6c6",
+      "secondary_container": "#474747",
+      "surface": "#121414",
+      "tertiary_fixed": "#ffdbcc",
+      "surface_container": "#1e2020",
+      "inverse_on_surface": "#2f3131",
+      "on_tertiary_fixed_variant": "#733515",
+      "error": "#ffb4ab",
+      "surface_tint": "#b1c5ff",
+      "on_surface": "#e2e2e2",
+      "on_tertiary_fixed": "#351000",
+      "secondary_fixed": "#e2e2e2",
+      "on_secondary_container": "#b5b5b5",
+      "error_container": "#93000a",
+      "primary": "#b1c5ff",
+      "on_error_container": "#ffdad6",
+      "inverse_surface": "#e2e2e2",
+      "surface_container_highest": "#333535",
+      "surface_container_high": "#282a2b",
+      "outline_variant": "#44464f",
+      "on_secondary_fixed_variant": "#474747",
+      "surface_container_lowest": "#0c0f0f",
+      "primary_fixed": "#dae2ff",
+      "tertiary_container": "#421600",
+      "surface_dim": "#121414",
+      "secondary_fixed_dim": "#c6c6c6",
+      "outline": "#8e909b",
+      "surface_container_low": "#1a1c1c",
+      "surface_variant": "#333535",
+      "on_tertiary": "#562001",
+      "on_error": "#690005",
+      "on_primary": "#132e64",
+      "primary_fixed_dim": "#b1c5ff",
+      "on_primary_container": "#7289c5",
+      "on_secondary_fixed": "#1b1b1b",
+      "on_primary_fixed": "#001946",
+      "primary_container": "#002056",
+      "surface_bright": "#37393a",
+      "tertiary": "#ffb694",
+      "on_surface_variant": "#c5c6d1",
+      "inverse_primary": "#465d95",
+      "on_tertiary_container": "#c57751",
+      "on_background": "#e2e2e2"
+    },
+    "colorVariant": "FIDELITY",
+    "overridePrimaryColor": "#002056",
+    "overrideSecondaryColor": "#000000",
+    "overrideTertiaryColor": "#521d00",
+    "overrideNeutralColor": "#ffffff",
+    "spacingScale": 2,
+    "typography": {
+      "headline-md": {
+        "fontFamily": "Inter",
+        "fontSize": "24px",
+        "fontWeight": "600",
+        "lineHeight": "32px"
+      },
+      "label-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "lineHeight": "20px"
+      },
+      "headline-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "32px",
+        "fontWeight": "600",
+        "lineHeight": "40px"
+      },
+      "body-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "lineHeight": "24px"
+      },
+      "headline-sm": {
+        "fontFamily": "Inter",
+        "fontSize": "20px",
+        "fontWeight": "600",
+        "lineHeight": "28px"
+      },
+      "body-md": {
+        "fontFamily": "Inter",
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "lineHeight": "20px"
+      },
+      "body-sm": {
+        "fontFamily": "Inter",
+        "fontSize": "12px",
+        "fontWeight": "400",
+        "lineHeight": "16px"
+      },
+      "label-sm": {
+        "fontFamily": "Inter",
+        "fontSize": "11px",
+        "fontWeight": "500",
+        "lineHeight": "14px"
+      },
+      "label-md": {
+        "fontFamily": "Inter",
+        "fontSize": "12px",
+        "fontWeight": "500",
+        "lineHeight": "16px"
+      }
+    },
+    "spacing": {
+      "space-sm": "0.5rem",
+      "space-md": "1rem",
+      "margin": "1.5rem",
+      "space-xl": "2rem",
+      "space-lg": "1.5rem",
+      "space-xs": "0.25rem",
+      "gutter": "1rem"
+    },
+    "headlineFontFamily": "Inter",
+    "bodyFontFamily": "Inter",
+    "labelFontFamily": "Inter"
+  },
+  "deviceType": "MOBILE",
+  "screenType": "DESIGN",
+  "screenMetadata": {
+    "agentType": "PRO_AGENT",
+    "status": "COMPLETE"
+  },
+  "designSystem": {
+    "name": "assets/7413594048384039481",
+    "designSystem": {
+      "displayName": "Fidelity Dark System",
+      "styleGuidelines": "## Brand & Style\n\nThe design system adopts a **Corporate / Modern** aesthetic tailored for a high-contrast dark mode environment. It projects reliability, precision, and authority through deep, commanding blues and stark structural contrasts. The experience is engineered for clarity and focus, minimizing distractions while maximizing data legibility.\n\n## Layout & Spacing\n\nThe layout model is built on a responsive fluid grid system utilizing a standard 1rem (16px) gutter and 1.5rem (24px) outer margins. Component spacing follows a predictable multiplier scale (`space-xs` through `space-xl`), ensuring balanced rhythm and whitespace across all screen sizes.\n\n## Elevation & Depth\n\nElevation in this dark-themed system relies primarily on **low-contrast outlines** and stark surface contrast rather than heavy drop shadows. Surfaces are distinguished by subtle shifts against the absolute black background, bounded by crisp white or tinted borders to clearly define interactive containers and structural boundaries.\n\n## Components\n\n- **Buttons**: Feature soft rounded corners, utilizing the primary deep blue (`#002056`) or neutral outlines depending on hierarchy, paired with high-contrast white label text.\n- **Chips**: Compact tagging elements utilizing subtle neutral borders and Inter label typography.\n- **Lists**: Clean structural rows separated by low-opacity dividers for dense information displays.\n- **Checkboxes & Radio Buttons**: Crisp geometric indicators utilizing the primary color for selected states against dark surfaces.\n- **Input Fields**: Form controls featuring soft rounded borders, clear focus rings, and high-contrast placeholder/input text.\n- **Cards**: Structural containers built on absolute black backgrounds with subtle borders and generous internal padding.",
+      "theme": {
+        "colorMode": "DARK",
+        "font": "INTER",
+        "roundness": "ROUND_FOUR",
+        "customColor": "#002056",
+        "headlineFont": "INTER",
+        "bodyFont": "INTER",
+        "labelFont": "INTER",
+        "namedColors": {
+          "surface_bright": "#37393a",
+          "on_secondary_fixed_variant": "#474747",
+          "surface_container": "#1e2020",
+          "outline": "#8e909b",
+          "on_surface_variant": "#c5c6d1",
+          "on_background": "#e2e2e2",
+          "on_tertiary_container": "#c57751",
+          "on_secondary_fixed": "#1b1b1b",
+          "inverse_surface": "#e2e2e2",
+          "surface_container_low": "#1a1c1c",
+          "tertiary": "#ffb694",
+          "secondary_fixed_dim": "#c6c6c6",
+          "outline_variant": "#44464f",
+          "on_error": "#690005",
+          "secondary_fixed": "#e2e2e2",
+          "on_tertiary_fixed": "#351000",
+          "on_primary": "#132e64",
+          "error_container": "#93000a",
+          "tertiary_container": "#421600",
+          "on_secondary_container": "#b5b5b5",
+          "on_tertiary_fixed_variant": "#733515",
+          "on_primary_fixed": "#001946",
+          "surface_variant": "#333535",
+          "on_primary_fixed_variant": "#2d457b",
+          "secondary": "#c6c6c6",
+          "on_error_container": "#ffdad6",
+          "background": "#121414",
+          "on_secondary": "#303030",
+          "primary_fixed": "#dae2ff",
+          "surface_container_highest": "#333535",
+          "surface_container_high": "#282a2b",
+          "on_primary_container": "#7289c5",
+          "inverse_on_surface": "#2f3131",
+          "surface": "#121414",
+          "error": "#ffb4ab",
+          "primary": "#b1c5ff",
+          "tertiary_fixed": "#ffdbcc",
+          "inverse_primary": "#465d95",
+          "on_tertiary": "#562001",
+          "tertiary_fixed_dim": "#ffb694",
+          "primary_fixed_dim": "#b1c5ff",
+          "surface_container_lowest": "#0c0f0f",
+          "surface_dim": "#121414",
+          "surface_tint": "#b1c5ff",
+          "secondary_container": "#474747",
+          "primary_container": "#002056",
+          "on_surface": "#e2e2e2"
+        },
+        "designMd": "---\nname: Fidelity Dark System\ncolors:\n  surface: '#121414'\n  surface-dim: '#121414'\n  surface-bright: '#37393a'\n  surface-container-lowest: '#0c0f0f'\n  surface-container-low: '#1a1c1c'\n  surface-container: '#1e2020'\n  surface-container-high: '#282a2b'\n  surface-container-highest: '#333535'\n  on-surface: '#e2e2e2'\n  on-surface-variant: '#c5c6d1'\n  inverse-surface: '#e2e2e2'\n  inverse-on-surface: '#2f3131'\n  outline: '#8e909b'\n  outline-variant: '#44464f'\n  surface-tint: '#b1c5ff'\n  primary: '#b1c5ff'\n  on-primary: '#132e64'\n  primary-container: '#002056'\n  on-primary-container: '#7289c5'\n  inverse-primary: '#465d95'\n  secondary: '#c6c6c6'\n  on-secondary: '#303030'\n  secondary-container: '#474747'\n  on-secondary-container: '#b5b5b5'\n  tertiary: '#ffb694'\n  on-tertiary: '#562001'\n  tertiary-container: '#421600'\n  on-tertiary-container: '#c57751'\n  error: '#ffb4ab'\n  on-error: '#690005'\n  error-container: '#93000a'\n  on-error-container: '#ffdad6'\n  primary-fixed: '#dae2ff'\n  primary-fixed-dim: '#b1c5ff'\n  on-primary-fixed: '#001946'\n  on-primary-fixed-variant: '#2d457b'\n  secondary-fixed: '#e2e2e2'\n  secondary-fixed-dim: '#c6c6c6'\n  on-secondary-fixed: '#1b1b1b'\n  on-secondary-fixed-variant: '#474747'\n  tertiary-fixed: '#ffdbcc'\n  tertiary-fixed-dim: '#ffb694'\n  on-tertiary-fixed: '#351000'\n  on-tertiary-fixed-variant: '#733515'\n  background: '#121414'\n  on-background: '#e2e2e2'\n  surface-variant: '#333535'\ntypography:\n  headline-lg:\n    fontFamily: Inter\n    fontSize: 32px\n    fontWeight: '600'\n    lineHeight: 40px\n  headline-md:\n    fontFamily: Inter\n    fontSize: 24px\n    fontWeight: '600'\n    lineHeight: 32px\n  headline-sm:\n    fontFamily: Inter\n    fontSize: 20px\n    fontWeight: '600'\n    lineHeight: 28px\n  body-lg:\n    fontFamily: Inter\n    fontSize: 16px\n    fontWeight: '400'\n    lineHeight: 24px\n  body-md:\n    fontFamily: Inter\n    fontSize: 14px\n    fontWeight: '400'\n    lineHeight: 20px\n  body-sm:\n    fontFamily: Inter\n    fontSize: 12px\n    fontWeight: '400'\n    lineHeight: 16px\n  label-lg:\n    fontFamily: Inter\n    fontSize: 14px\n    fontWeight: '500'\n    lineHeight: 20px\n  label-md:\n    fontFamily: Inter\n    fontSize: 12px\n    fontWeight: '500'\n    lineHeight: 16px\n  label-sm:\n    fontFamily: Inter\n    fontSize: 11px\n    fontWeight: '500'\n    lineHeight: 14px\nrounded:\n  sm: 0.125rem\n  DEFAULT: 0.25rem\n  md: 0.375rem\n  lg: 0.5rem\n  xl: 0.75rem\n  full: 9999px\nspacing:\n  gutter: 1rem\n  margin: 1.5rem\n  space-xs: 0.25rem\n  space-sm: 0.5rem\n  space-md: 1rem\n  space-lg: 1.5rem\n  space-xl: 2rem\n---\n\n# Fidelity Dark System Design System\n\n## Brand & Style\nThe design system adopts a **Corporate / Modern** aesthetic tailored for a high-contrast dark mode environment. It projects reliability, precision, and authority through deep, commanding blues and stark structural contrasts. The experience is engineered for clarity and focus, minimizing distractions while maximizing data legibility.\n\n## Colors\nThe color palette is built for a dark mode paradigm, anchoring the visual hierarchy with deep navy and absolute black surfaces, contrasted against pure white typography and structural elements.\n\n- **Primary (`#002056`)**: Deep corporate blue used for key interactive states, structural emphasis, and primary focal points.\n- **Secondary (`#000000`)**: Absolute black utilized for background depth, container framing, and grounding the interface.\n- **Tertiary (`#521d00`)**: A rich, dark amber-brown accent used selectively for warnings, highlights, or specialized status indicators.\n- **Neutral (`#ffffff`)**: Pure white reserved for high-priority text, icons, and crisp border elements to ensure maximum accessibility in dark environments.\n\n## Typography\nThe system uses **Inter** exclusively across all text roles (headlines, body, and labels). Inter provides exceptional legibility at small sizes and a neutral, professional tone suited for complex data-dense interfaces. Type scales proportionally to maintain strict visual hierarchy across desktop and mobile form factors.\n\n## Layout & Spacing\nThe layout model is built on a responsive fluid grid system utilizing a standard 1rem (16px) gutter and 1.5rem (24px) outer margins. Component spacing follows a predictable multiplier scale (`space-xs` through `space-xl`), ensuring balanced rhythm and whitespace across all screen sizes.\n\n## Elevation & Depth\nElevation in this dark-themed system relies primarily on **low-contrast outlines** and stark surface contrast rather than heavy drop shadows. Surfaces are distinguished by subtle shifts against the absolute black background, bounded by crisp white or tinted borders to clearly define interactive containers and structural boundaries.\n\n## Shapes\nThe shape language uses a **Soft** roundedness configuration, providing subtle 0.25rem border radii on base UI components, scaling up to 0.5rem and 0.75rem for larger containers. This maintains a clean, modern, and professional aesthetic without excessive curves.\n\n## Components\n- **Buttons**: Feature soft rounded corners, utilizing the primary deep blue or neutral outlines depending on hierarchy, paired with high-contrast white label text.\n- **Chips**: Compact tagging elements utilizing subtle neutral borders and Inter label typography.\n- **Lists**: Clean structural rows separated by low-opacity dividers for dense information displays.\n- **Checkboxes & Radio Buttons**: Crisp geometric indicators utilizing the primary color for selected states against dark surfaces.\n- **Input Fields**: Form controls featuring soft rounded borders, clear focus rings, and high-contrast placeholder/input text.\n- **Cards**: Structural containers built on absolute black backgrounds with subtle borders and generous internal padding.",
+        "colorVariant": "FIDELITY",
+        "overridePrimaryColor": "#002056",
+        "overrideSecondaryColor": "#000000",
+        "overrideTertiaryColor": "#521d00",
+        "overrideNeutralColor": "#ffffff",
+        "spacingScale": 2,
+        "typography": {
+          "headline-sm": {
+            "fontFamily": "Inter",
+            "fontSize": "20px",
+            "fontWeight": "600",
+            "lineHeight": "28px"
+          },
+          "label-md": {
+            "fontFamily": "Inter",
+            "fontSize": "12px",
+            "fontWeight": "500",
+            "lineHeight": "16px"
+          },
+          "label-sm": {
+            "fontFamily": "Inter",
+            "fontSize": "11px",
+            "fontWeight": "500",
+            "lineHeight": "14px"
+          },
+          "body-sm": {
+            "fontFamily": "Inter",
+            "fontSize": "12px",
+            "fontWeight": "400",
+            "lineHeight": "16px"
+          },
+          "headline-md": {
+            "fontFamily": "Inter",
+            "fontSize": "24px",
+            "fontWeight": "600",
+            "lineHeight": "32px"
+          },
+          "headline-lg": {
+            "fontFamily": "Inter",
+            "fontSize": "32px",
+            "fontWeight": "600",
+            "lineHeight": "40px"
+          },
+          "body-lg": {
+            "fontFamily": "Inter",
+            "fontSize": "16px",
+            "fontWeight": "400",
+            "lineHeight": "24px"
+          },
+          "label-lg": {
+            "fontFamily": "Inter",
+            "fontSize": "14px",
+            "fontWeight": "500",
+            "lineHeight": "20px"
+          },
+          "body-md": {
+            "fontFamily": "Inter",
+            "fontSize": "14px",
+            "fontWeight": "400",
+            "lineHeight": "20px"
+          }
+        },
+        "spacing": {
+          "space-sm": "0.5rem",
+          "gutter": "1rem",
+          "space-md": "1rem",
+          "space-xl": "2rem",
+          "space-lg": "1.5rem",
+          "space-xs": "0.25rem",
+          "margin": "1.5rem"
+        },
+        "headlineFontFamily": "Inter",
+        "bodyFontFamily": "Inter",
+        "labelFontFamily": "Inter"
+      }
+    },
+    "version": "2"
+  }
+}

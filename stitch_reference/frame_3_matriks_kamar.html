@@ -1,0 +1,671 @@
+<!DOCTYPE html><html class="dark" lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>KostHub Manager - Matriks Kamar Interaktif</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-secondary-container": "#b5b5b5",
+            "inverse-surface": "#e2e2e2",
+            "outline-variant": "#44464f",
+            "on-secondary-fixed-variant": "#474747",
+            "on-error": "#690005",
+            "inverse-on-surface": "#2f3131",
+            "background": "#121414",
+            "on-error-container": "#ffdad6",
+            "surface-bright": "#37393a",
+            "tertiary-fixed-dim": "#ffb694",
+            "on-secondary": "#303030",
+            "secondary-fixed": "#e2e2e2",
+            "surface-container-lowest": "#0c0f0f",
+            "surface-container-low": "#1a1c1c",
+            "tertiary": "#ffb694",
+            "on-surface": "#e2e2e2",
+            "surface-dim": "#121414",
+            "tertiary-container": "#421600",
+            "surface": "#121414",
+            "on-primary-fixed": "#001946",
+            "error-container": "#93000a",
+            "primary": "#b1c5ff",
+            "on-background": "#e2e2e2",
+            "surface-variant": "#333535",
+            "on-tertiary-fixed": "#351000",
+            "inverse-primary": "#465d95",
+            "on-secondary-fixed": "#1b1b1b",
+            "surface-container-highest": "#333535",
+            "error": "#ffb4ab",
+            "on-primary-container": "#7289c5",
+            "surface-tint": "#b1c5ff",
+            "on-tertiary-fixed-variant": "#733515",
+            "on-tertiary-container": "#c57751",
+            "outline": "#8e909b",
+            "surface-container": "#1e2020",
+            "secondary-fixed-dim": "#c6c6c6",
+            "surface-container-high": "#282a2b",
+            "primary-fixed": "#dae2ff",
+            "on-tertiary": "#562001",
+            "on-primary-fixed-variant": "#2d457b",
+            "secondary": "#c6c6c6",
+            "on-surface-variant": "#c5c6d1",
+            "secondary-container": "#474747",
+            "primary-container": "#002056",
+            "on-primary": "#132e64",
+            "primary-fixed-dim": "#b1c5ff",
+            "tertiary-fixed": "#ffdbcc"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-lg": "1.5rem",
+            "margin": "1.5rem",
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "space-xl": "2rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem"
+          },
+          "fontFamily": {
+            "label-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "label-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-sm": ["Inter"],
+            "headline-lg": ["Inter"]
+          },
+          "fontSize": {
+            "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #121414;
+      color: #e2e2e2;
+      overflow-x: hidden;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Custom scrollbar for modern corporate look */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #121414;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #333535;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #44464f;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background flex min-h-screen antialiased selection:bg-primary selection:text-on-primary">
+<!-- SIDEBAR NAVIGATION (Shared Component Anchor) -->
+<aside class="w-64 h-screen fixed left-0 top-0 flex flex-col justify-between p-4 border-r border-outline-variant/30 bg-[#0E131F] z-30">
+<div class="flex flex-col gap-y-6">
+<!-- Property Brand Header -->
+<div class="flex items-center gap-3 px-2 py-1">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center border border-outline-variant/60 shadow-inner">
+<span class="material-symbols-outlined text-primary" data-icon="apartment">apartment</span>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="font-headline-sm text-headline-sm font-semibold text-primary truncate leading-tight">Kost Singgah Nyaman</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">64 Unit Aktif</span>
+</div>
+</div>
+<!-- Quick Action / CTA inside sidebar -->
+<div class="px-1">
+<button class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface transition-all duration-150 group">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md font-medium">Laporan Kas</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors text-sm" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-1 px-1">
+<!-- 1. Dashboard -->
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<!-- 2. Matriks Kamar (ACTIVE ITEM) -->
+<a class="flex items-center justify-between px-3 py-2.5 bg-primary-container text-on-primary-container rounded-lg font-semibold transition-all duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-lg text-primary" data-icon="bed" style="font-variation-settings: 'FILL' 1;">bed</span>
+<span class="font-label-md text-label-md text-primary font-semibold">Matriks Kamar</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+</a>
+<!-- 3. Pembayaran & Kas -->
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="payments">payments</span>
+<span class="font-label-md text-label-md">Pembayaran &amp; Kas</span>
+</a>
+<!-- 4. Pengeluaran -->
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-md text-label-md">Pengeluaran</span>
+</a>
+<!-- 5. Komplain & Maintenance -->
+<a class="flex items-center justify-between px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-lg" data-icon="build">build</span>
+<span class="font-label-md text-label-md">Komplain &amp; Maintenance</span>
+</div>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-tertiary-container text-tertiary border border-tertiary/30">1</span>
+</a>
+<!-- 6. Pengaturan Kost -->
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Pengaturan Kost</span>
+</a>
+</nav>
+</div>
+<!-- Footer Sidebar Links & Property Info -->
+<div class="flex flex-col gap-2 pt-4 border-t border-outline-variant/60 px-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="support">support</span>
+<span class="font-label-md text-label-md">Pusat Bantuan</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-error hover:bg-error-container/20 rounded-lg transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Keluar</span>
+</a>
+<!-- Server & Sync Status Indicator -->
+<div class="mt-2 p-2.5 rounded-lg bg-surface-container-lowest border border-outline-variant/40 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Cloud Sync Aktif</span>
+</div>
+<span class="font-body-sm text-[11px] text-outline">v2.4.1</span>
+</div>
+</div>
+</aside>
+<!-- MAIN CANVAS & CONTENT WRAPPER -->
+<div class="pl-64 flex-1 flex flex-col min-w-0 bg-background pb-24">
+<!-- TOP NAV BAR (Shared Component Anchor) -->
+<header class="h-16 w-full px-6 bg-[#0E131F]/90 backdrop-blur-md border-b border-outline-variant/30 flex items-center justify-between sticky top-0 z-20">
+<div class="flex items-center gap-6 flex-1 max-w-xl">
+<h1 class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight flex items-center gap-2">
+          KostHub Manager
+          <span class="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-surface-container-highest text-primary border border-primary/20">Pro SaaS</span>
+</h1>
+<!-- Search Bar with shortcut badge -->
+<div class="relative w-full max-w-sm">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-lg" data-icon="search">search</span>
+</div>
+<input class="w-full pl-9 pr-12 py-1.5 bg-surface-container-low border border-outline-variant rounded-lg text-on-surface placeholder-on-surface-variant font-body-sm text-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Cari kamar 101, penghuni, atau tag..." type="text">
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+<kbd class="px-1.5 py-0.5 text-[10px] font-mono font-medium text-outline bg-surface-container-highest border border-outline-variant rounded">⌘K</kbd>
+</div>
+</div>
+</div>
+<!-- Trailing Action Cluster -->
+<div class="flex items-center gap-3">
+<!-- Add Room Quick Primary Action -->
+<button class="flex items-center gap-2 px-3.5 py-1.5 bg-primary text-on-primary font-label-md text-label-md font-semibold rounded-lg hover:bg-primary/90 transition-all duration-150 shadow-sm active:scale-95">
+<span class="material-symbols-outlined text-base" data-icon="add">add</span>
+<span class="">Tambah Kamar</span>
+</button>
+<div class="h-5 w-px bg-outline-variant mx-1"></div>
+<!-- Notification Icon with badge -->
+<button class="relative p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Notifikasi">
+<span class="material-symbols-outlined text-xl" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-tertiary"></span>
+</button>
+<!-- Help Icon -->
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Pusat Bantuan">
+<span class="material-symbols-outlined text-xl" data-icon="help">help</span>
+</button>
+<!-- User Profile Pill -->
+<div class="flex items-center gap-2 pl-2 border-l border-outline-variant/60 cursor-pointer group">
+<img class="w-8 h-8 rounded-full border border-primary/50 object-cover" data-alt="A sharp, executive profile photo of an Indonesian kost property manager in a sleek navy polo shirt with modern office interior and warm ambient rim lighting, professional corporate portrait style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLgSmyxh-r3PY6firhFG-FB2Qw8DaUFmZlV9j7F85zvsL56yQOkExc1LAHAAe4rgDI5Qoa4C7-KeNvgQXIzKYtRKMN5dZyDFTcZVJ_iX6Dwkuk7fXKmRyM5llRPC_IrVXZCXquhq16rqKxPyfGRk9nNEq0skzQ-5CDnsklDrlroP0VcotUPzA3Bm16k2FXgtz0BDEJGlKJqyAiwgs971BQeHF326jo3cVOBXZHvtoOpR27T0cckO3UCw">
+<div class="hidden lg:flex flex-col text-left">
+<span class="font-label-md text-label-md font-semibold text-on-surface group-hover:text-primary transition-colors">Budi Santoso</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Owner &amp; Admin</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-base group-hover:text-on-surface" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+</div>
+</div>
+</header>
+<!-- SUBHEADER / ACTION & FILTER BAR -->
+<section class="px-6 py-6 bg-[#0B0F17] flex flex-col gap-5 border-b border-outline-variant/20">
+  <!-- Title & Clean Status Summary Badges -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-3">
+        <h2 class="text-2xl font-bold text-white tracking-tight">Matriks Okupansi Kamar</h2>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          92.2% Terisi
+        </span>
+      </div>
+      <p class="text-sm text-outline mt-1">
+        Ringkasan ketersediaan kamar, status penyewa, dan kontrol check-in langsung.
+      </p>
+    </div>
+
+    <!-- Simplified Fresh Status Indicators -->
+    <div class="flex items-center gap-2 bg-[#131926] p-1.5 rounded-xl border border-outline-variant/30">
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container/60 text-xs font-medium">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"></span>
+        <span class="text-on-surface-variant">Terisi:</span>
+        <span class="font-bold text-emerald-400">59</span>
+      </div>
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container/60 text-xs font-medium">
+        <span class="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(177,197,255,0.6)]"></span>
+        <span class="text-on-surface-variant">Siap Huni:</span>
+        <span class="font-bold text-primary">5</span>
+      </div>
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container/60 text-xs font-medium">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]"></span>
+        <span class="text-on-surface-variant">Perbaikan:</span>
+        <span class="font-bold text-amber-300">1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simplified Clean Filter Bar -->
+  <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+    <div class="flex items-center gap-2 p-1 bg-[#131926] rounded-xl border border-outline-variant/30 overflow-x-auto">
+      <button class="px-4 py-1.5 rounded-lg bg-primary text-on-primary font-medium text-xs shadow transition-all">
+        Semua Lantai
+      </button>
+      <button class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container-high font-medium text-xs transition-colors">
+        Lantai 1 <span class="text-outline ml-1">24</span>
+      </button>
+      <button class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container-high font-medium text-xs transition-colors">
+        Lantai 2 <span class="text-outline ml-1">24</span>
+      </button>
+      <button class="px-3.5 py-1.5 rounded-lg text-on-surface-variant hover:text-white hover:bg-surface-container-high font-medium text-xs transition-colors">
+        Lantai 3 <span class="text-outline ml-1">16</span>
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2.5">
+      <button class="flex items-center gap-2 px-3 py-1.5 bg-[#131926] border border-outline-variant/40 rounded-lg text-xs font-medium text-on-surface hover:border-primary/40 transition-colors">
+        <span class="material-symbols-outlined text-sm text-outline" data-icon="swap_vert">swap_vert</span>
+        <span class="">Jatuh Tempo Terdekat</span>
+      </button>
+      <button class="flex items-center gap-1.5 px-3.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-lg text-xs font-semibold transition-colors">
+        <span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+        <span class="">Isi Kamar</span>
+      </button>
+    </div>
+  </div>
+</section>
+<!-- MAIN INTERACTIVE ROOM GRID SECTION -->
+<main class="px-6 py-6 flex flex-col gap-7">
+  <!-- ================= LANTAI 1 ================= -->
+  <section class="flex flex-col gap-3.5">
+    <div class="flex items-center justify-between pb-2 border-b border-outline-variant/30">
+      <div class="flex items-center gap-2.5">
+        <span class="px-2 py-0.5 rounded bg-primary/10 text-primary font-bold text-xs border border-primary/20">1F</span>
+        <h3 class="text-base font-semibold text-white">Lantai 1 - Sayap Barat &amp; Timur</h3>
+        <span class="text-xs text-outline font-normal ml-2">22 Terisi • 2 Kosong</span>
+      </div>
+      <span class="text-xs text-outline hidden sm:block">Tarif: Rp 1.950.000 - Rp 2.400.000 / bln</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <!-- CARD 101: Terisi -->
+      <div class="bg-[#131926] rounded-xl border border-outline-variant/30 hover:border-emerald-500/50 p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-white tracking-tight">101</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Terisi
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white truncate">Rian Pratama</p>
+          <div class="flex items-center justify-between text-xs text-outline mt-1">
+            <span class="">Bulanan</span>
+            <span class="text-amber-300 font-medium">Tempo: 15 Juni</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface border border-outline-variant/40 transition-colors flex items-center justify-center gap-1">
+          <span class="">Kelola Kamar</span>
+          <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+        </button>
+      </div>
+
+      <!-- CARD 102: Terisi -->
+      <div class="bg-[#131926] rounded-xl border border-outline-variant/30 hover:border-emerald-500/50 p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-white tracking-tight">102</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Terisi
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white truncate">Nadia Maharani</p>
+          <div class="flex items-center justify-between text-xs text-outline mt-1">
+            <span class="">3 Bulanan</span>
+            <span class="text-on-surface-variant font-medium">Tempo: 28 Juli</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface border border-outline-variant/40 transition-colors flex items-center justify-center gap-1">
+          <span class="">Kelola Kamar</span>
+          <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+        </button>
+      </div>
+
+      <!-- CARD 105: Siap Huni -->
+      <div class="bg-[#0F1D33] rounded-xl border-2 border-primary/50 hover:border-primary p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-primary tracking-tight">105</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-primary/20 text-primary border border-primary/40">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Siap Huni
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white">Deluxe AC 3x4m</p>
+          <div class="flex items-center justify-between text-xs text-primary font-medium mt-1">
+            <span class="">Rp 2.200.000/bln</span>
+            <span class="text-outline text-[11px]">Kunci Siap</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-xs font-semibold text-on-primary shadow transition-colors flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-xs" data-icon="add">add</span>
+          <span class="">Check-in Baru</span>
+        </button>
+      </div>
+
+      <!-- CARD 106: Terisi -->
+      <div class="bg-[#131926] rounded-xl border border-outline-variant/30 hover:border-emerald-500/50 p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-white tracking-tight">106</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Terisi
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white truncate">Dimas Saputra</p>
+          <div class="flex items-center justify-between text-xs text-outline mt-1">
+            <span class="">Executive Queen</span>
+            <span class="text-on-surface-variant font-medium">Tempo: 20 Juni</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface border border-outline-variant/40 transition-colors flex items-center justify-center gap-1">
+          <span class="">Kelola Kamar</span>
+          <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LANTAI 2 ================= -->
+  <section class="flex flex-col gap-3.5">
+    <div class="flex items-center justify-between pb-2 border-b border-outline-variant/30">
+      <div class="flex items-center gap-2.5">
+        <span class="px-2 py-0.5 rounded bg-primary/10 text-primary font-bold text-xs border border-primary/20">2F</span>
+        <h3 class="text-base font-semibold text-white">Lantai 2 - Executive &amp; Balcon</h3>
+        <span class="text-xs text-outline font-normal ml-2">21 Terisi • 2 Kosong • 1 Perbaikan</span>
+      </div>
+      <span class="text-xs text-outline hidden sm:block">Tarif: Rp 2.300.000 - Rp 2.800.000 / bln</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <!-- CARD 201: Terisi -->
+      <div class="bg-[#131926] rounded-xl border border-outline-variant/30 hover:border-emerald-500/50 p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-white tracking-tight">201</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Terisi
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white truncate">Farhan Maulana</p>
+          <div class="flex items-center justify-between text-xs text-outline mt-1">
+            <span class="">Tahunan</span>
+            <span class="text-on-surface-variant font-medium">Tempo: 10 Okt</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface border border-outline-variant/40 transition-colors flex items-center justify-center gap-1">
+          <span class="">Kelola Kamar</span>
+          <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+        </button>
+      </div>
+
+      <!-- CARD 208: Maintenance -->
+      <div class="bg-[#261A0F] rounded-xl border border-amber-500/50 hover:border-amber-400 p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-amber-300 tracking-tight">208</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+            <span class="material-symbols-outlined text-xs" data-icon="build">build</span> Perbaikan
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-amber-200 truncate">Perbaikan AC Daikin</p>
+          <div class="flex items-center justify-between text-xs text-outline mt-1">
+            <span class="text-amber-400/80 font-mono">#M-402</span>
+            <span class="text-amber-300/90 font-medium">Est: Besok</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-xs font-medium text-amber-300 border border-amber-500/40 transition-colors flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-xs" data-icon="history">history</span>
+          <span class="">Log Servis</span>
+        </button>
+      </div>
+
+      <!-- CARD 212: Siap Huni -->
+      <div class="bg-[#0F1D33] rounded-xl border-2 border-primary/50 hover:border-primary p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-primary tracking-tight">212</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-primary/20 text-primary border border-primary/40">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Siap Huni
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white">VIP Balcon 4x4m</p>
+          <div class="flex items-center justify-between text-xs text-primary font-medium mt-1">
+            <span class="">Rp 2.700.000/bln</span>
+            <span class="text-outline text-[11px]">Cat Baru</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-xs font-semibold text-on-primary shadow transition-colors flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-xs" data-icon="add">add</span>
+          <span class="">Check-in Baru</span>
+        </button>
+      </div>
+
+      <!-- CARD 214: Terisi -->
+      <div class="bg-[#131926] rounded-xl border border-outline-variant/30 hover:border-emerald-500/50 p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-white tracking-tight">214</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Terisi
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white truncate">Alya Salsabila</p>
+          <div class="flex items-center justify-between text-xs text-outline mt-1">
+            <span class="">Bulanan</span>
+            <span class="text-on-surface-variant font-medium">Tempo: 05 Juli</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface border border-outline-variant/40 transition-colors flex items-center justify-center gap-1">
+          <span class="">Kelola Kamar</span>
+          <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LANTAI 3 ================= -->
+  <section class="flex flex-col gap-3.5">
+    <div class="flex items-center justify-between pb-2 border-b border-outline-variant/30">
+      <div class="flex items-center gap-2.5">
+        <span class="px-2 py-0.5 rounded bg-primary/10 text-primary font-bold text-xs border border-primary/20">3F</span>
+        <h3 class="text-base font-semibold text-white">Lantai 3 - Penthouse &amp; Studio Suite</h3>
+        <span class="text-xs text-outline font-normal ml-2">15 Terisi • 1 Kosong</span>
+      </div>
+      <button class="text-primary hover:text-white text-xs font-medium flex items-center gap-1">
+        <span class="">Lihat Semua 16 Unit</span>
+        <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <!-- CARD 302: Siap Huni -->
+      <div class="bg-[#0F1D33] rounded-xl border-2 border-primary/50 hover:border-primary p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-primary tracking-tight">302</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-primary/20 text-primary border border-primary/40">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Siap Huni
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white">Penthouse Loft 5x4m</p>
+          <div class="flex items-center justify-between text-xs text-primary font-medium mt-1">
+            <span class="">Rp 3.500.000/bln</span>
+            <span class="text-outline text-[11px]">Sanitasi OK</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-xs font-semibold text-on-primary shadow transition-colors flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-xs" data-icon="add">add</span>
+          <span class="">Check-in Baru</span>
+        </button>
+      </div>
+
+      <!-- CARD 304: Terisi -->
+      <div class="bg-[#131926] rounded-xl border border-outline-variant/30 hover:border-emerald-500/50 p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-white tracking-tight">304</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Terisi
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white truncate">dr. Hendra Wijaya</p>
+          <div class="flex items-center justify-between text-xs text-outline mt-1">
+            <span class="">Studio Penthouse</span>
+            <span class="text-on-surface-variant font-medium">Tempo: 01 Juli</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface border border-outline-variant/40 transition-colors flex items-center justify-center gap-1">
+          <span class="">Kelola Kamar</span>
+          <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+        </button>
+      </div>
+
+      <!-- CARD 306: Terisi -->
+      <div class="bg-[#131926] rounded-xl border border-outline-variant/30 hover:border-emerald-500/50 p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-white tracking-tight">306</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Terisi
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white truncate">Maya Kartika</p>
+          <div class="flex items-center justify-between text-xs text-outline mt-1">
+            <span class="">6 Bulanan</span>
+            <span class="text-emerald-400 font-medium">Tempo: 18 Nov</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface border border-outline-variant/40 transition-colors flex items-center justify-center gap-1">
+          <span class="">Kelola Kamar</span>
+          <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+        </button>
+      </div>
+
+      <!-- CARD 308: Terisi -->
+      <div class="bg-[#131926] rounded-xl border border-outline-variant/30 hover:border-emerald-500/50 p-4 transition-all duration-150 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xl font-bold text-white tracking-tight">308</span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Terisi
+          </span>
+        </div>
+        <div class="my-3 pt-1">
+          <p class="text-sm font-semibold text-white truncate">Bagus Trihatmojo</p>
+          <div class="flex items-center justify-between text-xs text-outline mt-1">
+            <span class="">Studio Deluxe</span>
+            <span class="text-amber-300 font-medium">Tempo: 16 Juni</span>
+          </div>
+        </div>
+        <button class="w-full py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-medium text-on-surface border border-outline-variant/40 transition-colors flex items-center justify-center gap-1">
+          <span class="">Kelola Kamar</span>
+          <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- FIXED BOTTOM SUMMARY BAR / MINI ANALYTICS -->
+<footer class="fixed bottom-0 right-0 left-64 h-16 bg-[#0E131F]/95 backdrop-blur-md border-t border-outline-variant/30 px-6 flex items-center justify-between z-20 shadow-2xl">
+  <div class="flex items-center gap-6">
+    <div class="flex items-baseline gap-2">
+      <span class="text-xs text-outline font-medium">Okupansi:</span>
+      <span class="text-lg font-bold text-emerald-400">92.2%</span>
+      <span class="text-xs text-outline">(59/64 Unit)</span>
+    </div>
+    <div class="h-6 w-px bg-outline-variant/40 hidden sm:block"></div>
+    <div class="flex items-center gap-4 text-xs">
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-primary"></span>
+        <span class="text-white font-medium">5 Kosong</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+        <span class="text-white font-medium">1 Perbaikan</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <div class="hidden md:flex items-center gap-2 text-xs mr-2">
+      <span class="text-outline">Potensi Penuh:</span>
+      <span class="font-bold text-primary">+Rp 9.500.000/bln</span>
+    </div>
+    <button class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-on-primary font-semibold text-xs rounded-lg transition-all shadow">
+      <span class="material-symbols-outlined text-sm" data-icon="campaign">campaign</span>
+      <span class="">Promosikan 5 Kamar Kosong</span>
+    </button>
+  </div>
+</footer>
+</div>
+
+
+</body></html>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pengaturan &amp; Konfigurasi Kost - KostHub Manager</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-container": "#421600",
+            "on-secondary": "#303030",
+            "secondary-fixed-dim": "#c6c6c6",
+            "surface-dim": "#121414",
+            "primary-fixed-dim": "#b1c5ff",
+            "on-error-container": "#ffdad6",
+            "surface-container-high": "#282a2b",
+            "on-primary-container": "#7289c5",
+            "primary-container": "#002056",
+            "on-primary-fixed": "#001946",
+            "surface": "#121414",
+            "outline": "#8e909b",
+            "surface-container-highest": "#333535",
+            "surface-container-lowest": "#0c0f0f",
+            "surface-container-low": "#1a1c1c",
+            "on-tertiary-fixed": "#351000",
+            "on-primary": "#132e64",
+            "error-container": "#93000a",
+            "primary-fixed": "#dae2ff",
+            "on-primary-fixed-variant": "#2d457b",
+            "on-secondary-fixed-variant": "#474747",
+            "inverse-surface": "#e2e2e2",
+            "outline-variant": "#44464f",
+            "secondary-container": "#474747",
+            "on-surface": "#e2e2e2",
+            "primary": "#b1c5ff",
+            "surface-container": "#1e2020",
+            "inverse-on-surface": "#2f3131",
+            "on-secondary-fixed": "#1b1b1b",
+            "tertiary": "#ffb694",
+            "error": "#ffb4ab",
+            "on-tertiary-fixed-variant": "#733515",
+            "background": "#121414",
+            "secondary-fixed": "#e2e2e2",
+            "surface-variant": "#333535",
+            "surface-bright": "#37393a",
+            "on-secondary-container": "#b5b5b5",
+            "inverse-primary": "#465d95",
+            "on-surface-variant": "#c5c6d1",
+            "on-tertiary-container": "#c57751",
+            "on-tertiary": "#562001",
+            "on-error": "#690005",
+            "surface-tint": "#b1c5ff",
+            "tertiary-fixed-dim": "#ffb694",
+            "on-background": "#e2e2e2",
+            "tertiary-fixed": "#ffdbcc",
+            "secondary": "#c6c6c6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "margin": "1.5rem",
+            "space-lg": "1.5rem",
+            "space-xl": "2rem",
+            "gutter": "1rem",
+            "space-sm": "0.5rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "label-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #121414;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #333535;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+<!-- Side Navigation Bar (Anchored from JSON) -->
+<aside class="w-64 h-screen fixed left-0 top-0 flex flex-col justify-between p-space-md border-r border-outline-variant bg-surface-container-low z-40">
+<div class="flex flex-col gap-space-lg">
+<!-- Header / Profile Brand -->
+<div class="flex items-center gap-space-sm pb-space-sm border-b border-outline-variant">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-primary font-bold text-headline-sm border border-outline-variant">
+<span class="material-symbols-outlined text-primary" data-icon="apartment">apartment</span>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="text-label-lg font-label-lg text-on-surface font-semibold truncate">Kost Singgah Nyaman</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">64 Unit Aktif</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-1">
+<!-- 1. Dashboard -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- 2. Matriks Kamar -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="bed">bed</span>
+<span>Matriks Kamar</span>
+</a>
+<!-- 3. Pembayaran & Kas -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span>Pembayaran &amp; Kas</span>
+</a>
+<!-- 4. Pengeluaran -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span>Pengeluaran</span>
+</a>
+<!-- 5. Komplain & Maintenance -->
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span>Komplain &amp; Maintenance</span>
+</a>
+<!-- 6. Pengaturan Kost (ACTIVE ITEM) -->
+<a class="flex items-center gap-3 px-3 py-2 bg-primary-container text-on-primary-container rounded-lg font-semibold text-label-md font-label-md border border-primary/20" href="#">
+<span class="material-symbols-outlined text-primary" data-icon="settings">settings</span>
+<span class="text-primary font-semibold">Pengaturan Kost</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Actions / CTA & Support -->
+<div class="flex flex-col gap-3 pt-space-sm border-t border-outline-variant">
+<button class="w-full flex items-center justify-center gap-2 py-2 px-3 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-lg text-label-md font-label-md transition-colors border border-outline-variant">
+<span class="material-symbols-outlined text-primary" data-icon="summarize">summarize</span>
+<span>Laporan Kas</span>
+</button>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-colors text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="support">support</span>
+<span>Pusat Bantuan</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-error hover:bg-error-container/20 rounded-lg transition-colors text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Keluar</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper with TopNavBar -->
+<div class="pl-64 flex flex-col flex-1 min-h-screen">
+<!-- TopNavBar (Anchored from JSON) -->
+<header class="w-full h-16 flex justify-between items-center px-space-lg bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-30">
+<div class="flex items-center gap-4">
+<span class="text-headline-sm font-headline-sm font-bold text-on-surface">KostHub Manager</span>
+<!-- Search bar on left -->
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-body-lg" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant text-on-surface text-body-sm font-body-sm pl-9 pr-3 py-1.5 rounded-lg focus:outline-none focus:border-primary" placeholder="Cari pengaturan, kamar..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<!-- Action Buttons -->
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-colors duration-150 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="h-6 w-px bg-outline-variant mx-1"></div>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-primary text-on-primary rounded-lg text-label-md font-label-md font-semibold hover:bg-primary-fixed-dim transition-colors">
+<span class="material-symbols-outlined text-body-lg" data-icon="add">add</span>
+<span>Tambah Kamar</span>
+</button>
+<div class="flex items-center gap-2 ml-2 pl-2 border-l border-outline-variant">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person">person</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface font-medium hidden lg:inline">Budi Santoso</span>
+</div>
+</div>
+</header>
+<!-- Page Body -->
+<main class="p-space-lg flex-1 overflow-y-auto">
+<!-- Title & Subtitle Banner -->
+<div class="mb-space-lg pb-space-sm border-b border-outline-variant/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-headline-md font-headline-md text-on-surface font-semibold tracking-tight">Pengaturan &amp; Konfigurasi Kost</h1>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Atur identitas properti, otomatisasi pesan WhatsApp pengingat sewa, rekening bank, dan QRIS.</p>
+</div>
+<div class="flex items-center gap-2 text-label-sm font-label-sm bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span>Sinkronisasi Cloud Aktif</span>
+</div>
+</div>
+<!-- 2-Column Responsive Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start pb-20">
+<!-- KOLOM KIRI (Form Konfigurasi) - 7 Cols on XL -->
+<div class="xl:col-span-7 space-y-space-lg">
+<!-- SEKSI 1: Identitas Properti Kost -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p- space-md md:p-space-lg shadow-sm">
+<div class="flex items-center gap-2.5 pb-3 border-b border-outline-variant">
+<span class="material-symbols-outlined text-primary" data-icon="home_work">home_work</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">1. Identitas Properti Kost</h2>
+</div>
+<div class="mt-space-md grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<div class="md:col-span-2">
+<label class="block text-label-md font-label-md text-on-surface-variant mb-1.5">Nama Kost</label>
+<div class="relative">
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary" type="text" value="Kost Singgah Nyaman"/>
+</div>
+</div>
+<div class="md:col-span-2">
+<label class="block text-label-md font-label-md text-on-surface-variant mb-1.5">Alamat Lengkap</label>
+<textarea class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary resize-none" rows="2">Jl. Senopati Raya No. 42, Kebayoran Baru, Jakarta Selatan, DKI Jakarta 12190</textarea>
+</div>
+<div>
+<label class="block text-label-md font-label-md text-on-surface-variant mb-1.5">Jumlah Kamar</label>
+<div class="relative flex items-center">
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary" type="number" value="64"/>
+<span class="absolute right-3 text-label-sm font-label-sm text-on-surface-variant">Unit</span>
+</div>
+</div>
+<div>
+<label class="block text-label-md font-label-md text-on-surface-variant mb-1.5">Kontak WhatsApp Pengelola</label>
+<div class="relative">
+<span class="absolute left-3 top-2.5 text-body-sm font-body-sm text-on-surface-variant">+62</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg pl-12 pr-3 py-2 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary" type="text" value="812-8899-7721"/>
+</div>
+</div>
+<div class="md:col-span-2">
+<label class="block text-label-md font-label-md text-on-surface-variant mb-1.5">Tautan Google Maps</label>
+<div class="flex gap-2">
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg px-3 py-2 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary truncate" type="url" value="https://maps.app.goo.gl/KostSinggahNyamanJaksel"/>
+<a class="px-3 py-2 bg-surface-container-high border border-outline-variant hover:border-primary text-on-surface rounded-lg flex items-center justify-center transition-colors" href="#">
+<span class="material-symbols-outlined text-body-lg" data-icon="open_in_new">open_in_new</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- SEKSI 2: Pengaturan Pembayaran & Rekening -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-space-md md:p-space-lg shadow-sm">
+<div class="flex items-center gap-2.5 pb-3 border-b border-outline-variant">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">2. Pengaturan Pembayaran &amp; Rekening</h2>
+</div>
+<div class="mt-space-md space-y-space-md">
+<!-- Rekening Utama (BCA) -->
+<div class="p-space-md bg-surface-container rounded-lg border border-outline-variant">
+<div class="flex items-center justify-between mb-2">
+<span class="text-label-md font-label-md text-primary font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm" data-icon="verified">verified</span> Rekening Utama (Bank BCA)
+                  </span>
+<span class="text-label-sm font-label-sm bg-primary-container text-on-primary-container px-2 py-0.5 rounded">Aktif</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Nomor Rekening</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary" type="text" value="8820-192-881"/>
+</div>
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Atas Nama (A/N)</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary" type="text" value="Budi Santoso"/>
+</div>
+</div>
+</div>
+<!-- Rekening Cadangan (Mandiri) -->
+<div class="p-space-md bg-surface-container rounded-lg border border-outline-variant">
+<div class="flex items-center justify-between mb-2">
+<span class="text-label-md font-label-md text-on-surface-variant font-semibold">Rekening Cadangan (Bank Mandiri)</span>
+<span class="text-label-sm font-label-sm bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded">Opsional</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Nomor Rekening</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary" type="text" value="137-00-19828-11"/>
+</div>
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Atas Nama (A/N)</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary" type="text" value="Budi Santoso"/>
+</div>
+</div>
+</div>
+<!-- Upload & Preview Statis QRIS Dinamis -->
+<div class="p-space-md bg-surface-container rounded-lg border border-outline-variant flex flex-col sm:flex-row items-center gap-space-md">
+<div class="w-32 h-32 bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-lg flex flex-col items-center justify-center p-2 text-center relative group">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="qr_code_2">qr_code_2</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant mt-1">QRIS Kost Aktif</span>
+</div>
+<div class="flex-1 text-center sm:text-left">
+<h4 class="text-label-lg font-label-lg text-on-surface font-semibold">QRIS Standar Pembayaran</h4>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">Gunakan barcode QRIS statis atau hubungkan gateway dinamis untuk otomatisasi validasi pembayaran.</p>
+<div class="mt-3 flex flex-wrap gap-2 justify-center sm:justify-start">
+<button class="px-3 py-1.5 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-on-surface rounded-lg text-label-sm font-label-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-body-md" data-icon="upload">upload</span>
+<span>Ganti Gambar QR</span>
+</button>
+<button class="px-3 py-1.5 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-on-surface-variant hover:text-on-surface rounded-lg text-label-sm font-label-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-body-md" data-icon="visibility">visibility</span>
+<span>Lihat Resolusi Penuh</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SEKSI 3: Otomatisasi Template Pesan WhatsApp -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-space-md md:p-space-lg shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-outline-variant">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary" data-icon="chat">chat</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">3. Otomatisasi Template WhatsApp</h2>
+</div>
+<span class="text-label-sm font-label-sm text-primary font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="bolt">bolt</span> Auto-Trigger Aktif
+              </span>
+</div>
+<div class="mt-space-md space-y-space-md">
+<!-- Event Trigger Selector -->
+<div>
+<label class="block text-label-md font-label-md text-on-surface-variant mb-1.5">Pilih Peristiwa Otomatisasi (Event Trigger)</label>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-2" id="event-selector">
+<button class="p-2.5 rounded-lg border border-primary bg-primary-container/40 text-left transition-all" id="btn-due" onclick="selectEvent('due')" type="button">
+<div class="text-label-md font-label-md text-primary font-semibold">Pengingat Jatuh Tempo (H-3)</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant mt-0.5">Kirim 3 hari sebelum tempo</div>
+</button>
+<button class="p-2.5 rounded-lg border border-outline-variant bg-surface-container text-left hover:border-outline transition-all" id="btn-paid" onclick="selectEvent('paid')" type="button">
+<div class="text-label-md font-label-md text-on-surface font-semibold">Kwitansi Pembayaran Lunas</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant mt-0.5">Kirim instan saat lunas</div>
+</button>
+<button class="p-2.5 rounded-lg border border-outline-variant bg-surface-container text-left hover:border-outline transition-all" id="btn-checkin" onclick="selectEvent('checkin')" type="button">
+<div class="text-label-md font-label-md text-on-surface font-semibold">Verifikasi Check-in</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant mt-0.5">Panduan &amp; kunci kamar</div>
+</button>
+</div>
+</div>
+<!-- Dynamic Tags Section -->
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1.5">Klik Tag untuk Menambahkan ke Template:</label>
+<div class="flex flex-wrap gap-1.5">
+<button class="px-2.5 py-1 rounded bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-label-sm font-label-sm transition-colors" onclick="insertTag('{NAMA_PENYEWA}')" type="button">
+                    +{NAMA_PENYEWA}
+                  </button>
+<button class="px-2.5 py-1 rounded bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-label-sm font-label-sm transition-colors" onclick="insertTag('{NOMOR_KAMAR}')" type="button">
+                    +{NOMOR_KAMAR}
+                  </button>
+<button class="px-2.5 py-1 rounded bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-label-sm font-label-sm transition-colors" onclick="insertTag('{NOMINAL}')" type="button">
+                    +{NOMINAL}
+                  </button>
+<button class="px-2.5 py-1 rounded bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-label-sm font-label-sm transition-colors" onclick="insertTag('{JATUH_TEMPO}')" type="button">
+                    +{JATUH_TEMPO}
+                  </button>
+<button class="px-2.5 py-1 rounded bg-surface-container-high border border-outline-variant hover:border-primary text-primary text-label-sm font-label-sm transition-colors" onclick="insertTag('{LINK_KWITANSI}')" type="button">
+                    +{LINK_KWITANSI}
+                  </button>
+</div>
+</div>
+<!-- Template Textarea -->
+<div>
+<div class="flex justify-between items-center mb-1.5">
+<label class="text-label-md font-label-md text-on-surface-variant">Isi Template Pesan</label>
+<span class="text-label-sm font-label-sm text-outline" id="char-counter">248 karakter</span>
+</div>
+<textarea class="w-full bg-surface-container border border-outline-variant rounded-lg p-3 text-body-md font-body-md text-on-surface focus:outline-none focus:border-primary font-mono leading-relaxed" id="template-text" oninput="updateLivePreview()" rows="7">Halo Kak {NAMA_PENYEWA}, ini pengingat ramah dari Kost Singgah Nyaman. Masa sewa Kamar {NOMOR_KAMAR} akan jatuh tempo pada {JATUH_TEMPO}. Total tagihan: {NOMINAL}. Mohon lakukan konfirmasi atau pembayaran via link berikut: {LINK_KWITANSI}. Terima kasih!</textarea>
+</div>
+<div class="p-3 bg-surface-container rounded-lg border border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-0" id="attach_pdf" type="checkbox"/>
+<label class="text-label-md font-label-md text-on-surface" for="attach_pdf">Lampirkan PDF Invoice Digital Otomatis</label>
+</div>
+<span class="text-label-sm font-label-sm text-outline">Disarankan</span>
+</div>
+</div>
+</div>
+</div>
+<!-- KOLOM KANAN (Live Preview & WhatsApp Gateway) - 5 Cols on XL -->
+<div class="xl:col-span-5 space-y-space-lg xl:sticky xl:top-20">
+<!-- WhatsApp Gateway Quota Status Card -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+<span class="text-label-md font-label-md text-on-surface font-semibold">WhatsApp Cloud Gateway</span>
+</div>
+<span class="text-label-sm font-label-sm px-2 py-0.5 bg-emerald-950/80 border border-emerald-800 text-emerald-400 rounded-full font-medium">Terhubung</span>
+</div>
+<div class="space-y-1.5">
+<div class="flex justify-between text-label-sm font-label-sm">
+<span class="text-on-surface-variant">Sisa Kuota Pesan Bulan Ini</span>
+<span class="text-on-surface font-semibold">1.450 / 2.000 Pesan</span>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 72.5%;"></div>
+</div>
+<p class="text-label-sm font-label-sm text-outline text-right">Reset otomatis tanggal 1 setiap bulan</p>
+</div>
+</div>
+<!-- Live Interactive Smartphone WhatsApp Preview -->
+<div class="bg-surface-container-lowest border-2 border-outline-variant rounded-3xl p-3 shadow-2xl max-w-sm mx-auto">
+<!-- Phone Notch / Speaker -->
+<div class="flex justify-center mb-2">
+<div class="w-24 h-4 bg-surface-container-highest rounded-full flex items-center justify-center">
+<div class="w-3 h-3 rounded-full bg-surface-container-low mr-2"></div>
+<div class="w-8 h-1 bg-surface-container-high rounded-full"></div>
+</div>
+</div>
+<!-- WhatsApp Header -->
+<div class="bg-[#1F2C34] text-on-surface rounded-t-xl p-2.5 flex items-center justify-between border-b border-white/5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-body-md text-outline" data-icon="arrow_back">arrow_back</span>
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs">
+                  KS
+                </div>
+<div>
+<div class="text-label-md font-label-md font-semibold leading-tight text-white">Kost Singgah Nyaman</div>
+<div class="text-[10px] text-emerald-400 leading-tight">Akun Bisnis Resmi</div>
+</div>
+</div>
+<div class="flex items-center gap-2 text-outline">
+<span class="material-symbols-outlined text-body-md" data-icon="videocam">videocam</span>
+<span class="material-symbols-outlined text-body-md" data-icon="call">call</span>
+<span class="material-symbols-outlined text-body-md" data-icon="more_vert">more_vert</span>
+</div>
+</div>
+<!-- WhatsApp Chat Body Canvas -->
+<div class="bg-[#0B141A] p-3 min-h-[380px] flex flex-col justify-end rounded-b-xl relative overflow-hidden">
+<!-- Watermark pattern overlay -->
+<div class="absolute inset-0 opacity-5 pointer-events-none flex flex-wrap gap-4 p-4">
+<span class="material-symbols-outlined text-3xl" data-icon="chat">chat</span>
+<span class="material-symbols-outlined text-3xl" data-icon="receipt">receipt</span>
+<span class="material-symbols-outlined text-3xl" data-icon="home">home</span>
+</div>
+<!-- Message Timestamp Badge -->
+<div class="flex justify-center my-2">
+<span class="bg-[#182229] text-[10px] text-slate-400 px-2 py-0.5 rounded-md font-medium shadow-sm">HARI INI</span>
+</div>
+<!-- Outgoing WhatsApp Chat Bubble -->
+<div class="max-w-[90%] self-end bg-[#005C4B] text-slate-100 rounded-lg p-3 text-xs shadow-md space-y-2 border border-emerald-600/30">
+<p class="leading-relaxed whitespace-pre-line text-[13px] text-white" id="preview-text">
+                  Halo Kak <strong>Andi Pratama</strong>, ini pengingat ramah dari Kost Singgah Nyaman. Masa sewa Kamar <strong>A-102</strong> akan jatuh tempo pada <strong>28 Okt 2024</strong>. Total tagihan: <strong>Rp 2.150.000</strong>. Mohon lakukan konfirmasi atau pembayaran via link berikut: <strong>kost.id/pay/k102</strong>. Terima kasih!
+                </p>
+<!-- Official Invoice Attachment Card Mockup -->
+<div class="bg-[#025142] p-2 rounded border border-emerald-500/20 flex items-center justify-between">
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="material-symbols-outlined text-rose-300 text-lg" data-icon="picture_as_pdf">picture_as_pdf</span>
+<div class="truncate">
+<div class="font-medium text-[11px] truncate text-white">Invoice_Okt_A102.pdf</div>
+<div class="text-[9px] text-emerald-200">142 KB • PDF Resmi</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-xs text-white" data-icon="download">download</span>
+</div>
+<!-- Interactive Quick Action Link Button inside WA -->
+<div class="pt-1 border-t border-emerald-600/50 flex items-center justify-center">
+<a class="text-[11px] text-primary flex items-center gap-1 font-semibold hover:underline" href="#">
+<span class="material-symbols-outlined text-xs" data-icon="credit_card">credit_card</span>
+<span>Bayar via QRIS / Bank Transfer</span>
+</a>
+</div>
+<!-- Chat Meta Time & Status -->
+<div class="flex items-center justify-end gap-1 text-[9px] text-emerald-200/70 pt-0.5">
+<span>09:41</span>
+<span class="material-symbols-outlined text-[13px] text-sky-400 font-bold" data-icon="done_all">done_all</span>
+</div>
+</div>
+</div>
+<!-- WhatsApp Fake Input Footer -->
+<div class="flex items-center gap-1.5 mt-2 px-1">
+<div class="flex-1 bg-surface-container rounded-full px-3 py-1.5 flex items-center gap-2 border border-outline-variant">
+<span class="material-symbols-outlined text-xs text-outline" data-icon="sentiment_satisfied">sentiment_satisfied</span>
+<span class="text-[11px] text-outline">Ketik pesan preview...</span>
+</div>
+<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-sm" data-icon="mic">mic</span>
+</div>
+</div>
+</div>
+<!-- Help Tip Box -->
+<div class="p-3 bg-surface-container-low border border-outline-variant rounded-lg text-body-sm font-body-sm text-on-surface-variant flex gap-2.5">
+<span class="material-symbols-outlined text-primary text-body-lg flex-shrink-0" data-icon="info">info</span>
+<span>Tag kurung kurawal <code class="text-primary font-mono font-semibold">{TAG}</code> akan dikonversi otomatis sesuai data kamar saat jadwal eksekusi bot berjalan.</span>
+</div>
+</div>
+</div>
+</main>
+<!-- STICKY ACTION BAR (Pojok Kanan Bawah) -->
+<div class="fixed bottom-0 right-0 left-64 bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant py-3 px-space-lg flex items-center justify-between z-30">
+<div class="flex items-center gap-2 text-body-sm font-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-base" data-icon="cloud_done">cloud_done</span>
+<span>Perubahan konfigurasi tersimpan lokal otomatis.</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-high transition-colors text-label-md font-label-md font-medium" type="button">
+          Batalkan
+        </button>
+<button class="px-5 py-2 bg-primary text-on-primary hover:bg-primary-fixed-dim rounded-lg text-label-md font-label-md font-semibold flex items-center gap-2 shadow-lg shadow-primary/10 transition-all" onclick="saveConfiguration()" type="button">
+<span class="material-symbols-outlined text-base" data-icon="save">save</span>
+<span>Simpan Perubahan</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Inline Logic for Dynamic Tags, WhatsApp Live Sync & Event Presets -->
+<script>
+    const templates = {
+      due: "Halo Kak {NAMA_PENYEWA}, ini pengingat ramah dari Kost Singgah Nyaman. Masa sewa Kamar {NOMOR_KAMAR} akan jatuh tempo pada {JATUH_TEMPO}. Total tagihan: {NOMINAL}. Mohon lakukan konfirmasi atau pembayaran via link berikut: {LINK_KWITANSI}. Terima kasih!",
+      paid: "Terima kasih Kak {NAMA_PENYEWA}! Pembayaran sewa Kost Singgah Nyaman Kamar {NOMOR_KAMAR} sebesar {NOMINAL} telah kami terima lunas. Kwitansi resmi dapat diunduh di: {LINK_KWITANSI}. Selamat beristirahat!",
+      checkin: "Selamat datang di Kost Singgah Nyaman, Kak {NAMA_PENYEWA}! Kamar {NOMOR_KAMAR} Anda telah siap huni mulai {JATUH_TEMPO}. Mohon bawa identitas asli saat serah terima kunci. Detail kontrak: {LINK_KWITANSI}."
+    };
+
+    function selectEvent(eventType) {
+      // Toggle button active visual states
+      ['due', 'paid', 'checkin'].forEach(id => {
+        const btn = document.getElementById('btn-' + id);
+        if (id === eventType) {
+          btn.className = "p-2.5 rounded-lg border border-primary bg-primary-container/40 text-left transition-all";
+          btn.querySelector('div:first-child').className = "text-label-md font-label-md text-primary font-semibold";
+        } else {
+          btn.className = "p-2.5 rounded-lg border border-outline-variant bg-surface-container text-left hover:border-outline transition-all";
+          btn.querySelector('div:first-child').className = "text-label-md font-label-md text-on-surface font-semibold";
+        }
+      });
+
+      const textarea = document.getElementById('template-text');
+      textarea.value = templates[eventType];
+      updateLivePreview();
+    }
+
+    function insertTag(tag) {
+      const textarea = document.getElementById('template-text');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      textarea.value = text.substring(0, start) + tag + text.substring(end);
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+      updateLivePreview();
+    }
+
+    function updateLivePreview() {
+      const textarea = document.getElementById('template-text');
+      const charCounter = document.getElementById('char-counter');
+      const previewText = document.getElementById('preview-text');
+      
+      charCounter.innerText = textarea.value.length + " karakter";
+
+      // Mock dynamic data injection for real-time visual realism
+      let rendered = textarea.value
+        .replace(/{NAMA_PENYEWA}/g, "<strong>Andi Pratama</strong>")
+        .replace(/{NOMOR_KAMAR}/g, "<strong>A-102</strong>")
+        .replace(/{NOMINAL}/g, "<strong>Rp 2.150.000</strong>")
+        .replace(/{JATUH_TEMPO}/g, "<strong>28 Okt 2024</strong>")
+        .replace(/{LINK_KWITANSI}/g, "<strong>kost.id/pay/k102</strong>");
+
+      previewText.innerHTML = rendered;
+    }
+
+    function saveConfiguration() {
+      alert("Pengaturan Kost Singgah Nyaman berhasil disimpan ke server!");
+    }
+
+    // Initialize character counter
+    updateLivePreview();
+  </script>
+</body></html>

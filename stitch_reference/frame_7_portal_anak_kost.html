@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Portal Anak Kost - KostKita</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-container": "#421600",
+            "on-secondary": "#303030",
+            "secondary-fixed-dim": "#c6c6c6",
+            "surface-dim": "#121414",
+            "primary-fixed-dim": "#b1c5ff",
+            "on-error-container": "#ffdad6",
+            "surface-container-high": "#282a2b",
+            "on-primary-container": "#7289c5",
+            "primary-container": "#002056",
+            "on-primary-fixed": "#001946",
+            "surface": "#121414",
+            "outline": "#8e909b",
+            "surface-container-highest": "#333535",
+            "surface-container-lowest": "#0c0f0f",
+            "surface-container-low": "#1a1c1c",
+            "on-tertiary-fixed": "#351000",
+            "on-primary": "#132e64",
+            "error-container": "#93000a",
+            "primary-fixed": "#dae2ff",
+            "on-primary-fixed-variant": "#2d457b",
+            "on-secondary-fixed-variant": "#474747",
+            "inverse-surface": "#e2e2e2",
+            "outline-variant": "#44464f",
+            "secondary-container": "#474747",
+            "on-surface": "#e2e2e2",
+            "primary": "#b1c5ff",
+            "surface-container": "#1e2020",
+            "inverse-on-surface": "#2f3131",
+            "on-secondary-fixed": "#1b1b1b",
+            "tertiary": "#ffb694",
+            "error": "#ffb4ab",
+            "on-tertiary-fixed-variant": "#733515",
+            "background": "#121414",
+            "secondary-fixed": "#e2e2e2",
+            "surface-variant": "#333535",
+            "surface-bright": "#37393a",
+            "on-secondary-container": "#b5b5b5",
+            "inverse-primary": "#465d95",
+            "on-surface-variant": "#c5c6d1",
+            "on-tertiary-container": "#c57751",
+            "on-tertiary": "#562001",
+            "on-error": "#690005",
+            "surface-tint": "#b1c5ff",
+            "tertiary-fixed-dim": "#ffb694",
+            "on-background": "#e2e2e2",
+            "tertiary-fixed": "#ffdbcc",
+            "secondary": "#c6c6c6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "margin": "1.5rem",
+            "space-lg": "1.5rem",
+            "space-xl": "2rem",
+            "gutter": "1rem",
+            "space-sm": "0.5rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "body-lg": ["Inter"],
+            "headline-sm": ["Inter"],
+            "label-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-md": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+            "label-lg": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+            "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+            "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+            "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    body {
+      background-color: #0c0f0f;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-lowest text-on-surface antialiased flex justify-center min-h-screen">
+<!-- Mobile View Container (~390px) -->
+<div class="w-full max-w-[420px] bg-background min-h-screen flex flex-col relative pb-24 shadow-2xl">
+<!-- TopAppBar (from Shared Components JSON) -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm dark:shadow-none sticky top-0 z-40">
+<div class="flex justify-between items-center w-full px-4 h-14 max-w-lg mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary dark:text-inverse-primary" data-icon="holiday_village">holiday_village</span>
+<span class="text-headline-md font-headline-md text-primary dark:text-inverse-primary font-bold tracking-tight">KostKita</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container hover:bg-surface-variant active:scale-95 transition-transform duration-150 relative text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-tertiary"></span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-4 pt-3 flex flex-col gap-4">
+<!-- Header Profil & Status Penghuni -->
+<section class="bg-surface-container-low rounded-xl p-4 border border-outline-variant flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-xl bg-primary-container flex items-center justify-center border border-primary text-primary font-bold text-headline-sm">
+              DS
+            </div>
+<div>
+<div class="flex items-center gap-1.5">
+<h1 class="text-headline-sm font-headline-sm text-on-surface">Halo, Dimas Saputra 👋</h1>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-0.5">
+                Kost Singgah Nyaman - Kamar 106
+              </p>
+<p class="text-label-sm font-label-sm text-primary">Executive Queen • Lantai 1</p>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-surface-container-high">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-highest border border-outline-variant text-label-sm font-label-sm text-on-surface">
+<span class="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
+<span class="text-[#34d399] font-medium">Aktif Huni (Bulan ke-5)</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]" data-icon="verified_user">verified_user</span> Kontrak Aktif
+          </span>
+</div>
+</section>
+<!-- 1. Kartu Tagihan Bulan Ini -->
+<section class="bg-surface-container rounded-xl p-4 border border-outline-variant relative overflow-hidden flex flex-col gap-3">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="receipt_long">receipt_long</span>
+<span class="text-label-md font-label-md text-on-surface-variant">Tagihan Berjalan (Juni 2025)</span>
+</div>
+<!-- Badge amber terang jatuh tempo -->
+<span class="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm font-semibold bg-[#422006] text-[#fde047] border border-[#ca8a04]">
+            Jatuh Tempo: 20 Juni (5 Hari Lagi)
+          </span>
+</div>
+<div class="pt-1">
+<div class="text-label-sm font-label-sm text-on-surface-variant">Total Kewajiban Pembayaran</div>
+<div class="text-headline-lg font-headline-lg text-on-surface tracking-tight mt-0.5">
+            Rp 2.400.000
+          </div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mt-1">
+            Sewa Kamar + Parkir Mobil Avanza (B 1928 NY)
+          </p>
+</div>
+<!-- Tombol Aksi Cepat Tagihan -->
+<div class="grid grid-cols-1 gap-2 pt-1">
+<!-- Tombol Bayar Sekarang (Warna Emerald Kontras) -->
+<button class="w-full py-2.5 px-4 rounded-xl bg-[#059669] hover:bg-[#047857] active:scale-95 transition-transform duration-150 flex items-center justify-center gap-2 text-on-surface font-label-lg font-semibold text-white shadow-md">
+<span class="material-symbols-outlined text-[20px]" data-icon="qr_code_scanner">qr_code_scanner</span>
+<span>Bayar Sekarang via QRIS / Transfer</span>
+</button>
+<button class="w-full py-2 px-4 rounded-xl bg-surface-container-high hover:bg-surface-variant active:scale-95 transition-transform duration-150 flex items-center justify-center gap-1.5 text-on-surface text-label-md font-label-md border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="description">description</span>
+<span>Lihat Rincian Kwitansi</span>
+</button>
+</div>
+</section>
+<!-- 2. Quick Actions -->
+<section class="flex flex-col gap-2">
+<h2 class="text-label-lg font-label-lg text-on-surface-variant">Menu Akses Cepat</h2>
+<div class="grid grid-cols-4 gap-2">
+<!-- Item 1 -->
+<button class="flex flex-col items-center justify-center p-2.5 bg-surface-container-low hover:bg-surface-container active:scale-95 transition-transform duration-150 rounded-xl border border-outline-variant text-center group">
+<div class="w-10 h-10 rounded-xl bg-primary-container text-primary flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[22px]" data-icon="home_repair_service">home_repair_service</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface leading-tight">Lapor Rusak / AC</span>
+</button>
+<!-- Item 2 -->
+<button class="flex flex-col items-center justify-center p-2.5 bg-surface-container-low hover:bg-surface-container active:scale-95 transition-transform duration-150 rounded-xl border border-outline-variant text-center group">
+<div class="w-10 h-10 rounded-xl bg-primary-container text-primary flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[22px]" data-icon="group_add">group_add</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface leading-tight">Izin Tamu Inap</span>
+</button>
+<!-- Item 3 -->
+<button class="flex flex-col items-center justify-center p-2.5 bg-surface-container-low hover:bg-surface-container active:scale-95 transition-transform duration-150 rounded-xl border border-outline-variant text-center group">
+<div class="w-10 h-10 rounded-xl bg-primary-container text-primary flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[22px]" data-icon="event_repeat">event_repeat</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface leading-tight">Perpanjang Sewa</span>
+</button>
+<!-- Item 4 -->
+<button class="flex flex-col items-center justify-center p-2.5 bg-surface-container-low hover:bg-surface-container active:scale-95 transition-transform duration-150 rounded-xl border border-outline-variant text-center group">
+<div class="w-10 h-10 rounded-xl bg-primary-container text-primary flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[22px]" data-icon="wifi_password">wifi_password</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface leading-tight">Aturan &amp; WiFi</span>
+</button>
+</div>
+</section>
+<!-- 3. Form Lapor Keluhan Cepat (Maintenance) -->
+<section class="bg-surface-container-low rounded-xl p-4 border border-outline-variant flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="report_problem">report_problem</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Lapor Keluhan Kamar</h2>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Respon 1x24 Jam</span>
+</div>
+<!-- Form fields -->
+<div class="flex flex-col gap-2.5">
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Kategori Masalah</label>
+<div class="grid grid-cols-2 gap-1.5">
+<label class="cursor-pointer">
+<input checked="" class="peer sr-only" name="keluhan" type="radio"/>
+<div class="p-2 rounded-lg bg-surface-container-high border border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container peer-checked:text-primary text-body-sm font-body-sm text-on-surface flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="ac_unit">ac_unit</span> AC Bocor / Rusak
+                </div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="keluhan" type="radio"/>
+<div class="p-2 rounded-lg bg-surface-container-high border border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container peer-checked:text-primary text-body-sm font-body-sm text-on-surface flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="lightbulb">lightbulb</span> Lampu Putus
+                </div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="keluhan" type="radio"/>
+<div class="p-2 rounded-lg bg-surface-container-high border border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container peer-checked:text-primary text-body-sm font-body-sm text-on-surface flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="water_drop">water_drop</span> Air Keruh / Mati
+                </div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="keluhan" type="radio"/>
+<div class="p-2 rounded-lg bg-surface-container-high border border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container peer-checked:text-primary text-body-sm font-body-sm text-on-surface flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="wifi_off">wifi_off</span> WiFi Lemot / DC
+                </div>
+</label>
+</div>
+</div>
+<div>
+<label class="block text-label-sm font-label-sm text-on-surface-variant mb-1">Deskripsi Singkat</label>
+<textarea class="w-full bg-surface-container-highest border border-outline-variant rounded-xl text-body-sm font-body-sm text-on-surface placeholder:text-outline p-2.5 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Contoh: AC meneteskan air ke meja belajar sejak tadi malam..." rows="2"></textarea>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex-1 py-2 px-3 rounded-xl bg-surface-container-highest border border-outline-variant hover:bg-surface-variant text-label-md font-label-md text-on-surface flex items-center justify-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_a_photo">add_a_photo</span>
+<span>Upload Foto Bukti</span>
+</button>
+<button class="py-2 px-5 rounded-xl bg-primary text-on-primary font-label-md font-semibold hover:bg-primary-fixed active:scale-95 transition-transform">
+              Kirim
+            </button>
+</div>
+</div>
+<!-- Riwayat keluhan sebelumnya -->
+<div class="pt-2 border-t border-surface-container-high">
+<div class="text-label-sm font-label-sm text-on-surface-variant mb-1.5">Riwayat Keluhan Terakhir:</div>
+<div class="p-2.5 rounded-xl bg-surface-container-highest border border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="check_circle">check_circle</span>
+<div>
+<p class="text-body-sm font-body-sm text-on-surface font-medium">Servis AC Kamar 106</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Selesai pada 12 Mei 2025</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#064e3b] text-[#6ee7b7] border border-[#059669]">
+              Selesai
+            </span>
+</div>
+</div>
+</section>
+<!-- 4. Info Kendaraan Terdaftar -->
+<section class="bg-surface-container-low rounded-xl p-4 border border-outline-variant flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="directions_car">directions_car</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Kendaraan Terdaftar</h2>
+</div>
+<span class="text-label-sm font-label-sm text-[#34d399] flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="check">check</span> Izin Aktif
+          </span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-high border border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center border border-outline-variant text-on-surface">
+<span class="material-symbols-outlined text-[22px]" data-icon="car_tag">car_tag</span>
+</div>
+<div>
+<div class="text-label-lg font-label-lg text-on-surface font-medium">Toyota Avanza Hitam</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant">Plat: <span class="text-primary font-mono font-medium">B 1928 NY</span></div>
+</div>
+</div>
+<div class="text-right">
+<div class="text-label-sm font-label-sm text-on-surface-variant">Slot Parkir Mobil</div>
+<div class="text-headline-sm font-headline-sm text-tertiary font-bold tracking-wider">B-02</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (from Shared Components JSON) -->
+<!-- Destination count: 5 ["Eksplor", "Aktivitas", "Sewa Saya", "Kelola", "Profil"] -->
+<!-- Current intent is Tenant Portal / Mobile Tenant View ("Sewa Saya" active) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-2 h-16 max-w-lg mx-auto bg-surface dark:bg-inverse-surface shadow-md dark:shadow-none">
+<!-- 1. Eksplor (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant gap-1 py-1 hover:text-primary dark:hover:text-inverse-primary active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="text-label-sm font-label-sm">Eksplor</span>
+</a>
+<!-- 2. Aktivitas (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant gap-1 py-1 hover:text-primary dark:hover:text-inverse-primary active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="text-label-sm font-label-sm">Aktivitas</span>
+</a>
+<!-- 3. Sewa Saya (ACTIVE STATE as per Tenant context) -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-inverse-primary font-semibold gap-1 py-1 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="key" data-weight="fill" style="font-variation-settings: 'FILL' 1;">key</span>
+<span class="text-label-sm font-label-sm">Sewa Saya</span>
+</a>
+<!-- 4. Kelola (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant gap-1 py-1 hover:text-primary dark:hover:text-inverse-primary active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-label-sm font-label-sm">Kelola</span>
+</a>
+<!-- 5. Profil (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant gap-1 py-1 hover:text-primary dark:hover:text-inverse-primary active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-label-sm font-label-sm">Profil</span>
+</a>
+</nav>
+</div>
+</body></html>
