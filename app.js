@@ -1028,6 +1028,11 @@ function showScreen(name) {
     const el = $(id); if (el) el.style.display = 'none';
   });
   const target = $(name); if (target) target.style.display = 'flex';
+
+  if (name === 'screen-login') {
+    if ($('login-kost-title')) $('login-kost-title').textContent = S.kost?.nama || 'SiKost';
+    renderGoogleAccounts();
+  }
 }
 
 // ── MAPPERS (JS State <-> Supabase DB) ────────────────────────
@@ -1190,10 +1195,17 @@ const DB = {
       // 6. Kost Pengaturan
       const { data: kRow } = await sbClient.from('kost_pengaturan').select('*').limit(1).maybeSingle();
       if (kRow) {
-        const cloudHasData = kRow.nama && kRow.nama !== 'SiKost';
-        const localHasData = S.kost.nama && S.kost.nama !== 'SiKost';
+        const localUpdatedAt = Number(localStorage.getItem('sk3_kost_updated_at')) || (S.kost?.updatedAt ? Number(S.kost.updatedAt) : 0);
+        const cloudUpdatedAt = kRow.updated_at ? new Date(kRow.updated_at).getTime() : 0;
+        const cloudIsDefaultSeed = (!kRow.nama || kRow.nama === 'SiKost' || kRow.nama === 'SiKost Makmur' || kRow.nama === 'Kost Griya Harmoni');
+        const localHasCustomName = S.kost.nama && S.kost.nama !== 'SiKost' && S.kost.nama !== 'SiKost Makmur' && S.kost.nama !== 'Kost Griya Harmoni';
 
-        if (cloudHasData || !localHasData) {
+        // Jika local memiliki data kustom atau data lokal lebih baru: pertahankan lokal dan sync balik ke cloud
+        if (localHasCustomName || (localUpdatedAt > 0 && (localUpdatedAt >= cloudUpdatedAt || cloudIsDefaultSeed))) {
+          // Jangan biarkan cloud menimpa! Sync balik data kustom lokal ke cloud jika manager
+          await DB.saveKost();
+        } else if (cloudUpdatedAt > localUpdatedAt && !cloudIsDefaultSeed) {
+          // Hanya muat dari cloud jika cloud memang valid dan lebih baru
           S.kost = {
             ...S.kost,
             nama: kRow.nama || S.kost.nama || 'SiKost',
@@ -1204,11 +1216,14 @@ const DB = {
             bankNama: kRow.bank_nama || S.kost.bankNama || '',
             bankRekening: kRow.bank_rekening || S.kost.bankRekening || '',
             bankAtasNama: kRow.bank_atas_nama || S.kost.bankAtasNama || '',
-            qrisUrl: kRow.qris_url || S.kost.qrisUrl || ''
+            qrisUrl: kRow.qris_url || S.kost.qrisUrl || '',
+            updatedAt: cloudUpdatedAt
           };
-        } else if (localHasData) {
-          // Cloud masih default/kosong tapi lokal sudah kustom, sinkronkan ke cloud
-          await DB.saveKost();
+          localStorage.setItem('sk3_kost', JSON.stringify(S.kost));
+          localStorage.setItem('sk3_kost_updated_at', cloudUpdatedAt.toString());
+          if (S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
+            S.propertiesData[S.activeKostId].kost = { ...S.kost };
+          }
         }
       }
 
@@ -1987,11 +2002,13 @@ function loginWithAkun(akun) {
 // ── LOGOUT ────────────────────────────────────────────────────
 $('btn-logout').addEventListener('click', async () => {
   confirm_dlg('Konfirmasi Keluar', 'Apakah Anda yakin ingin keluar dari SiKost?', async () => {
+    // Pastikan seluruh data pengaturan tersimpan sebelum session ditutup
+    if (typeof saveAllPengaturan === 'function') {
+      try { await saveAllPengaturan('logout'); } catch {}
+    }
     currentUser = null;
     LS.clearSession();
-    if ($('login-kost-title')) $('login-kost-title').textContent = S.kost?.nama || 'SiKost';
     showScreen('screen-login');
-    renderGoogleAccounts();
     toast('Anda telah keluar.');
     if (sbClient) {
       try { await sbClient.auth.signOut(); } catch {}
@@ -4201,6 +4218,8 @@ function renderPengaturan() {
   renderSettingsCabangList();
 }
 
+let debouncedCloudKostTimer = null;
+
 async function saveAllPengaturan(sourceForm = '') {
   // 1. Profil Kost
   if ($('set-nama-kost') && $('set-nama-kost').value.trim()) {
@@ -4235,6 +4254,7 @@ async function saveAllPengaturan(sourceForm = '') {
   if ($('set-wa-template'))   S.kost.waTemplate   = $('set-wa-template').value.trim();
 
   S.kost.updatedAt = Date.now();
+  localStorage.setItem('sk3_kost_updated_at', S.kost.updatedAt.toString());
 
   // 4. Sinkronkan ke bucket cabang yang sedang aktif
   if (S.activeKostId && S.propertiesData) {
@@ -4284,12 +4304,22 @@ async function saveAllPengaturan(sourceForm = '') {
   renderGoogleAccounts();
 
   // 9. Sync ke Cloud Supabase jika aktif
-  await DB.saveKost();
+  if (sourceForm === 'auto') {
+    clearTimeout(debouncedCloudKostTimer);
+    debouncedCloudKostTimer = setTimeout(() => {
+      DB.saveKost();
+    }, 800);
+  } else {
+    clearTimeout(debouncedCloudKostTimer);
+    await DB.saveKost();
+  }
 
-  const msg = sourceForm === 'bank' ? 'Informasi rekening & QRIS tersimpan permanen! 💳' :
-              sourceForm === 'wa'   ? 'Template WhatsApp penagihan berhasil disimpan! 📱' :
-                                      'Semua pengaturan kost berhasil disimpan permanen! 💾';
-  toast(msg, 'success');
+  if (sourceForm && sourceForm !== 'auto' && sourceForm !== 'logout') {
+    const msg = sourceForm === 'bank' ? 'Informasi rekening & QRIS tersimpan permanen! 💳' :
+                sourceForm === 'wa'   ? 'Template WhatsApp penagihan berhasil disimpan! 📱' :
+                                        'Semua pengaturan kost berhasil disimpan permanen! 💾';
+    toast(msg, 'success');
+  }
 }
 
 // Event Listeners Form Pengaturan
@@ -4316,6 +4346,44 @@ document.querySelectorAll('.btn-save-quick').forEach(btn => {
   btn.addEventListener('click', async () => {
     await saveAllPengaturan('quick');
   });
+});
+
+// Real-time Auto-Save pada setiap ketikan / perubahan field input pengaturan
+const settingAutoFields = [
+  'set-nama-kost',
+  'set-pemilik',
+  'set-kota-kost',
+  'set-alamat',
+  'set-hp-pemilik',
+  'set-total-kamar',
+  'set-tempo-default',
+  'set-bank-nama',
+  'set-bank-rekening',
+  'set-bank-atas-nama',
+  'set-qris-url',
+  'set-wa-template'
+];
+
+settingAutoFields.forEach(id => {
+  const el = $(id);
+  if (el) {
+    el.addEventListener('input', () => {
+      saveAllPengaturan('auto');
+    });
+    el.addEventListener('change', () => {
+      saveAllPengaturan('auto');
+    });
+  }
+});
+
+// Pastikan perubahan juga tersimpan otomatis saat tab ditutup / pindah fokus / navigasi
+window.addEventListener('beforeunload', () => {
+  try { saveAllPengaturan('auto'); } catch {}
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    try { saveAllPengaturan('auto'); } catch {}
+  }
 });
 
 // Upload QRIS Langsung dari File
@@ -4406,11 +4474,15 @@ if (formEditCabang) {
 
     if (cid === S.activeKostId) {
       S.kost = { ...targetKost };
+      S.kost.updatedAt = Date.now();
+      localStorage.setItem('sk3_kost_updated_at', S.kost.updatedAt.toString());
       if ($('sb-kost-name'))     $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
       if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
       if ($('topbar-prop-name')) $('topbar-prop-name').textContent = S.kost.nama || 'SiKost';
       if ($('topbar-prop-loc'))  $('topbar-prop-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
       if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama || 'SiKost';
+      document.title = (S.kost.nama || 'SiKost') + ' – Manajemen Kost Modern';
+      DB.saveKost();
     }
 
     if (Array.isArray(S.properties)) {
