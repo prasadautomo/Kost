@@ -598,6 +598,20 @@ function generateInitialMultiKostData() {
 function seedDemoData(force = false) {
   if (!force && S.propertiesData && S.propertiesData.kost_1 && S.propertiesData.kost_5) return;
 
+  // Cek apakah ada data yang tersimpan sebelumnya di localStorage
+  if (!force && typeof localStorage !== 'undefined') {
+    const saved = localStorage.getItem('sk3_properties_data');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.kost_1 && parsed.kost_5) {
+          S.propertiesData = parsed;
+          return;
+        }
+      } catch {}
+    }
+  }
+
   const initData = generateInitialMultiKostData();
   S.properties = initData.properties;
   S.propertiesData = initData.propertiesData;
@@ -783,11 +797,12 @@ function renderSettingsCabangList() {
               </div>
               <div style="font-size:0.78rem;color:var(--text-3);margin-top:2px">📍 ${data.kost.alamat}</div>
               <div style="font-size:0.74rem;color:var(--text-2);margin-top:2px">
-                Okupansi: <strong>${terisiCount}/${totalKamar} kamar terisi</strong> · 📞 Telp/WA: ${data.kost.hp || '–'} · 🏦 ${data.kost.bankNama}: ${data.kost.bankRekening} (a.n ${data.kost.bankAtasNama})
+                Okupansi: <strong>${terisiCount}/${totalKamar} kamar terisi</strong> · 📞 Telp/WA: ${data.kost.hp || '–'} · 🏦 ${data.kost.bankNama || 'Bank'}: ${data.kost.bankRekening || '–'} (a.n ${data.kost.bankAtasNama || '–'})
               </div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn-outline btn-sm" onclick="openEditCabang('${p.id}')">✏️ Edit Info</button>
             <button class="btn-primary btn-sm" onclick="switchKost('${p.id}')">
               ${isActive ? '✓ Sedang Dikelola' : 'Beralih ke Cabang Ini ⚡'}
             </button>
@@ -815,6 +830,19 @@ const LS = {
         };
       }
 
+      // Sinkronkan ke daftar properties (5 cabang)
+      if (Array.isArray(S.properties) && S.activeKostId && S.kost) {
+        const prop = S.properties.find(p => p.id === S.activeKostId);
+        if (prop) {
+          prop.nama = S.kost.nama || prop.nama;
+          prop.pemilik = S.kost.pemilik || prop.pemilik;
+          prop.alamat = S.kost.alamat || prop.alamat;
+          prop.hp = S.kost.hp || prop.hp;
+          prop.totalKamar = S.kost.totalKamar || prop.totalKamar;
+          prop.kota = S.kost.kota || (S.kost.alamat ? S.kost.alamat.split(',')[0].trim() : prop.kota);
+        }
+      }
+
       localStorage.setItem('sk3_properties_data', JSON.stringify(S.propertiesData));
       localStorage.setItem('sk3_active_kost_id',  S.activeKostId || 'kost_1');
       localStorage.setItem('sk3_properties',       JSON.stringify(S.properties));
@@ -834,6 +862,7 @@ const LS = {
   load() {
     const rawPropertiesData = localStorage.getItem('sk3_properties_data');
     const savedActiveId = localStorage.getItem('sk3_active_kost_id');
+    const rawKost = localStorage.getItem('sk3_kost');
 
     if (rawPropertiesData) {
       try {
@@ -847,6 +876,20 @@ const LS = {
         } else {
           const cur = S.propertiesData[S.activeKostId] || S.propertiesData.kost_1;
           S.kost = { ...cur.kost };
+
+          // Muat override sk3_kost mandiri jika ada
+          if (rawKost) {
+            try {
+              const parsedKost = JSON.parse(rawKost);
+              if (parsedKost && parsedKost.nama) {
+                S.kost = { ...S.kost, ...parsedKost };
+                if (S.propertiesData[S.activeKostId]) {
+                  S.propertiesData[S.activeKostId].kost = { ...S.kost };
+                }
+              }
+            } catch {}
+          }
+
           S.penghuni = cur.penghuni || [];
           S.kamar = cur.kamar || [];
           S.pembayaran = cur.pembayaran || [];
@@ -870,6 +913,9 @@ const LS = {
   loadSession()  { const v = localStorage.getItem('sk3_session'); return v ? JSON.parse(v) : null; },
   clearSession() { localStorage.removeItem('sk3_session'); }
 };
+
+// Segera muat state saat app.js dievaluasi agar tidak tertimpa
+try { LS.load(); } catch (e) { console.warn('Early LS.load warning:', e); }
 
 // ── CRYPTO ────────────────────────────────────────────────────
 async function hashPw(pw) {
@@ -1144,17 +1190,26 @@ const DB = {
       // 6. Kost Pengaturan
       const { data: kRow } = await sbClient.from('kost_pengaturan').select('*').limit(1).maybeSingle();
       if (kRow) {
-        S.kost = {
-          nama: kRow.nama || 'SiKost',
-          pemilik: kRow.pemilik || '',
-          alamat: kRow.alamat || '',
-          hp: kRow.hp || '',
-          totalKamar: kRow.total_kamar || 10,
-          bankNama: kRow.bank_nama || '',
-          bankRekening: kRow.bank_rekening || '',
-          bankAtasNama: kRow.bank_atas_nama || '',
-          qrisUrl: kRow.qris_url || ''
-        };
+        const cloudHasData = kRow.nama && kRow.nama !== 'SiKost';
+        const localHasData = S.kost.nama && S.kost.nama !== 'SiKost';
+
+        if (cloudHasData || !localHasData) {
+          S.kost = {
+            ...S.kost,
+            nama: kRow.nama || S.kost.nama || 'SiKost',
+            pemilik: kRow.pemilik || S.kost.pemilik || '',
+            alamat: kRow.alamat || S.kost.alamat || '',
+            hp: kRow.hp || S.kost.hp || '',
+            totalKamar: kRow.total_kamar || S.kost.totalKamar || 10,
+            bankNama: kRow.bank_nama || S.kost.bankNama || '',
+            bankRekening: kRow.bank_rekening || S.kost.bankRekening || '',
+            bankAtasNama: kRow.bank_atas_nama || S.kost.bankAtasNama || '',
+            qrisUrl: kRow.qris_url || S.kost.qrisUrl || ''
+          };
+        } else if (localHasData) {
+          // Cloud masih default/kosong tapi lokal sudah kustom, sinkronkan ke cloud
+          await DB.saveKost();
+        }
       }
 
       // 8. Profiles (Jika Manager)
@@ -1432,21 +1487,25 @@ function createGoogleAccountCard(acc, isInline = false) {
 }
 
 function renderGoogleAccounts() {
-  seedDemoData(false);
+  if (!S.propertiesData || !S.propertiesData.kost_1) {
+    seedDemoData(false);
+  }
 
-  // 1. Akun Manager: Gavin Utomo & Prasad Automo
-  const mgrNama = S.kost?.pemilik || 'Gavin Utomo';
+  // 1. Akun Manager: sinkronkan dengan nama pemilik di pengaturan kost
+  const mgrNama = (S.kost?.pemilik ? S.kost.pemilik + ' (Owner)' : 'Gavin Utomo (Owner)');
   const mgrEmail = 'gavinutomo4@gmail.com';
   let mgr = S.akun.find(a => a.email && a.email.toLowerCase() === mgrEmail);
   if (!mgr) {
     mgr = { id: 'akun_mgr_gavin', nama: mgrNama, email: mgrEmail, role: 'manager', penghuniId: null };
     S.akun.push(mgr);
     LS.save();
+  } else if (S.kost?.pemilik) {
+    mgr.nama = mgrNama;
   }
 
   let prasad = S.akun.find(a => a.email && a.email.toLowerCase() === 'prasadautomo@gmail.com');
   if (!prasad) {
-    prasad = { id: 'akun_mgr_prasad', nama: 'Prasad Automo', email: 'prasadautomo@gmail.com', role: 'manager', penghuniId: null };
+    prasad = { id: 'akun_mgr_prasad', nama: 'Prasada Utomo (Manager)', email: 'prasadautomo@gmail.com', role: 'manager', penghuniId: null };
     S.akun.push(prasad);
     LS.save();
   }
@@ -1930,6 +1989,7 @@ $('btn-logout').addEventListener('click', async () => {
   confirm_dlg('Konfirmasi Keluar', 'Apakah Anda yakin ingin keluar dari SiKost?', async () => {
     currentUser = null;
     LS.clearSession();
+    if ($('login-kost-title')) $('login-kost-title').textContent = S.kost?.nama || 'SiKost';
     showScreen('screen-login');
     renderGoogleAccounts();
     toast('Anda telah keluar.');
@@ -1943,6 +2003,10 @@ function enterApp() {
   showScreen('screen-app');
   buildSidebar();
   renderUserChip();
+  if ($('login-kost-title')) $('login-kost-title').textContent = S.kost?.nama || 'SiKost';
+  if ($('sb-kost-name'))     $('sb-kost-name').textContent     = S.kost?.nama || 'SiKost';
+  if ($('topbar-prop-name')) $('topbar-prop-name').textContent = S.kost?.nama || 'SiKost';
+  document.title = (S.kost?.nama || 'SiKost') + ' – Manajemen Kost Modern';
   updatePropertySwitcherUI();
   setupPropertySwitcherEvents();
   const urlPage = new URLSearchParams(window.location.search).get('page') || (location.hash ? location.hash.replace('#', '') : '');
@@ -3337,7 +3401,21 @@ window.kirimWaTagihan = function(pid, bln) {
     rekInfo = `\n\nPembayaran dapat ditransfer ke:\n🏦 ${S.kost.bankNama}: *${S.kost.bankRekening}*\n👤 a.n ${S.kost.bankAtasNama || S.kost.pemilik}`;
   }
 
-  const text = `Halo Kak ${p.nama}, mengingatkan tagihan sewa kamar ${p.kamar || ''} di ${S.kost.nama || 'Kost'} untuk bulan ${blnLabel} sebesar *${rp(p.sewa)}* telah jatuh tempo.${rekInfo}\n\nMohon konfirmasi atau kirimkan bukti transfer jika sudah membayar ya. Terima kasih banyak! 🙏`;
+  let text = '';
+  if (S.kost.waTemplate && S.kost.waTemplate.trim()) {
+    text = S.kost.waTemplate
+      .replace(/{nama}/g, p.nama)
+      .replace(/{kamar}/g, p.kamar || '')
+      .replace(/{bulan}/g, blnLabel)
+      .replace(/{nominal}/g, rp(p.sewa))
+      .replace(/{kost}/g, S.kost.nama || 'Kost')
+      .replace(/{bank}/g, S.kost.bankNama || 'Bank')
+      .replace(/{rekening}/g, S.kost.bankRekening || '')
+      .replace(/{pemilik}/g, S.kost.bankAtasNama || S.kost.pemilik || '')
+      .replace(/{tempo}/g, p.tempo || S.kost.tempoDefault || 5);
+  } else {
+    text = `Halo Kak ${p.nama}, mengingatkan tagihan sewa kamar ${p.kamar || ''} di ${S.kost.nama || 'Kost'} untuk bulan ${blnLabel} sebesar *${rp(p.sewa)}* telah jatuh tempo.${rekInfo}\n\nMohon konfirmasi atau kirimkan bukti transfer jika sudah membayar ya. Terima kasih banyak! 🙏`;
+  }
   
   const targetUrl = `https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`;
   window.__lastOpenedUrl = targetUrl;
@@ -4053,12 +4131,43 @@ $('form-profil-pw').addEventListener('submit', async function(e) {
 });
 
 // ── PENGATURAN (MANAGER) ──────────────────────────────────────
+function getDefaultWaTemplate() {
+  return `Halo Kak {nama}, mengingatkan tagihan sewa kamar {kamar} di {kost} untuk bulan {bulan} sebesar *{nominal}* telah jatuh tempo.\n\nPembayaran dapat ditransfer ke:\n🏦 {bank}: *{rekening}*\n👤 a.n {pemilik}\n\nMohon konfirmasi atau kirimkan bukti transfer jika sudah membayar ya. Terima kasih banyak! 🙏`;
+}
+
+function renderWaPreview() {
+  const tplEl = $('set-wa-template');
+  const prevEl = $('preview-wa-msg');
+  if (!tplEl || !prevEl) return;
+  const raw = tplEl.value || getDefaultWaTemplate();
+  const sampleBank = $('set-bank-nama')?.value.trim() || S.kost.bankNama || 'Bank BCA';
+  const sampleRek = $('set-bank-rekening')?.value.trim() || S.kost.bankRekening || '8465-1234-90';
+  const samplePemilik = $('set-bank-atas-nama')?.value.trim() || $('set-pemilik')?.value.trim() || S.kost.pemilik || 'Pengelola Kost';
+  const sampleKost = $('set-nama-kost')?.value.trim() || S.kost.nama || 'Kost Harmoni';
+  const sampleTempo = $('set-tempo-default')?.value.trim() || S.kost.tempoDefault || 5;
+
+  const rendered = raw
+    .replace(/{nama}/g, 'Dimas Prasetyo')
+    .replace(/{kamar}/g, '101')
+    .replace(/{bulan}/g, 'Oktober 2026')
+    .replace(/{nominal}/g, 'Rp 1.500.000')
+    .replace(/{kost}/g, sampleKost)
+    .replace(/{bank}/g, sampleBank)
+    .replace(/{rekening}/g, sampleRek)
+    .replace(/{pemilik}/g, samplePemilik)
+    .replace(/{tempo}/g, sampleTempo);
+
+  prevEl.textContent = rendered;
+}
+
 function renderPengaturan() {
-  $('set-nama-kost').value   = S.kost.nama || '';
-  $('set-pemilik').value     = S.kost.pemilik || '';
-  $('set-alamat').value      = S.kost.alamat || '';
-  $('set-hp-pemilik').value  = S.kost.hp || '';
-  $('set-total-kamar').value = S.kost.totalKamar || '';
+  if ($('set-nama-kost'))     $('set-nama-kost').value     = S.kost.nama || '';
+  if ($('set-pemilik'))       $('set-pemilik').value       = S.kost.pemilik || '';
+  if ($('set-kota-kost'))      $('set-kota-kost').value      = S.kost.kota || (S.kost.alamat ? S.kost.alamat.split(',')[0].trim() : '');
+  if ($('set-alamat'))        $('set-alamat').value        = S.kost.alamat || '';
+  if ($('set-hp-pemilik'))    $('set-hp-pemilik').value    = S.kost.hp || '';
+  if ($('set-total-kamar'))   $('set-total-kamar').value   = S.kost.totalKamar || '';
+  if ($('set-tempo-default')) $('set-tempo-default').value = S.kost.tempoDefault || 5;
 
   // Form Bank & QRIS
   if ($('set-bank-nama'))     $('set-bank-nama').value     = S.kost.bankNama || '';
@@ -4066,6 +4175,22 @@ function renderPengaturan() {
   if ($('set-bank-atas-nama'))$('set-bank-atas-nama').value= S.kost.bankAtasNama || '';
   if ($('set-qris-url'))      $('set-qris-url').value      = S.kost.qrisUrl || '';
 
+  const previewQris = $('preview-qris');
+  if (previewQris) {
+    if (S.kost.qrisUrl) {
+      previewQris.innerHTML = `<img src="${S.kost.qrisUrl}" alt="Preview QRIS" style="max-height:160px;border-radius:8px;border:1px solid var(--border)" />`;
+      previewQris.style.display = 'block';
+    } else {
+      previewQris.style.display = 'none';
+      previewQris.innerHTML = '';
+    }
+  }
+
+  // Template WhatsApp
+  if ($('set-wa-template')) {
+    $('set-wa-template').value = S.kost.waTemplate || getDefaultWaTemplate();
+    renderWaPreview();
+  }
 
   const cfg = getSupabaseConfig();
   if (cfg) {
@@ -4076,40 +4201,250 @@ function renderPengaturan() {
   renderSettingsCabangList();
 }
 
-$('form-kost').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  S.kost.nama       = $('set-nama-kost').value.trim();
-  S.kost.pemilik    = $('set-pemilik').value.trim();
-  S.kost.alamat     = $('set-alamat').value.trim();
-  S.kost.hp         = $('set-hp-pemilik').value.trim();
-  S.kost.totalKamar = $('set-total-kamar').value;
+async function saveAllPengaturan(sourceForm = '') {
+  // 1. Profil Kost
+  if ($('set-nama-kost') && $('set-nama-kost').value.trim()) {
+    S.kost.nama = $('set-nama-kost').value.trim();
+  }
+  if ($('set-pemilik') && $('set-pemilik').value.trim()) {
+    S.kost.pemilik = $('set-pemilik').value.trim();
+  }
+  if ($('set-kota-kost')) {
+    S.kost.kota = $('set-kota-kost').value.trim() || (S.kost.alamat ? S.kost.alamat.split(',')[0].trim() : 'Indonesia');
+  }
+  if ($('set-alamat')) {
+    S.kost.alamat = $('set-alamat').value.trim();
+  }
+  if ($('set-hp-pemilik')) {
+    S.kost.hp = $('set-hp-pemilik').value.trim();
+  }
+  if ($('set-total-kamar') && $('set-total-kamar').value) {
+    S.kost.totalKamar = Number($('set-total-kamar').value) || S.kost.totalKamar || 8;
+  }
+  if ($('set-tempo-default') && $('set-tempo-default').value) {
+    S.kost.tempoDefault = Math.max(1, Math.min(31, Number($('set-tempo-default').value) || 5));
+  }
+
+  // 2. Bank & QRIS
+  if ($('set-bank-nama'))     S.kost.bankNama     = $('set-bank-nama').value.trim();
+  if ($('set-bank-rekening')) S.kost.bankRekening = $('set-bank-rekening').value.trim();
+  if ($('set-bank-atas-nama'))S.kost.bankAtasNama = $('set-bank-atas-nama').value.trim();
+  if ($('set-qris-url'))      S.kost.qrisUrl      = $('set-qris-url').value.trim();
+
+  // 3. WA Template
+  if ($('set-wa-template'))   S.kost.waTemplate   = $('set-wa-template').value.trim();
+
+  S.kost.updatedAt = Date.now();
+
+  // 4. Sinkronkan ke bucket cabang yang sedang aktif
+  if (S.activeKostId && S.propertiesData) {
+    if (!S.propertiesData[S.activeKostId]) S.propertiesData[S.activeKostId] = {};
+    S.propertiesData[S.activeKostId].kost = { ...S.kost };
+  }
+
+  // 5. Sinkronkan ke properties list (5 cabang)
+  if (Array.isArray(S.properties) && S.activeKostId) {
+    const prop = S.properties.find(p => p.id === S.activeKostId);
+    if (prop) {
+      prop.nama = S.kost.nama;
+      prop.pemilik = S.kost.pemilik;
+      prop.alamat = S.kost.alamat;
+      prop.hp = S.kost.hp;
+      prop.totalKamar = S.kost.totalKamar;
+      prop.kota = S.kost.kota;
+    }
+  }
+
+  // 6. Sinkronkan nama pemilik di akun manager aktif & daftar akun Google
+  if (S.kost.pemilik) {
+    if (currentUser && currentUser.role === 'manager') {
+      currentUser.nama = S.kost.pemilik + ' (Owner)';
+      LS.saveSession(currentUser);
+      renderUserChip();
+    }
+    const mgrAcc = S.akun.find(a => a.id === 'akun_mgr_gavin' || (a.role === 'manager' && a.email === 'gavinutomo4@gmail.com'));
+    if (mgrAcc) {
+      mgrAcc.nama = S.kost.pemilik + ' (Owner)';
+    }
+  }
+
+  // 7. Simpan permanen ke LocalStorage
   LS.save();
-  $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
-  if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama;
-  toast('Profil kost disimpan! 🏠');
+
+  // 8. Update UI real-time di seluruh komponen aplikasi
+  if ($('sb-kost-name'))     $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
+  if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
+  if ($('topbar-prop-name')) $('topbar-prop-name').textContent = S.kost.nama || 'SiKost';
+  if ($('topbar-prop-loc'))  $('topbar-prop-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
+  if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama || 'SiKost';
+  document.title = (S.kost.nama || 'SiKost') + ' – Manajemen Kost Modern';
+
+  updatePropertySwitcherUI();
+  renderSettingsCabangList();
+  renderGoogleAccounts();
+
+  // 9. Sync ke Cloud Supabase jika aktif
   await DB.saveKost();
+
+  const msg = sourceForm === 'bank' ? 'Informasi rekening & QRIS tersimpan permanen! 💳' :
+              sourceForm === 'wa'   ? 'Template WhatsApp penagihan berhasil disimpan! 📱' :
+                                      'Semua pengaturan kost berhasil disimpan permanen! 💾';
+  toast(msg, 'success');
+}
+
+// Event Listeners Form Pengaturan
+$('form-kost')?.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  await saveAllPengaturan('profil');
 });
 
-const formBank = $('form-bank');
-if (formBank) {
-  formBank.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    S.kost.bankNama      = $('set-bank-nama').value.trim();
-    S.kost.bankRekening  = $('set-bank-rekening').value.trim();
-    S.kost.bankAtasNama  = $('set-bank-atas-nama').value.trim();
-    S.kost.qrisUrl       = $('set-qris-url').value.trim();
-    LS.save();
-    toast('Informasi pembayaran disimpan! 💳');
-    await DB.saveKost();
+$('form-bank')?.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  await saveAllPengaturan('bank');
+});
+
+$('form-wa-template')?.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  await saveAllPengaturan('wa');
+});
+
+$('btn-save-all-settings')?.addEventListener('click', async () => {
+  await saveAllPengaturan('all');
+});
+
+document.querySelectorAll('.btn-save-quick').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    await saveAllPengaturan('quick');
+  });
+});
+
+// Upload QRIS Langsung dari File
+const qrisFileInput = $('set-qris-file');
+if (qrisFileInput) {
+  qrisFileInput.addEventListener('change', async function() {
+    const file = this.files[0];
+    if (!file) return;
+    try {
+      toast('Memproses foto QRIS...');
+      const compressedDataUrl = await compressImage(file, 800, 800, 0.85);
+      if ($('set-qris-url')) $('set-qris-url').value = compressedDataUrl;
+      const preview = $('preview-qris');
+      if (preview) {
+        preview.innerHTML = `<img src="${compressedDataUrl}" alt="Preview QRIS" style="max-height:160px;border-radius:8px;border:1px solid var(--border)" />`;
+        preview.style.display = 'block';
+      }
+      toast('Foto QRIS berhasil dimuat! Klik "Simpan Informasi Pembayaran" untuk menyimpan permanen.');
+    } catch (err) {
+      toast('Gagal memproses gambar QRIS: ' + err.message, 'err');
+    }
   });
 }
 
+// Variabel Tag WA Klik untuk Menyisipkan
+document.querySelectorAll('.tag-var').forEach(tag => {
+  tag.addEventListener('click', () => {
+    const tplArea = $('set-wa-template');
+    if (!tplArea) return;
+    const insertText = tag.dataset.tag || tag.textContent;
+    const startPos = tplArea.selectionStart || tplArea.value.length;
+    const endPos = tplArea.selectionEnd || tplArea.value.length;
+    tplArea.value = tplArea.value.substring(0, startPos) + insertText + tplArea.value.substring(endPos);
+    tplArea.focus();
+    tplArea.selectionStart = tplArea.selectionEnd = startPos + insertText.length;
+    renderWaPreview();
+  });
+});
+
+$('set-wa-template')?.addEventListener('input', renderWaPreview);
+$('set-bank-nama')?.addEventListener('input', renderWaPreview);
+$('set-bank-rekening')?.addEventListener('input', renderWaPreview);
+$('set-bank-atas-nama')?.addEventListener('input', renderWaPreview);
+$('set-nama-kost')?.addEventListener('input', renderWaPreview);
+$('set-pemilik')?.addEventListener('input', renderWaPreview);
+$('set-tempo-default')?.addEventListener('input', renderWaPreview);
+
+$('btn-reset-wa-template')?.addEventListener('click', () => {
+  if ($('set-wa-template')) {
+    $('set-wa-template').value = getDefaultWaTemplate();
+    renderWaPreview();
+    toast('Template direset ke standar. Klik Simpan untuk memperbarui.');
+  }
+});
+
+// Modal Edit Cabang
+window.openEditCabang = function(cabangId) {
+  const data = S.propertiesData ? S.propertiesData[cabangId] : null;
+  if (!data || !data.kost) {
+    toast('Data cabang tidak ditemukan!', 'err');
+    return;
+  }
+  const k = data.kost;
+  $('edit-cabang-id').value         = cabangId;
+  $('edit-cabang-nama').value       = k.nama || '';
+  $('edit-cabang-kota').value       = k.kota || (k.alamat ? k.alamat.split(',')[0].trim() : '');
+  $('edit-cabang-alamat').value     = k.alamat || '';
+  $('edit-cabang-hp').value         = k.hp || '';
+  $('edit-cabang-totalkamar').value = k.totalKamar || 8;
+  $('edit-cabang-pemilik').value    = k.pemilik || S.kost.pemilik || '';
+  openModal('modal-edit-cabang');
+};
+
+const formEditCabang = $('form-edit-cabang');
+if (formEditCabang) {
+  formEditCabang.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const cid = $('edit-cabang-id').value;
+    if (!S.propertiesData || !S.propertiesData[cid]) return;
+
+    const targetKost = S.propertiesData[cid].kost;
+    targetKost.nama       = $('edit-cabang-nama').value.trim();
+    targetKost.kota       = $('edit-cabang-kota').value.trim();
+    targetKost.alamat     = $('edit-cabang-alamat').value.trim();
+    targetKost.hp         = $('edit-cabang-hp').value.trim();
+    targetKost.totalKamar = Number($('edit-cabang-totalkamar').value) || 8;
+    targetKost.pemilik    = $('edit-cabang-pemilik').value.trim();
+
+    if (cid === S.activeKostId) {
+      S.kost = { ...targetKost };
+      if ($('sb-kost-name'))     $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
+      if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
+      if ($('topbar-prop-name')) $('topbar-prop-name').textContent = S.kost.nama || 'SiKost';
+      if ($('topbar-prop-loc'))  $('topbar-prop-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
+      if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama || 'SiKost';
+    }
+
+    if (Array.isArray(S.properties)) {
+      const prop = S.properties.find(p => p.id === cid);
+      if (prop) {
+        prop.nama = targetKost.nama;
+        prop.kota = targetKost.kota;
+        prop.alamat = targetKost.alamat;
+        prop.hp = targetKost.hp;
+        prop.totalKamar = targetKost.totalKamar;
+        prop.pemilik = targetKost.pemilik;
+      }
+    }
+
+    LS.save();
+    closeModal('modal-edit-cabang');
+    renderSettingsCabangList();
+    updatePropertySwitcherUI();
+    toast(`Cabang "${targetKost.nama}" berhasil diperbarui! 🏢`, 'success');
+  });
+}
+
+$('modal-edit-cabang-close')?.addEventListener('click', () => closeModal('modal-edit-cabang'));
+$('btn-cancel-edit-cabang')?.addEventListener('click', () => closeModal('modal-edit-cabang'));
+
+// Tab Switching Pengaturan
 document.querySelectorAll('.settings-tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.settings-tab').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.stab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
-    $('stab-' + btn.dataset.stab).classList.add('active');
+    const targetContent = $('stab-' + btn.dataset.stab);
+    if (targetContent) targetContent.classList.add('active');
+    if (btn.dataset.stab === 'wa') renderWaPreview();
   });
 });
 
