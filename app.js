@@ -992,11 +992,20 @@ window.updatePropertySwitcherUI = updatePropertySwitcherUI;
 
 function renderMultiKostCards() {
   const container = $('multi-kost-cards-grid');
+  const summaryBar = $('multi-kost-summary-bar');
   if (!container || !S.propertiesData) return;
 
-  container.innerHTML = (S.properties || []).map(p => {
+  const curMonth = thisMonth();
+  let totalKamarAll = 0;
+  let totalTerisiAll = 0;
+  let totalPenghuniAktifAll = 0;
+  let totalOmsetAll = 0;
+  let totalBelumBayarAll = 0;
+  let totalNominalBelumBayar = 0;
+
+  const branchStats = (S.properties || []).map((p, idx) => {
     const data = S.propertiesData[p.id];
-    if (!data) return '';
+    if (!data) return null;
     const isActive = p.id === S.activeKostId;
     const aktifPenghuni = (data.penghuni || []).filter(x => x.status === 'aktif');
     const terisiCount = [...new Set(aktifPenghuni.map(x => x.kamar).filter(Boolean))].length;
@@ -1004,36 +1013,128 @@ function renderMultiKostCards() {
     const targetPendapatan = aktifPenghuni.reduce((sum, x) => sum + (Number(x.sewa) || 0), 0);
     const pct = totalKamar > 0 ? Math.round((terisiCount / totalKamar) * 100) : 0;
 
+    // Hitung status tagihan cabang bulan ini
+    const payments = (data.pembayaran || []).filter(pb => pb.bulan === curMonth || (typeof pb.bulan === 'string' && pb.bulan.startsWith(curMonth)));
+    const lunasIds = new Set(payments.filter(pb => pb.status === 'lunas').map(pb => pb.penghuniId || pb.penghuni_id));
+    const belumBayarPenghuni = aktifPenghuni.filter(x => !lunasIds.has(x.id));
+    const nominalBelumBayar = belumBayarPenghuni.reduce((sum, x) => sum + (Number(x.sewa) || 0), 0);
+
+    totalKamarAll += totalKamar;
+    totalTerisiAll += terisiCount;
+    totalPenghuniAktifAll += aktifPenghuni.length;
+    totalOmsetAll += targetPendapatan;
+    totalBelumBayarAll += belumBayarPenghuni.length;
+    totalNominalBelumBayar += nominalBelumBayar;
+
+    return {
+      p, data, isActive, idx,
+      aktifPenghuni, terisiCount, totalKamar, targetPendapatan, pct,
+      belumBayarCount: belumBayarPenghuni.length,
+      nominalBelumBayar
+    };
+  }).filter(Boolean);
+
+  const pctAll = totalKamarAll > 0 ? Math.round((totalTerisiAll / totalKamarAll) * 100) : 0;
+  const blnNow = new Date();
+  const blnLabel = blnNow.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+
+  // Render Baris Command Center Portofolio 5 Cabang
+  if (summaryBar) {
+    summaryBar.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;padding:14px 18px;background:var(--surface);border-radius:12px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+        <div>
+          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">🏢 Portofolio Terpadu</div>
+          <div style="font-size:1.15rem;font-weight:800;color:var(--text);margin-top:2px">5 Cabang Aktif</div>
+          <div style="font-size:0.72rem;color:var(--text-3);margin-top:2px">Pindah cepat: <kbd style="background:var(--bg-2);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:0.68rem">Alt + 1..5</kbd></div>
+        </div>
+        <div>
+          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">🛏️ Okupansi Konsolidasi</div>
+          <div style="font-size:1.15rem;font-weight:800;color:var(--accent-light);margin-top:2px">${totalTerisiAll} / ${totalKamarAll} <span style="font-size:0.8rem">(${pctAll}%)</span></div>
+          <div style="font-size:0.72rem;color:var(--green);margin-top:2px">${totalKamarAll - totalTerisiAll} Kamar Kosong Siap Huni</div>
+        </div>
+        <div>
+          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">💰 Estimasi Omset / Bulan</div>
+          <div style="font-size:1.15rem;font-weight:800;color:var(--green);margin-top:2px">${rp(totalOmsetAll)}</div>
+          <div style="font-size:0.72rem;color:var(--text-3);margin-top:2px">${totalPenghuniAktifAll} Penghuni Aktif</div>
+        </div>
+        <div>
+          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">⚠️ Tagihan Menunggak (${blnLabel})</div>
+          <div style="font-size:1.15rem;font-weight:800;color:${totalBelumBayarAll > 0 ? 'var(--red)' : 'var(--green)'};margin-top:2px">
+            ${totalBelumBayarAll > 0 ? `${totalBelumBayarAll} Belum Lunas` : 'Semua Lunas 🎉'}
+          </div>
+          <div style="font-size:0.72rem;color:${totalBelumBayarAll > 0 ? 'var(--red)' : 'var(--text-3)'};margin-top:2px">
+            ${totalBelumBayarAll > 0 ? `${rp(totalNominalBelumBayar)} pending` : 'Arus kas sehat'}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = branchStats.map(b => {
     return `
-      <div class="kost-branch-card ${isActive ? 'active-branch' : ''}">
+      <div class="kost-branch-card ${b.isActive ? 'active-branch' : ''}" style="cursor:pointer" onclick="switchKost('${b.p.id}')">
         <div class="branch-card-header">
           <div class="branch-card-icon">🏢</div>
           <div style="flex:1;min-width:0">
-            <div class="branch-card-title">${data.kost.nama}</div>
-            <div class="branch-card-loc">📍 ${data.kost.kota || data.kost.alamat.split(',')[0]}</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="branch-card-title" style="margin-bottom:0">${b.data.kost.nama}</div>
+            </div>
+            <div class="branch-card-loc">📍 ${b.data.kost.kota || b.data.kost.alamat.split(',')[0]}</div>
           </div>
-          ${isActive ? '<span class="badge badge-accent" style="font-size:0.68rem">✓ Aktif</span>' : ''}
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <span class="badge ${b.isActive ? 'badge-accent' : 'badge-gray'}" style="font-size:0.66rem;font-family:monospace" title="Shortcut keyboard: Alt+${b.idx + 1}">Alt+${b.idx + 1}</span>
+            ${b.isActive ? '<span class="badge badge-accent" style="font-size:0.66rem">✓ Aktif</span>' : ''}
+          </div>
         </div>
         
         <div class="branch-card-stats">
           <div>
             <div style="color:var(--text-3);font-size:0.7rem">Okupansi</div>
-            <div style="font-weight:800;color:var(--text)">${terisiCount} / ${totalKamar} (${pct}%)</div>
+            <div style="font-weight:800;color:var(--text)">${b.terisiCount} / ${b.totalKamar} (${b.pct}%)</div>
           </div>
           <div style="text-align:right">
             <div style="color:var(--text-3);font-size:0.7rem">Target Sewa</div>
-            <div style="font-weight:800;color:var(--green)">${rp(targetPendapatan)}</div>
+            <div style="font-weight:800;color:var(--green)">${rp(b.targetPendapatan)}</div>
           </div>
         </div>
 
-        <button type="button" class="branch-card-btn ${isActive ? 'btn-ghost' : 'btn-primary'}" onclick="switchKost('${p.id}')">
-          ${isActive ? '✓ Sedang Dikelola' : 'Kelola Cabang Ini ⚡'}
-        </button>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:0.74rem">
+          <span style="color:var(--text-3)">Status Bulan Ini:</span>
+          ${b.belumBayarCount > 0 
+            ? `<span class="badge badge-orange" style="font-size:0.68rem">⚠️ ${b.belumBayarCount} Belum Lunas</span>` 
+            : `<span class="badge badge-green" style="font-size:0.68rem">✅ Lunas Semua</span>`}
+        </div>
+
+        <div style="display:flex;gap:6px" onclick="event.stopPropagation()">
+          <button type="button" class="branch-card-btn ${b.isActive ? 'btn-ghost' : 'btn-primary'}" style="flex:1" onclick="switchKost('${b.p.id}')">
+            ${b.isActive ? '✓ Sedang Dikelola' : 'Kelola Cabang ⚡'}
+          </button>
+          <button type="button" class="btn-ghost btn-sm" onclick="quickTambahPenghuni('${b.p.id}')" title="Tambah penghuni ke cabang ini" style="padding:6px 10px;font-size:0.75rem">
+            + Penghuni
+          </button>
+          <button type="button" class="btn-ghost btn-sm" onclick="quickLihatTagihan('${b.p.id}')" title="Buka buku kas/tagihan cabang ini" style="padding:6px 8px;font-size:0.75rem">
+            Tagihan →
+          </button>
+        </div>
       </div>
     `;
   }).join('');
 }
 window.renderMultiKostCards = renderMultiKostCards;
+
+window.quickTambahPenghuni = function(branchId, roomPrefill) {
+  if (branchId && branchId !== S.activeKostId) {
+    switchKost(branchId);
+  }
+  openModalPenghuni(null, roomPrefill);
+};
+
+window.quickLihatTagihan = function(branchId) {
+  if (branchId && branchId !== S.activeKostId) {
+    switchKost(branchId);
+  }
+  navigateTo('pembayaran');
+};
 
 function renderSettingsCabangList() {
   const container = $('settings-cabang-list');
@@ -2642,8 +2743,9 @@ $('theme-toggle').addEventListener('click', () => {
   if ($('page-dashboard').classList.contains('active')) renderCharts();
 });
 
-// ── ACTION CENTER: FOKUS & TUGAS HARI INI ──────────────────────
+// ── ACTION CENTER: FOKUS & TUGAS HARI INI (5 CABANG KONSOLIDASI) ────
 let activeActionFilter = 'all';
+let activeActionScope  = 'all'; // 'all' (semua 5 cabang) atau 'active' (hanya cabang aktif)
 
 function renderDashActionCenter() {
   const container = $('dash-action-center');
@@ -2653,47 +2755,81 @@ function renderDashActionCenter() {
   const nowDay = now.getDate();
   const curMonth = thisMonth();
 
-  const aktif = S.penghuni.filter(p => p.status === 'aktif');
-  const payments = S.pembayaran.filter(pb => pb.bulan === curMonth);
-
-  // 1. Tagihan Jatuh Tempo & Menunggak
   const dueItems = [];
-  aktif.forEach(p => {
-    const pb = payments.find(x => x.penghuniId === p.id);
-    const isLunas = pb?.status === 'lunas';
-    if (!isLunas) {
-      const tempo = Number(p.tempo) || 1;
-      const diff = tempo - nowDay;
-      let statusLabel = '';
-      let badgeClass = 'badge-orange';
-      if (diff < 0) {
-        statusLabel = `Terlambat ${Math.abs(diff)} hari (Tempo Tgl ${tempo})`;
-        badgeClass = 'badge-red';
-      } else if (diff <= 3) {
-        statusLabel = diff === 0 ? 'Jatuh Tempo Hari Ini!' : `H-${diff} Tempo (Tgl ${tempo})`;
-        badgeClass = 'badge-orange';
-      } else {
-        statusLabel = `Tempo Tgl ${tempo}`;
-        badgeClass = 'badge-blue';
+  const emptyRooms = [];
+  const contractItems = [];
+
+  // Tentukan daftar cabang yang dievaluasi
+  const branchesToScan = (activeActionScope === 'all' && S.properties && S.properties.length > 1)
+    ? S.properties
+    : [{ id: S.activeKostId, nama: S.kost.nama }];
+
+  branchesToScan.forEach(prop => {
+    const bData = S.propertiesData ? S.propertiesData[prop.id] : null;
+    if (!bData) return;
+
+    const bKost = bData.kost || {};
+    const bPenghuni = (bData.penghuni || []).filter(p => p.status === 'aktif');
+    const bPayments = (bData.pembayaran || []).filter(pb => pb.bulan === curMonth || (typeof pb.bulan === 'string' && pb.bulan.startsWith(curMonth)));
+    const bKamar = bData.kamar || [];
+
+    // 1. Tagihan Jatuh Tempo & Menunggak
+    bPenghuni.forEach(p => {
+      const pb = bPayments.find(x => x.penghuniId === p.id || x.penghuni_id === p.id);
+      const isLunas = pb?.status === 'lunas';
+      if (!isLunas) {
+        const tempo = Number(p.tempo) || 1;
+        const diff = tempo - nowDay;
+        let statusLabel = '';
+        let badgeClass = 'badge-orange';
+        if (diff < 0) {
+          statusLabel = `Terlambat ${Math.abs(diff)} hari (Tempo Tgl ${tempo})`;
+          badgeClass = 'badge-red';
+        } else if (diff <= 3) {
+          statusLabel = diff === 0 ? 'Jatuh Tempo Hari Ini!' : `H-${diff} Tempo (Tgl ${tempo})`;
+          badgeClass = 'badge-orange';
+        } else {
+          statusLabel = `Tempo Tgl ${tempo}`;
+          badgeClass = 'badge-blue';
+        }
+        dueItems.push({ 
+          type: 'tagihan', 
+          p, diff, statusLabel, badgeClass, 
+          branchId: prop.id, 
+          branchNama: bKost.nama || prop.nama,
+          branchKota: bKost.kota || ''
+        });
       }
-      dueItems.push({ type: 'tagihan', p, diff, statusLabel, badgeClass });
-    }
+    });
+
+    // 2. Kamar Siap Huni (Kosong)
+    const occRooms = new Set(bPenghuni.map(p => p.kamar).filter(Boolean));
+    bKamar.filter(k => !occRooms.has(k.no)).forEach(k => {
+      emptyRooms.push({ 
+        type: 'kamar_kosong', 
+        k, 
+        branchId: prop.id, 
+        branchNama: bKost.nama || prop.nama,
+        branchKota: bKost.kota || ''
+      });
+    });
+
+    // 3. Pengingat Jatuh Tempo Kontrak Sewa (Lease Expiry)
+    bPenghuni.forEach(p => {
+      const exp = getContractExpiryStatus(p);
+      if (exp && (exp.isUrgent || exp.status === 'expired')) {
+        contractItems.push({ 
+          type: 'kontrak', 
+          p, exp, 
+          branchId: prop.id, 
+          branchNama: bKost.nama || prop.nama,
+          branchKota: bKost.kota || ''
+        });
+      }
+    });
   });
 
   dueItems.sort((a,b) => a.diff - b.diff);
-
-  // 2. Kamar Siap Huni (Kosong)
-  const occRooms = new Set(aktif.map(p => p.kamar).filter(Boolean));
-  const emptyRooms = S.kamar.filter(k => !occRooms.has(k.no)).map(k => ({ type: 'kamar_kosong', k }));
-
-  // 3. Pengingat Jatuh Tempo Kontrak Sewa (Lease Expiry)
-  const contractItems = [];
-  aktif.forEach(p => {
-    const exp = getContractExpiryStatus(p);
-    if (exp && (exp.isUrgent || exp.status === 'expired')) {
-      contractItems.push({ type: 'kontrak', p, exp });
-    }
-  });
   contractItems.sort((a, b) => a.exp.diffDays - b.exp.diffDays);
 
   const totalActions = dueItems.length + emptyRooms.length + contractItems.length;
@@ -2716,27 +2852,46 @@ function renderDashActionCenter() {
       <div class="dash-action-title-group">
         <span class="action-pulse-beacon"></span>
         <div>
-          <h2 class="dash-action-heading">Tindakan Mendesak Hari Ini</h2>
+          <div style="display:flex;align-items:center;gap:8px">
+            <h2 class="dash-action-heading" style="margin:0">Tindakan Mendesak</h2>
+            <span class="badge badge-accent" style="font-size:0.72rem">${activeActionScope === 'all' ? '🏢 Konsolidasi 5 Cabang' : '🏠 ' + S.kost.nama}</span>
+          </div>
           <div class="dash-action-subtitle">${totalActions} agenda operasional membutuhkan perhatian segera</div>
         </div>
       </div>
-      <div class="dash-action-tabs">
-        <button type="button" class="dash-action-tab ${activeActionFilter === 'all' ? 'active' : ''}" onclick="switchActionFilter('all')">
-          Semua (${totalActions})
-        </button>
-        <button type="button" class="dash-action-tab ${activeActionFilter === 'kontrak' ? 'active' : ''}" onclick="switchActionFilter('kontrak')">
-          ⏳ Kontrak Habis (${contractItems.length})
-        </button>
-        <button type="button" class="dash-action-tab ${activeActionFilter === 'tagihan' ? 'active' : ''}" onclick="switchActionFilter('tagihan')">
-          ⚠️ Tagihan (${dueItems.length})
-        </button>
-        <button type="button" class="dash-action-tab ${activeActionFilter === 'kamar' ? 'active' : ''}" onclick="switchActionFilter('kamar')">
-          🛏️ Kamar Kosong (${emptyRooms.length})
-        </button>
+      
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <!-- Toggle Cakupan: 5 Cabang vs Cabang Aktif -->
+        <div class="dash-action-tabs" style="background:var(--bg-2);padding:3px;border-radius:8px">
+          <button type="button" class="dash-action-tab ${activeActionScope === 'all' ? 'active' : ''}" onclick="switchActionScope('all')" title="Pantau seluruh 5 cabang">
+            🏢 Semua Cabang
+          </button>
+          <button type="button" class="dash-action-tab ${activeActionScope === 'active' ? 'active' : ''}" onclick="switchActionScope('active')" title="Hanya cabang aktif saat ini">
+            🏠 Cabang Aktif
+          </button>
+        </div>
+
+        <!-- Filter Kategori Tindakan -->
+        <div class="dash-action-tabs">
+          <button type="button" class="dash-action-tab ${activeActionFilter === 'all' ? 'active' : ''}" onclick="switchActionFilter('all')">
+            Semua (${totalActions})
+          </button>
+          <button type="button" class="dash-action-tab ${activeActionFilter === 'kontrak' ? 'active' : ''}" onclick="switchActionFilter('kontrak')">
+            ⏳ Kontrak Habis (${contractItems.length})
+          </button>
+          <button type="button" class="dash-action-tab ${activeActionFilter === 'tagihan' ? 'active' : ''}" onclick="switchActionFilter('tagihan')">
+            ⚠️ Tagihan (${dueItems.length})
+          </button>
+          <button type="button" class="dash-action-tab ${activeActionFilter === 'kamar' ? 'active' : ''}" onclick="switchActionFilter('kamar')">
+            🛏️ Kamar Kosong (${emptyRooms.length})
+          </button>
+        </div>
       </div>
     </div>
+
     <div class="dash-action-grid">
       ${displayItems.map(item => {
+        const branchBadge = `<span class="badge badge-accent" style="font-size:0.65rem;font-weight:700">🏢 ${item.branchNama}</span>`;
         if (item.type === 'kontrak') {
           const { p, exp } = item;
           const isExpired = exp.status === 'expired' || exp.status === 'today';
@@ -2746,6 +2901,7 @@ function renderDashActionCenter() {
                 <div class="action-card-main">
                   <div class="action-room-badge ${isExpired ? 'danger' : 'orange'}">${p.kamar || '–'}</div>
                   <div style="min-width:0">
+                    <div style="margin-bottom:2px">${branchBadge}</div>
                     <div class="action-card-title">${p.nama}</div>
                     <div class="action-card-sub">Berakhir: <strong>${fmtD(p.tglKeluar)}</strong> · ${rp(p.sewa)}/bln</div>
                   </div>
@@ -2753,13 +2909,13 @@ function renderDashActionCenter() {
                 <span class="badge ${exp.badgeClass}">${exp.label}</span>
               </div>
               <div class="action-card-actions">
-                <button type="button" class="btn-wa btn-sm" onclick="kirimWaKontrak('${p.id}')" title="Kirim WA Konfirmasi Kontrak">
+                <button type="button" class="btn-wa btn-sm" onclick="kirimWaKontrak('${p.id}', '${item.branchId}')" title="Kirim WA Konfirmasi Kontrak">
                   <span class="material-symbols-outlined" style="font-size:14px">chat</span> WA
                 </button>
-                <button type="button" class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${p.id}')" title="Perpanjang Masa Sewa">
+                <button type="button" class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${p.id}', '${item.branchId}')" title="Perpanjang Masa Sewa">
                   <span class="material-symbols-outlined" style="font-size:14px">update</span> Perpanjang
                 </button>
-                <button type="button" class="btn-danger btn-sm" onclick="checkoutPenghuni('${p.id}')" title="Selesaikan sewa & kosongkan kamar">
+                <button type="button" class="btn-danger btn-sm" onclick="checkoutPenghuni('${p.id}', '${item.branchId}')" title="Selesaikan sewa & kosongkan kamar">
                   <span class="material-symbols-outlined" style="font-size:14px">logout</span> Checkout
                 </button>
               </div>
@@ -2774,6 +2930,7 @@ function renderDashActionCenter() {
                 <div class="action-card-main">
                   <div class="action-room-badge ${isLate ? 'danger' : 'warning'}">${p.kamar || '–'}</div>
                   <div style="min-width:0">
+                    <div style="margin-bottom:2px">${branchBadge}</div>
                     <div class="action-card-title">${p.nama}</div>
                     <div class="action-card-sub">Tagihan: <strong style="color:var(--text)">${rp(p.sewa)}</strong></div>
                   </div>
@@ -2781,10 +2938,10 @@ function renderDashActionCenter() {
                 <span class="badge ${badgeClass}">${statusLabel}</span>
               </div>
               <div class="action-card-actions">
-                <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${p.id}', '${curMonth}')" title="Kirim WA Pengingat">
+                <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${p.id}', '${curMonth}', '${item.branchId}')" title="Kirim WA Pengingat dengan rekening cabang ini">
                   <span class="material-symbols-outlined" style="font-size:14px">chat</span> WA
                 </button>
-                <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${p.id}', '${curMonth}')" title="Tandai langsung lunas">
+                <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${p.id}', '${curMonth}', '${item.branchId}')" title="Tandai langsung lunas">
                   <span class="material-symbols-outlined" style="font-size:14px">check_circle</span> 1-Klik Lunas
                 </button>
               </div>
@@ -2798,6 +2955,7 @@ function renderDashActionCenter() {
                 <div class="action-card-main">
                   <div class="action-room-badge primary">${k.no}</div>
                   <div style="min-width:0">
+                    <div style="margin-bottom:2px">${branchBadge}</div>
                     <div class="action-card-title">Kamar ${k.no} (${k.tipe || 'Standar'})</div>
                     <div class="action-card-sub">Lt. ${k.lantai || '1'} · <strong style="color:var(--accent-light)">${rp(k.harga || 0)}/bln</strong></div>
                   </div>
@@ -2805,7 +2963,7 @@ function renderDashActionCenter() {
                 <span class="badge badge-gray">Siap Huni</span>
               </div>
               <div class="action-card-actions">
-                <button type="button" class="btn-primary btn-sm" onclick="openModalPenghuniWithRoom('${k.no}')">
+                <button type="button" class="btn-primary btn-sm" onclick="quickTambahPenghuni('${item.branchId}', '${k.no}')">
                   <span class="material-symbols-outlined" style="font-size:14px">person_add</span> + Isi Penghuni
                 </button>
               </div>
@@ -2823,28 +2981,38 @@ window.switchActionFilter = function(f) {
   renderDashActionCenter();
 };
 
-window.kirimWaKontrak = function(pid) {
-  const p = S.penghuni.find(x => x.id === pid);
+window.switchActionScope = function(scope) {
+  activeActionScope = scope;
+  renderDashActionCenter();
+};
+
+window.kirimWaKontrak = function(pid, branchId = S.activeKostId) {
+  let targetKost = S.kost;
+  let p = S.penghuni.find(x => x.id === pid);
+  if (branchId && branchId !== S.activeKostId && S.propertiesData && S.propertiesData[branchId]) {
+    targetKost = S.propertiesData[branchId].kost || S.kost;
+    p = (S.propertiesData[branchId].penghuni || []).find(x => x.id === pid) || p;
+  }
   if (!p) return;
   if (!p.hp) {
     toast('Nomor WhatsApp penghuni belum diisi!', true);
     return;
   }
   const cleanHp = p.hp.replace(/\D/g, '').replace(/^0/, '62');
-  const kostName = S.kost?.nama || 'SiKost';
+  const kostName = targetKost.nama || 'SiKost';
   const exp = getContractExpiryStatus(p);
   const tglStr = p.tglKeluar ? fmtD(p.tglKeluar) : 'segera';
 
   let msg = `Halo Kak ${p.nama}, semoga selalu sehat.\n\nKami dari pengelola *${kostName}* ingin menginfokan bahwa masa sewa kamar Kakak (*Kamar ${p.kamar || '–'}*) `;
-  if (exp.status === 'expired' || exp.status === 'today') {
+  if (exp && (exp.status === 'expired' || exp.status === 'today')) {
     msg += `telah berakhir pada tanggal *${tglStr}* (${exp.label}).\n\n`;
   } else {
-    msg += `akan berakhir pada tanggal *${tglStr}* (${exp.label}).\n\n`;
+    msg += `akan berakhir pada tanggal *${tglStr}* (${exp?.label || 'segera'}).\n\n`;
   }
   msg += `Apakah Kakak berencana untuk memperpanjang masa sewa untuk periode berikutnya? Mohon konfirmasinya ya Kak agar kami dapat menyiapkan administrasi perpanjangan kontrak sewa atau persiapan checkout kamar.\n\nTerima kasih banyak atas perhatiannya! 🙏`;
 
   window.open(`https://wa.me/${cleanHp}?text=${encodeURIComponent(msg)}`, '_blank');
-  toast('Membuka WhatsApp konfirmasi kontrak...');
+  toast(`Membuka WhatsApp konfirmasi kontrak (${kostName})...`);
 };
 
 window.openModalPerpanjangKontrak = function(pid) {
@@ -3237,8 +3405,26 @@ function getPenghuniFiltered() {
   const q  = $('cari-penghuni')?.value.toLowerCase() || '';
   const fs = $('filter-status')?.value || '';
   const fk = $('filter-kendaraan')?.value || '';
-  return S.penghuni.filter(p => {
-    const mQ = !q || (p.nama||'').toLowerCase().includes(q) || (p.nik||'').toLowerCase().includes(q) || (p.kamar||'').toLowerCase().includes(q);
+  const filterCabang = $('filter-cabang-penghuni')?.value || 'active';
+
+  let sourcePenghuni = S.penghuni;
+  if (filterCabang === 'all' && S.propertiesData) {
+    sourcePenghuni = [];
+    Object.keys(S.propertiesData).forEach(bid => {
+      const bData = S.propertiesData[bid];
+      const bPenghuni = bData.penghuni || [];
+      bPenghuni.forEach(p => {
+        sourcePenghuni.push({
+          ...p,
+          branchId: bid,
+          branchNama: bData.kost?.nama || bid
+        });
+      });
+    });
+  }
+
+  return sourcePenghuni.filter(p => {
+    const mQ = !q || (p.nama||'').toLowerCase().includes(q) || (p.nik||'').toLowerCase().includes(q) || (p.kamar||'').toLowerCase().includes(q) || (p.branchNama||'').toLowerCase().includes(q);
     let mS = true;
     if (fs === 'kontrak_habis') {
       const exp = getContractExpiryStatus(p);
@@ -3254,6 +3440,7 @@ function getPenghuniFiltered() {
 function renderPenghuni() {
   const list = getPenghuniFiltered();
   const isEmpty = list.length === 0;
+  const isKonsolidasi = $('filter-cabang-penghuni')?.value === 'all';
   $('empty-penghuni').style.display = isEmpty ? 'block' : 'none';
 
   if (currentView === 'grid') {
@@ -3265,12 +3452,14 @@ function renderPenghuni() {
       const contractBadge = (exp && exp.isUrgent)
         ? `<span class="badge ${exp.badgeClass}" title="Kontrak berakhir: ${fmtD(p.tglKeluar)}">⏳ ${exp.label}</span>`
         : '';
+      const branchBadge = isKonsolidasi && p.branchNama ? `<span class="badge badge-accent" style="font-size:0.65rem">🏢 ${p.branchNama}</span>` : '';
       return `
         <div class="pg-card ${p.status!=='aktif'?'inactive':''}" onclick="openDetail('${p.id}')">
           ${av}
           <div class="pg-name">${p.nama}</div>
           <div class="pg-meta">Kamar ${p.kamar||'–'} · Lantai ${p.lantai||'1'}</div>
           <div class="pg-tags">
+            ${branchBadge}
             ${p.status==='aktif'?'<span class="badge badge-green">Aktif</span>':'<span class="badge badge-gray">Keluar</span>'}
             ${contractBadge}
             ${p.kendaraan&&p.kendaraan!=='tidak ada'?`<span class="badge badge-blue">${p.kendaraan}</span>`:''}
@@ -3291,10 +3480,11 @@ function renderPenghuni() {
       const statusBadge = p.status === 'aktif'
         ? (exp && exp.isUrgent ? `<span class="badge ${exp.badgeClass}">⏳ ${exp.label}</span>` : '<span class="badge badge-green">Aktif</span>')
         : '<span class="badge badge-gray">Keluar</span>';
+      const branchLabel = isKonsolidasi && p.branchNama ? `<span class="badge badge-accent" style="font-size:0.65rem;margin-left:6px">🏢 ${p.branchNama}</span>` : '';
       return `
         <tr onclick="openDetail('${p.id}')" style="cursor:pointer">
           <td>${idx + 1}</td>
-          <td><strong>${p.nama}</strong><br><small style="color:var(--text-4)">${p.hp||'–'}</small></td>
+          <td><strong>${p.nama}</strong>${branchLabel}<br><small style="color:var(--text-4)">${p.hp||'–'}</small></td>
           <td onclick="event.stopPropagation()">${maskNik(p.nik, p.id)}</td>
           <td>Kamar ${p.kamar||'–'}</td>
           <td>${p.hp||'–'}</td>
@@ -3312,7 +3502,7 @@ function renderPenghuni() {
 }
 
 let searchPenghuniTimer;
-$('cari-penghuni').addEventListener('input', function(e) {
+$('cari-penghuni')?.addEventListener('input', function(e) {
   if (e && e.isTrusted === false) {
     renderPenghuni();
     return;
@@ -3324,10 +3514,11 @@ $('cari-penghuni').addEventListener('input', function(e) {
     searchPenghuniTimer = setTimeout(renderPenghuni, 100);
   }
 });
-$('filter-status').addEventListener('change', renderPenghuni);
-$('filter-kendaraan').addEventListener('change', renderPenghuni);
-$('btn-grid-view').addEventListener('click', () => { currentView='grid'; $('btn-grid-view').classList.add('active'); $('btn-list-view').classList.remove('active'); renderPenghuni(); });
-$('btn-list-view').addEventListener('click', () => { currentView='list'; $('btn-list-view').classList.add('active'); $('btn-grid-view').classList.remove('active'); renderPenghuni(); });
+$('filter-status')?.addEventListener('change', renderPenghuni);
+$('filter-kendaraan')?.addEventListener('change', renderPenghuni);
+$('filter-cabang-penghuni')?.addEventListener('change', renderPenghuni);
+$('btn-grid-view')?.addEventListener('click', () => { currentView='grid'; $('btn-grid-view').classList.add('active'); $('btn-list-view').classList.remove('active'); renderPenghuni(); });
+$('btn-list-view')?.addEventListener('click', () => { currentView='list'; $('btn-list-view').classList.add('active'); $('btn-grid-view').classList.remove('active'); renderPenghuni(); });
 
 // ── PENGHUNI MODAL (TAMBAH / EDIT) ────────────────────────────
 function populateKamarSelect(currentKamar = '') {
@@ -3382,6 +3573,26 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
   $('form-penghuni').reset();
   $('prev-foto').style.display = 'none'; $('ph-foto').style.display = 'flex';
   $('prev-ktp').style.display  = 'none'; $('ph-ktp').style.display  = 'flex';
+
+  // Sinkronkan pilihan cabang di modal
+  const selCabangModal = $('field-cabang-penghuni-modal');
+  if (selCabangModal) {
+    const branches = (S.propertiesData && Object.keys(S.propertiesData).length > 0)
+      ? Object.keys(S.propertiesData)
+      : [S.activeKostId];
+    selCabangModal.innerHTML = branches.map(bid => {
+      const bName = S.propertiesData?.[bid]?.kost?.nama || bid;
+      return `<option value="${bid}" ${bid === S.activeKostId ? 'selected' : ''}>🏢 ${bName}</option>`;
+    }).join('');
+
+    selCabangModal.onchange = function() {
+      const chosen = this.value;
+      if (chosen && chosen !== S.activeKostId && typeof switchKost === 'function') {
+        switchKost(chosen);
+        populateKamarSelect('');
+      }
+    };
+  }
 
   if (id) {
     const p = S.penghuni.find(x => x.id === id);
@@ -4116,39 +4327,71 @@ window.hapusKamar = function(id) {
   }, 'Hapus');
 };
 
-// ── PEMBAYARAN & TAGIHAN ──────────────────────────────────────
+// ── PEMBAYARAN & TAGIHAN (DENGAN MODE KONSOLIDASI 5 CABANG) ───
 function renderPembayaran() {
-  const sel = $('filter-bulan-bayar');
+  const selBln = $('filter-bulan-bayar');
+  const selCabang = $('filter-cabang-bayar');
+  const isKonsolidasi = selCabang?.value === 'all';
+
   const months = []; const now = new Date();
   for (let i = 0; i < 12; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     months.push(ym);
   }
-  const cur = sel.value || months[0];
-  sel.innerHTML = months.map(m => {
+  const cur = selBln.value || months[0];
+  selBln.innerHTML = months.map(m => {
     const [y, mo] = m.split('-');
     const lbl = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
     return `<option value="${m}"${m === cur ? ' selected' : ''}>${lbl}</option>`;
   }).join('');
 
-  const bln = sel.value || months[0];
+  const bln = selBln.value || months[0];
   const [y, mo] = bln.split('-');
   const blnLabel = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
-  const aktif = S.penghuni.filter(p => p.status === 'aktif');
-  const payments = S.pembayaran.filter(pb => pb.bulan === bln || (typeof pb.bulan === 'string' && pb.bulan.startsWith(bln)));
+  // Siapkan data berdasarkan mode konsolidasi atau cabang aktif
+  let aktif = [];
+  let payments = [];
+
+  if (isKonsolidasi) {
+    (S.properties || []).forEach(prop => {
+      const bData = S.propertiesData ? S.propertiesData[prop.id] : null;
+      if (!bData) return;
+      (bData.penghuni || []).filter(p => p.status === 'aktif').forEach(p => {
+        aktif.push({ ...p, branchId: prop.id, branchNama: bData.kost?.nama || prop.nama });
+      });
+      (bData.pembayaran || []).filter(pb => pb.bulan === bln || (typeof pb.bulan === 'string' && pb.bulan.startsWith(bln))).forEach(pb => {
+        payments.push({ ...pb, branchId: prop.id });
+      });
+    });
+  } else {
+    aktif = S.penghuni.filter(p => p.status === 'aktif').map(p => ({ ...p, branchId: S.activeKostId, branchNama: S.kost.nama }));
+    payments = S.pembayaran.filter(pb => pb.bulan === bln || (typeof pb.bulan === 'string' && pb.bulan.startsWith(bln))).map(pb => ({ ...pb, branchId: S.activeKostId }));
+  }
+
   const lunas = payments.filter(pb => pb.status === 'lunas');
   const pending = payments.filter(pb => pb.status === 'menunggu');
   const belum = Math.max(0, aktif.length - lunas.length);
   const terkumpul = lunas.reduce((s, pb) => s + (Number(pb.jumlah) || 0), 0);
+  const scopeLabel = isKonsolidasi ? '🏢 5 Cabang' : S.kost.nama;
 
   $('kpi-bayar').innerHTML = `
-    <div class="kpi"><div class="kpi-label">Sudah Bayar</div><div class="kpi-value" style="color:var(--green)">${lunas.length}</div><div class="kpi-sub">penghuni lunas</div></div>
+    <div class="kpi"><div class="kpi-label">Sudah Bayar</div><div class="kpi-value" style="color:var(--green)">${lunas.length}</div><div class="kpi-sub">${scopeLabel}</div></div>
     <div class="kpi"><div class="kpi-label">Belum Bayar</div><div class="kpi-value" style="color:var(--red)">${belum}</div><div class="kpi-sub">penghuni aktif</div></div>
     <div class="kpi"><div class="kpi-label">Terkumpul</div><div class="kpi-value" style="font-size:1.15rem;color:var(--green)">${rp(terkumpul)}</div><div class="kpi-sub">bulan ${blnLabel}</div></div>
     <div class="kpi"><div class="kpi-label">Total Tagihan</div><div class="kpi-value" style="font-size:1.15rem">${rp(aktif.reduce((s,p)=>s+(Number(p.sewa)||0),0))}</div><div class="kpi-sub">keseluruhan</div></div>
   `;
+
+  // Update Thead row (tambahkan kolom Cabang jika konsolidasi)
+  const theadRow = $('thead-row-pembayaran');
+  if (theadRow) {
+    if (isKonsolidasi) {
+      theadRow.innerHTML = '<th>Cabang</th><th>Penghuni</th><th>Kamar</th><th>Bulan</th><th>Jatuh Tempo</th><th>Tagihan</th><th>Status</th><th>Aksi</th>';
+    } else {
+      theadRow.innerHTML = '<th>Penghuni</th><th>Kamar</th><th>Bulan</th><th>Jatuh Tempo</th><th>Tagihan</th><th>Status</th><th>Aksi</th>';
+    }
+  }
 
   // Section Verifikasi Pembayaran Pending
   const panelPending = $('panel-verifikasi-bayar');
@@ -4159,9 +4402,9 @@ function renderPembayaran() {
       panelPending.style.display = 'block';
       countPending.textContent = `${pending.length} Menunggu Verifikasi`;
       tbodyPending.innerHTML = pending.map(pb => {
-        const p = S.penghuni.find(x => x.id === pb.penghuniId || x.id === pb.penghuni_id);
+        const p = aktif.find(x => x.id === pb.penghuniId || x.id === pb.penghuni_id);
         return `<tr>
-          <td><strong>${p?.nama || '–'}</strong></td>
+          <td><strong>${p?.nama || '–'}</strong> ${isKonsolidasi ? `<span class="badge badge-accent" style="font-size:0.65rem">🏢 ${p?.branchNama || ''}</span>` : ''}</td>
           <td>Kamar ${p?.kamar || '–'}</td>
           <td>${blnLabel}</td>
           <td><strong style="color:var(--green)">${rp(pb.jumlah)}</strong></td>
@@ -4185,13 +4428,13 @@ function renderPembayaran() {
   const nowDay = new Date().getDate();
 
   $('tbody-pembayaran').innerHTML = aktif.filter(p => {
-    const pb = payments.find(x => x.penghuniId === p.id || x.penghuni_id === p.id);
+    const pb = payments.find(x => (x.penghuniId === p.id || x.penghuni_id === p.id) && x.branchId === p.branchId);
     const isLunas = pb?.status === 'lunas';
     if (filterStat === 'lunas') return isLunas;
     if (filterStat === 'belum') return !isLunas;
     return true;
   }).map(p => {
-    const pb = payments.find(x => x.penghuniId === p.id || x.penghuni_id === p.id);
+    const pb = payments.find(x => (x.penghuniId === p.id || x.penghuni_id === p.id) && x.branchId === p.branchId);
     const isLunas = pb?.status === 'lunas';
     const isPending = pb?.status === 'menunggu';
 
@@ -4216,25 +4459,28 @@ function renderPembayaran() {
     if (isLunas) {
       aksiCell = `
         <div style="display:flex;gap:6px;align-items:center">
-          <button type="button" class="btn-ghost btn-sm" onclick="showKwitansi('${p.id}','${bln}')">🧾 Kwitansi</button>
-          <button type="button" class="btn-outline btn-sm" onclick="batalBayar('${pb?.id || ''}','${p.id}','${bln}')" title="Batalkan status lunas">Batalkan</button>
+          <button type="button" class="btn-ghost btn-sm" onclick="showKwitansi('${p.id}','${bln}','${p.branchId}')">🧾 Kwitansi</button>
+          <button type="button" class="btn-outline btn-sm" onclick="batalBayar('${pb?.id || ''}','${p.id}','${bln}','${p.branchId}')" title="Batalkan status lunas">Batalkan</button>
         </div>`;
     } else if (isPending) {
       aksiCell = `
         <div style="display:flex;gap:6px;align-items:center">
           <button class="btn-primary btn-sm" onclick="setujuiBayar('${pb.id}')">Setujui</button>
-          <button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}')">📱 WA</button>
+          <button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}','${p.branchId}')">📱 WA</button>
         </div>`;
     } else {
       const sewaClean = Number(String(p.sewa || '0').replace(/\D/g, '')) || 0;
       aksiCell = `
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="btn-primary btn-sm" onclick="tandaiBayar('${p.id}','${bln}',${sewaClean})">✅ Tandai Lunas</button>
-          <button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}')">📱 WA</button>
+          <button class="btn-primary btn-sm" onclick="tandaiBayar('${p.id}','${bln}',${sewaClean},'${p.branchId}')">✅ Tandai Lunas</button>
+          <button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}','${p.branchId}')">📱 WA</button>
         </div>`;
     }
 
+    const branchCol = isKonsolidasi ? `<td><span class="badge badge-accent" style="font-size:0.68rem">🏢 ${p.branchNama}</span></td>` : '';
+
     return `<tr>
+      ${branchCol}
       <td><strong>${p.nama}</strong></td>
       <td>Kamar ${p.kamar||'–'}</td>
       <td>${blnLabel}</td>
@@ -4243,14 +4489,20 @@ function renderPembayaran() {
       <td>${statusCell}</td>
       <td>${aksiCell}</td>
     </tr>`;
-  }).join('') || `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data pembayaran yang sesuai.</td></tr>`;
+  }).join('') || `<tr><td colspan="${isKonsolidasi ? 8 : 7}" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data pembayaran yang sesuai.</td></tr>`;
 }
 
-$('filter-bulan-bayar').addEventListener('change', renderPembayaran);
-$('filter-status-bayar').addEventListener('change', renderPembayaran);
+$('filter-bulan-bayar')?.addEventListener('change', renderPembayaran);
+$('filter-status-bayar')?.addEventListener('change', renderPembayaran);
+$('filter-cabang-bayar')?.addEventListener('change', renderPembayaran);
 
-window.kirimWaTagihan = function(pid, bln) {
-  const p = S.penghuni.find(x => x.id === pid);
+window.kirimWaTagihan = function(pid, bln, branchId = S.activeKostId) {
+  let targetKost = S.kost;
+  let p = S.penghuni.find(x => x.id === pid);
+  if (branchId && branchId !== S.activeKostId && S.propertiesData && S.propertiesData[branchId]) {
+    targetKost = S.propertiesData[branchId].kost || S.kost;
+    p = (S.propertiesData[branchId].penghuni || []).find(x => x.id === pid) || p;
+  }
   if (!p) return;
   if (!p.hp) { toast('Nomor HP penghuni belum diisi!', 'err'); return; }
 
@@ -4275,41 +4527,47 @@ window.kirimWaTagihan = function(pid, bln) {
     }
   }
 
-  // Sertakan info rekening bank & nomor kamar secara otomatis
+  // Sertakan info rekening bank & nomor kamar secara otomatis sesuai cabang
   let rekInfo = '';
-  if (S.kost.bankNama && S.kost.bankRekening) {
-    rekInfo = `\n\nPembayaran dapat ditransfer ke:\n🏦 ${S.kost.bankNama}: *${S.kost.bankRekening}*\n👤 a.n ${S.kost.bankAtasNama || S.kost.pemilik}`;
+  if (targetKost.bankNama && targetKost.bankRekening) {
+    rekInfo = `\n\nPembayaran dapat ditransfer ke:\n🏦 ${targetKost.bankNama}: *${targetKost.bankRekening}*\n👤 a.n ${targetKost.bankAtasNama || targetKost.pemilik}`;
   }
 
   let text = '';
-  if (S.kost.waTemplate && S.kost.waTemplate.trim()) {
-    text = S.kost.waTemplate
+  if (targetKost.waTemplate && targetKost.waTemplate.trim()) {
+    text = targetKost.waTemplate
       .replace(/{nama}/g, p.nama)
       .replace(/{kamar}/g, p.kamar || '')
       .replace(/{bulan}/g, blnLabel)
       .replace(/{nominal}/g, rp(p.sewa))
-      .replace(/{kost}/g, S.kost.nama || 'Kost')
-      .replace(/{bank}/g, S.kost.bankNama || 'Bank')
-      .replace(/{rekening}/g, S.kost.bankRekening || '')
-      .replace(/{pemilik}/g, S.kost.bankAtasNama || S.kost.pemilik || '')
-      .replace(/{tempo}/g, p.tempo || S.kost.tempoDefault || 5);
+      .replace(/{kost}/g, targetKost.nama || 'Kost')
+      .replace(/{bank}/g, targetKost.bankNama || 'Bank')
+      .replace(/{rekening}/g, targetKost.bankRekening || '')
+      .replace(/{pemilik}/g, targetKost.bankAtasNama || targetKost.pemilik || '')
+      .replace(/{tempo}/g, p.tempo || targetKost.tempoDefault || 5);
   } else {
-    text = `Halo Kak ${p.nama}, mengingatkan tagihan sewa kamar ${p.kamar || ''} di ${S.kost.nama || 'Kost'} untuk bulan ${blnLabel} sebesar *${rp(p.sewa)}* telah jatuh tempo.${rekInfo}\n\nMohon konfirmasi atau kirimkan bukti transfer jika sudah membayar ya. Terima kasih banyak! 🙏`;
+    text = `Halo Kak *${p.nama}*,\n\nMengingatkan tagihan sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(p.sewa)}* (Jatuh tempo tgl ${p.tempo || 5}).${rekInfo}\n\nMohon konfirmasi jika sudah melakukan transfer ya. Terima kasih! 🙏`;
   }
-  
-  const targetUrl = `https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`;
-  window.__lastOpenedUrl = targetUrl;
-  window.open(targetUrl, '_blank');
-};
 
-window.tandaiBayar = async function(pid, bln, jumlah) {
-  let pb = S.pembayaran.find(x => x.penghuniId === pid && x.bulan === bln);
+  const url = `https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+};
+window.tandaiBayar = async function(pid, bln, jumlah, branchId = S.activeKostId) {
+  const isOtherBranch = branchId && branchId !== S.activeKostId && S.propertiesData && S.propertiesData[branchId];
+  const targetPbList = isOtherBranch ? (S.propertiesData[branchId].pembayaran = S.propertiesData[branchId].pembayaran || []) : S.pembayaran;
+
+  let pb = targetPbList.find(x => (x.penghuniId === pid || x.penghuni_id === pid) && (x.bulan === bln || (typeof x.bulan === 'string' && x.bulan.startsWith(bln))));
   if (pb) {
     pb.status = 'lunas'; pb.jumlah = jumlah; pb.tglBayar = new Date().toISOString(); pb.verifiedAt = new Date().toISOString();
   } else {
     pb = { id: uid(), penghuniId: pid, bulan: bln, jumlah, status: 'lunas', tglBayar: new Date().toISOString(), verifiedAt: new Date().toISOString() };
-    S.pembayaran.push(pb);
+    targetPbList.push(pb);
   }
+
+  if (!isOtherBranch && S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
+    S.propertiesData[S.activeKostId].pembayaran = [...S.pembayaran];
+  }
+
   LS.save();
   renderPembayaran();
   if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
@@ -4319,17 +4577,21 @@ window.tandaiBayar = async function(pid, bln, jumlah) {
   updateSidebarBadges();
 };
 
-window.batalBayar = function(arg1, arg2, arg3) {
+window.batalBayar = function(arg1, arg2, arg3, branchId = S.activeKostId) {
   let pbId = '', pid = '', bln = '';
   if (arg3 !== undefined) {
     pbId = arg1; pid = arg2; bln = arg3;
   } else {
     pid = arg1; bln = arg2;
-    const found = S.pembayaran.find(x => (x.penghuniId === pid || x.penghuni_id === pid) && (x.bulan === bln || (typeof x.bulan === 'string' && x.bulan.startsWith(bln))));
+    const isOtherBranch = branchId && branchId !== S.activeKostId && S.propertiesData && S.propertiesData[branchId];
+    const targetPbList = isOtherBranch ? (S.propertiesData[branchId].pembayaran || []) : S.pembayaran;
+    const found = targetPbList.find(x => (x.penghuniId === pid || x.penghuni_id === pid) && (x.bulan === bln || (typeof x.bulan === 'string' && x.bulan.startsWith(bln))));
     if (found) pbId = found.id;
   }
 
-  const p = S.penghuni.find(x => x.id === pid);
+  const isOtherBranch = branchId && branchId !== S.activeKostId && S.propertiesData && S.propertiesData[branchId];
+  const targetPenghuni = isOtherBranch ? (S.propertiesData[branchId].penghuni || []) : S.penghuni;
+  const p = targetPenghuni.find(x => x.id === pid) || S.penghuni.find(x => x.id === pid);
   const namaPenghuni = p ? p.nama : 'Penghuni';
   const kamarPenghuni = p?.kamar ? ` (Kamar ${p.kamar})` : '';
 
@@ -4337,32 +4599,34 @@ window.batalBayar = function(arg1, arg2, arg3) {
     'Batalkan Pembayaran Lunas',
     `Apakah Anda yakin ingin membatalkan status pembayaran lunas untuk <strong>${namaPenghuni}</strong>${kamarPenghuni}?<br><br><span style="color:var(--text-3);font-size:0.85rem">Status tagihan sewa akan dikembalikan menjadi <strong>Belum Bayar</strong>.</span>`,
     async () => {
-      // 1. Filter out from S.pembayaran
-      S.pembayaran = S.pembayaran.filter(pb => {
-        if (pbId && pb.id === pbId) return false;
-        const matchesPid = (pb.penghuniId === pid || pb.penghuni_id === pid);
-        const matchesBln = (pb.bulan === bln || (typeof pb.bulan === 'string' && pb.bulan.startsWith(bln)));
-        if (matchesPid && matchesBln) return false;
-        return true;
-      });
-
-      // 2. Sinkronkan ke bucket propertiesData cabang aktif jika ada
-      if (S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
-        S.propertiesData[S.activeKostId].pembayaran = [...S.pembayaran];
+      if (isOtherBranch) {
+        S.propertiesData[branchId].pembayaran = (S.propertiesData[branchId].pembayaran || []).filter(pb => {
+          if (pbId && pb.id === pbId) return false;
+          const matchesPid = (pb.penghuniId === pid || pb.penghuni_id === pid);
+          const matchesBln = (pb.bulan === bln || (typeof pb.bulan === 'string' && pb.bulan.startsWith(bln)));
+          if (matchesPid && matchesBln) return false;
+          return true;
+        });
+      } else {
+        S.pembayaran = S.pembayaran.filter(pb => {
+          if (pbId && pb.id === pbId) return false;
+          const matchesPid = (pb.penghuniId === pid || pb.penghuni_id === pid);
+          const matchesBln = (pb.bulan === bln || (typeof pb.bulan === 'string' && pb.bulan.startsWith(bln)));
+          if (matchesPid && matchesBln) return false;
+          return true;
+        });
+        if (S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
+          S.propertiesData[S.activeKostId].pembayaran = [...S.pembayaran];
+        }
       }
 
-      // 3. Simpan state ke LocalStorage
       LS.save();
-
-      // 4. Perbarui tampilan halaman
       renderPembayaran();
       if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
       if ($('page-kamar')?.classList.contains('active')) renderKamar();
 
-      // 5. Berikan notifikasi toast berhasil
       toast(`Status pembayaran ${namaPenghuni} berhasil dibatalkan menjadi Belum Bayar.`, 'ok');
 
-      // 6. Hapus dari database cloud Supabase
       if (pbId) {
         await DB.deletePembayaranById(pbId);
       }
@@ -4371,6 +4635,127 @@ window.batalBayar = function(arg1, arg2, arg3) {
     },
     'Batalkan Lunas'
   );
+};
+
+// Modal Kwitansi Digital Resmi (Multi-Cabang)
+window.showKwitansi = function(penghuniId, bulan, branchId = S.activeKostId) {
+  let targetKost = S.kost;
+  let p = S.penghuni.find(x => x.id === penghuniId);
+  let pbList = S.pembayaran;
+
+  if (branchId && branchId !== S.activeKostId && S.propertiesData && S.propertiesData[branchId]) {
+    targetKost = S.propertiesData[branchId].kost || S.kost;
+    p = (S.propertiesData[branchId].penghuni || []).find(x => x.id === penghuniId) || p;
+    pbList = S.propertiesData[branchId].pembayaran || [];
+  }
+
+  if (!p) {
+    toast('Data penghuni tidak ditemukan', 'err');
+    return;
+  }
+
+  const safeBln = bulan || thisMonth();
+  const [y, mo] = safeBln.split('-');
+  let blnLabel = safeBln;
+  if (y && mo) {
+    const d = new Date(parseInt(y, 10), parseInt(mo, 10) - 1, 1);
+    if (!isNaN(d.getTime())) {
+      blnLabel = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    }
+  }
+
+  const pb = pbList.find(x => (x.penghuniId === p.id || x.penghuni_id === p.id) && (x.bulan === safeBln || (typeof x.bulan === 'string' && x.bulan.startsWith(safeBln))));
+  const nominal = pb?.jumlah || p.sewa || 0;
+  const tglBayarStr = pb?.tglBayar ? fmtD(pb.tglBayar) : new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+  const invNo = `#INV-${safeBln.replace('-', '')}-${(p.id || '0000').slice(-4).toUpperCase()}`;
+
+  const bodyEl = $('modal-kwitansi-body');
+  if (bodyEl) {
+    bodyEl.innerHTML = `
+      <div class="kwitansi-sheet" style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:22px;position:relative;overflow:hidden">
+        <div style="border-bottom:2px solid var(--border);padding-bottom:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green)"></span>
+              <h3 style="margin:0;font-size:1.15rem;font-weight:800;letter-spacing:-0.3px">${targetKost.nama || 'Kost'}</h3>
+            </div>
+            <p style="margin:4px 0 0;font-size:0.8rem;color:var(--text-3)">${targetKost.alamat || 'Alamat Kost'}</p>
+            <p style="margin:2px 0 0;font-size:0.76rem;color:var(--text-3)">WhatsApp Admin: ${targetKost.hp || '–'}</p>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:0.7rem;text-transform:uppercase;font-weight:700;color:var(--text-3)">Kwitansi Pembayaran Resmi</div>
+            <div style="font-size:0.95rem;font-weight:800;color:var(--accent-light);font-family:monospace">${invNo}</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+          <div>
+            <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-3);font-weight:700">Diterima Dari:</span>
+            <div style="font-weight:700;font-size:0.98rem;color:var(--text);margin-top:2px">${p.nama}</div>
+            <div style="font-size:0.8rem;color:var(--text-2)">Kamar ${p.kamar || '–'} (Lt ${p.lantai || '1'})</div>
+          </div>
+          <div>
+            <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-3);font-weight:700">Waktu Pelunasan:</span>
+            <div style="font-weight:600;font-size:0.88rem;color:var(--green);margin-top:2px">${tglBayarStr}</div>
+            <div style="font-size:0.76rem;color:var(--text-3)">Status: <strong style="color:var(--green)">LUNAS / VERIFIED</strong></div>
+          </div>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px">
+          <div style="padding:8px 12px;background:var(--surface);font-size:0.72rem;font-weight:700;color:var(--text-3);text-transform:uppercase;border-bottom:1px solid var(--border)">
+            Rincian Pembayaran Sewa
+          </div>
+          <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);font-size:0.84rem">
+            <div>
+              <div style="font-weight:600">Sewa Kamar ${p.kamar || '–'} (Periode ${blnLabel})</div>
+              <div style="font-size:0.73rem;color:var(--text-3)">Sewa kamar bulanan termasuk fasilitas kost</div>
+            </div>
+            <div style="font-weight:700">${rp(nominal)}</div>
+          </div>
+          <div style="padding:12px;display:flex;justify-content:space-between;align-items:center;background:rgba(16,185,129,0.08)">
+            <span style="font-weight:800;font-size:0.85rem;text-transform:uppercase">Total Terbayar (LUNAS)</span>
+            <span style="font-size:1.2rem;font-weight:900;color:var(--green);font-family:monospace">${rp(nominal)}</span>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px dashed var(--border);padding-top:12px">
+          <div style="font-size:0.72rem;color:var(--text-3);max-width:65%">
+            Kwitansi elektronik ini dibuat sah secara otomatis oleh sistem SiKost Cloud tanpa memerlukan tanda tangan basah fisik.
+          </div>
+          <div style="text-align:center">
+            <div style="border:1px dashed var(--green);background:rgba(16,185,129,0.06);border-radius:6px;padding:3px 8px;font-size:0.65rem;font-weight:800;color:var(--green);margin-bottom:4px">
+              DIGITALLY VERIFIED
+            </div>
+            <div style="font-size:0.76rem;font-weight:700">${targetKost.pemilik || 'Pengelola Kost'}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Hook Print & WA
+  const btnPrint = $('btn-print-kwitansi');
+  if (btnPrint) btnPrint.onclick = () => window.print();
+
+  const btnWa = $('btn-wa-kwitansi');
+  if (btnWa) {
+    btnWa.onclick = () => {
+      let cleanHp = (p.hp || '').replace(/\D/g, '');
+      if (cleanHp.startsWith('0')) cleanHp = '62' + cleanHp.slice(1);
+      else if (!cleanHp.startsWith('62') && cleanHp.length >= 9) cleanHp = '62' + cleanHp;
+      if (cleanHp.length < 8) {
+        toast('Nomor HP penghuni tidak valid!', 'err');
+        return;
+      }
+      const waMsg = `Halo Kak *${p.nama}*,\n\nTerima kasih, pembayaran sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(nominal)}* telah kami terima *LUNAS*.\nNo. Kwitansi: *${invNo}*.\n\nTerima kasih atas kerjasamanya! 🙏`;
+      window.open(`https://wa.me/${cleanHp}?text=${encodeURIComponent(waMsg)}`, '_blank');
+    };
+  }
+
+  const btnClose = $('modal-kwitansi-close');
+  if (btnClose) btnClose.onclick = () => closeModal('modal-kwitansi');
+
+  openModal('modal-kwitansi');
 };
 
 window.setujuiBayar = async function(pbId) {
@@ -5767,39 +6152,57 @@ function renderSpotlightResults(q) {
   if (!query) {
     resEl.innerHTML = `
       <div style="text-align:center;padding:24px 16px;color:var(--text-3);font-size:0.85rem">
-        Ketik nama anak kost, nomor kamar, nomor HP, plat motor/mobil, atau catatan pengeluaran...
+        Ketik nama anak kost, nomor kamar, no HP, plat motor/mobil, atau pengeluaran lintas 5 kost...
       </div>
     `;
     return;
   }
 
-  // 1. Search Penghuni
-  const matchedPenghuni = S.penghuni.filter(p => 
-    (p.nama || '').toLowerCase().includes(query) ||
-    (p.kamar || '').toLowerCase().includes(query) ||
-    (p.hp || '').toLowerCase().includes(query) ||
-    (p.nik || '').includes(query) ||
-    (p.plat1 || '').toLowerCase().includes(query) ||
-    (p.plat2 || '').toLowerCase().includes(query)
-  );
+  // Cari di seluruh 5 cabang portofolio
+  const allBranches = (S.propertiesData && Object.keys(S.propertiesData).length > 0)
+    ? Object.keys(S.propertiesData)
+    : [S.activeKostId];
 
-  // 2. Search Kamar
-  const matchedKamar = S.kamar.filter(k => 
-    (k.no || '').toLowerCase().includes(query) ||
-    (k.tipe || '').toLowerCase().includes(query) ||
-    (k.fasilitas || '').toLowerCase().includes(query)
-  );
+  const matchedPenghuni = [];
+  const matchedKamar = [];
+  const matchedExp = [];
 
-  // 3. Search Pengeluaran
-  const matchedExp = S.pengeluaran.filter(x => 
-    (x.keterangan || '').toLowerCase().includes(query) ||
-    (x.kategori || '').toLowerCase().includes(query)
-  );
+  allBranches.forEach(bid => {
+    const bData = S.propertiesData?.[bid] || (bid === S.activeKostId ? S : null);
+    if (!bData) return;
+    const branchName = bData.kost?.nama || bid;
+
+    (bData.penghuni || []).forEach(p => {
+      if ((p.nama || '').toLowerCase().includes(query) ||
+          (p.kamar || '').toLowerCase().includes(query) ||
+          (p.hp || '').toLowerCase().includes(query) ||
+          (p.nik || '').includes(query) ||
+          (p.plat1 || '').toLowerCase().includes(query) ||
+          (p.plat2 || '').toLowerCase().includes(query)) {
+        matchedPenghuni.push({ ...p, branchId: bid, branchNama: branchName });
+      }
+    });
+
+    (bData.kamar || []).forEach(k => {
+      if ((k.no || '').toLowerCase().includes(query) ||
+          (k.tipe || '').toLowerCase().includes(query) ||
+          (k.fasilitas || '').toLowerCase().includes(query)) {
+        matchedKamar.push({ ...k, branchId: bid, branchNama: branchName });
+      }
+    });
+
+    (bData.pengeluaran || []).forEach(x => {
+      if ((x.keterangan || '').toLowerCase().includes(query) ||
+          (x.kategori || '').toLowerCase().includes(query)) {
+        matchedExp.push({ ...x, branchId: bid, branchNama: branchName });
+      }
+    });
+  });
 
   if (matchedPenghuni.length === 0 && matchedKamar.length === 0 && matchedExp.length === 0) {
     resEl.innerHTML = `
       <div style="text-align:center;padding:28px 16px;color:var(--text-3);font-size:0.85rem">
-        Tidak ditemukan hasil untuk "<strong>${q}</strong>"
+        Tidak ditemukan hasil untuk "<strong>${q}</strong>" di 5 cabang kost.
       </div>
     `;
     return;
@@ -5809,15 +6212,15 @@ function renderSpotlightResults(q) {
   if (matchedPenghuni.length > 0) {
     html += `<div class="spotlight-group-title">Penghuni (${matchedPenghuni.length})</div>`;
     html += matchedPenghuni.map(p => `
-      <div class="spotlight-item" onclick="closeSpotlight();openDetail('${p.id}')">
+      <div class="spotlight-item" onclick="closeSpotlight();switchKost('${p.branchId}');openDetail('${p.id}')">
         <div class="spotlight-item-left">
           <div class="spotlight-item-icon">👤</div>
           <div>
-            <div class="spotlight-item-title">${p.nama} ${p.status === 'aktif' ? '<span class="badge badge-green" style="font-size:0.65rem">Aktif</span>' : '<span class="badge badge-gray" style="font-size:0.65rem">Keluar</span>'}</div>
+            <div class="spotlight-item-title">${p.nama} <span class="badge badge-accent" style="font-size:0.62rem">🏢 ${p.branchNama}</span> ${p.status === 'aktif' ? '<span class="badge badge-green" style="font-size:0.62rem">Aktif</span>' : '<span class="badge badge-gray" style="font-size:0.62rem">Keluar</span>'}</div>
             <div class="spotlight-item-sub">Kamar ${p.kamar || '–'} · Telp/WA: ${p.hp || '–'} · Sewa: ${rp(p.sewa || 0)}</div>
           </div>
         </div>
-        <button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation();closeSpotlight();openDetail('${p.id}')">Lihat Detail →</button>
+        <button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation();closeSpotlight();switchKost('${p.branchId}');openDetail('${p.id}')">Lihat Detail →</button>
       </div>
     `).join('');
   }
@@ -5825,15 +6228,15 @@ function renderSpotlightResults(q) {
   if (matchedKamar.length > 0) {
     html += `<div class="spotlight-group-title">Kamar (${matchedKamar.length})</div>`;
     html += matchedKamar.map(k => `
-      <div class="spotlight-item" onclick="closeSpotlight();navigateTo('kamar')">
+      <div class="spotlight-item" onclick="closeSpotlight();switchKost('${k.branchId}');navigateTo('kamar')">
         <div class="spotlight-item-left">
           <div class="spotlight-item-icon">🛏️</div>
           <div>
-            <div class="spotlight-item-title">Kamar ${k.no} (${k.tipe || 'Standar'})</div>
+            <div class="spotlight-item-title">Kamar ${k.no} (${k.tipe || 'Standar'}) <span class="badge badge-accent" style="font-size:0.62rem">🏢 ${k.branchNama}</span></div>
             <div class="spotlight-item-sub">Lantai ${k.lantai || '1'} · ${rp(k.harga || 0)}/bln · ${k.fasilitas || 'Standar'}</div>
           </div>
         </div>
-        <button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation();closeSpotlight();navigateTo('kamar')">Buka Kamar →</button>
+        <button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation();closeSpotlight();switchKost('${k.branchId}');navigateTo('kamar')">Buka Kamar →</button>
       </div>
     `).join('');
   }
@@ -5841,15 +6244,15 @@ function renderSpotlightResults(q) {
   if (matchedExp.length > 0) {
     html += `<div class="spotlight-group-title">Pengeluaran Operasional (${matchedExp.length})</div>`;
     html += matchedExp.map(x => `
-      <div class="spotlight-item" onclick="closeSpotlight();navigateTo('pengeluaran')">
+      <div class="spotlight-item" onclick="closeSpotlight();switchKost('${x.branchId}');navigateTo('pengeluaran')">
         <div class="spotlight-item-left">
           <div class="spotlight-item-icon">💸</div>
           <div>
-            <div class="spotlight-item-title">${x.keterangan || x.kategori} <strong style="color:var(--red)">(${rp(x.jumlah)})</strong></div>
+            <div class="spotlight-item-title">${x.keterangan || x.kategori} <strong style="color:var(--red)">(${rp(x.jumlah)})</strong> <span class="badge badge-accent" style="font-size:0.62rem">🏢 ${x.branchNama}</span></div>
             <div class="spotlight-item-sub">${fmtD(x.tanggal)} · ${x.kategori}</div>
           </div>
         </div>
-        <button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation();closeSpotlight();navigateTo('pengeluaran')">Lihat →</button>
+        <button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation();closeSpotlight();switchKost('${x.branchId}');navigateTo('pengeluaran')">Lihat →</button>
       </div>
     `).join('');
   }
@@ -5998,11 +6401,25 @@ function setupNewFeatureEvents() {
   }
 
   window.addEventListener('keydown', e => {
+    // Ctrl + K Universal Spotlight Search
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
       openSpotlight();
       return;
     }
+
+    // Alt + 1..5 Shortcut Cepat Beralih Antar Cabang Kost
+    if (e.altKey && ['1', '2', '3', '4', '5'].includes(e.key)) {
+      e.preventDefault();
+      const branchId = 'kost_' + e.key;
+      if (typeof window.switchKost === 'function') {
+        window.switchKost(branchId);
+        const branchName = S.propertiesData?.[branchId]?.kost?.nama || ('Cabang ' + e.key);
+        toast(`🏢 Beralih ke [Alt+${e.key}]: ${branchName}`, 'ok');
+      }
+      return;
+    }
+
     if (e.key === 'Escape') {
       closeSpotlight();
       document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));

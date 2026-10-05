@@ -229,6 +229,7 @@
             </div>
             <span class="badge" style="background:rgba(99,102,241,0.15);color:var(--accent-light);font-weight:700;padding:6px 12px;border-radius:20px;font-size:0.78rem">5 Lokasi Berbeda</span>
           </div>
+          <div id="multi-kost-summary-bar" style="margin-bottom:16px"></div>
           <div class="multi-kost-grid" id="multi-kost-cards-grid">
             <!-- 5 Kost Cards di-render secara dinamis -->
           </div>
@@ -314,6 +315,10 @@
               <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
               <input class="search-input" id="cari-penghuni" type="search" placeholder="Cari nama, NIK, kamar…" />
             </div>
+            <select class="sel" id="filter-cabang-penghuni" title="Pilih Cabang atau Konsolidasi Semua Cabang">
+              <option value="active">Cabang Aktif</option>
+              <option value="all">🏢 Semua 5 Cabang</option>
+            </select>
             <select class="sel" id="filter-status">
               <option value="">Semua Status</option>
               <option value="aktif">Aktif</option>
@@ -395,6 +400,10 @@
           <div class="panel-header">
             <span class="panel-title">Daftar Tagihan &amp; Pembayaran</span>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <select class="sel" id="filter-cabang-bayar" title="Pilih Cabang atau Konsolidasi Semua Cabang">
+                <option value="active">Cabang Aktif</option>
+                <option value="all">🏢 Semua 5 Cabang (Konsolidasi)</option>
+              </select>
               <select class="sel" id="filter-status-bayar">
                 <option value="">Semua Status</option>
                 <option value="belum">Belum Bayar</option>
@@ -405,7 +414,7 @@
           </div>
           <div class="tbl-wrap">
             <table class="tbl">
-              <thead><tr><th>Penghuni</th><th>Kamar</th><th>Bulan</th><th>Jatuh Tempo</th><th>Tagihan</th><th>Status</th><th>Aksi</th></tr></thead>
+              <thead><tr id="thead-row-pembayaran"><th>Penghuni</th><th>Kamar</th><th>Bulan</th><th>Jatuh Tempo</th><th>Tagihan</th><th>Status</th><th>Aksi</th></tr></thead>
               <tbody id="tbody-pembayaran"></tbody>
             </table>
           </div>
@@ -776,6 +785,10 @@
         <!-- Hunian -->
         <div class="ftab-content" id="ftab-hunian">
           <div class="fg-grid">
+            <div class="fg col2">
+              <label>🏢 Cabang Kost Sasaran</label>
+              <select id="field-cabang-penghuni-modal" class="fc"></select>
+            </div>
             <div class="fg">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                 <label style="margin-bottom:0">Pilih Kamar Kosong <em>*</em></label>
