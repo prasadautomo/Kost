@@ -12,7 +12,6 @@ ALTER TABLE IF EXISTS public.penghuni DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.kamar DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.pembayaran DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.pengeluaran DISABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.keluhan DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.kost_pengaturan DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.profiles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.pengumuman DISABLE ROW LEVEL SECURITY;
@@ -45,14 +44,7 @@ DROP POLICY IF EXISTS "pengeluaran_web_all" ON public.pengeluaran;
 DROP POLICY IF EXISTS "pengeluaran_manager_all" ON public.pengeluaran;
 CREATE POLICY "pengeluaran_web_all" ON public.pengeluaran FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- 5. Keluhan
-DROP POLICY IF EXISTS "keluhan_web_all" ON public.keluhan;
-DROP POLICY IF EXISTS "keluhan_manager_all" ON public.keluhan;
-DROP POLICY IF EXISTS "keluhan_penghuni_own" ON public.keluhan;
-DROP POLICY IF EXISTS "keluhan_penghuni_insert" ON public.keluhan;
-CREATE POLICY "keluhan_web_all" ON public.keluhan FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-
--- 6. Kost Pengaturan
+-- 5. Kost Pengaturan
 DROP POLICY IF EXISTS "kost_web_all" ON public.kost_pengaturan;
 DROP POLICY IF EXISTS "kost_manage_manager" ON public.kost_pengaturan;
 DROP POLICY IF EXISTS "kost_read_all" ON public.kost_pengaturan;

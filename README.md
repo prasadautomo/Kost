@@ -20,7 +20,6 @@ Aplikasi web manajemen kost modern dengan dukungan **Cloud Database & Cloud Auth
 
 ### 3. 🛠️ Operasional & Pengalaman Penghuni (Tenant Portal)
 - 💳 **Konfirmasi Pembayaran Mandiri** – Anak kost dapat mengunggah bukti transfer bank langsung dari portal mereka. Pengelola menerima notifikasi badge dan dapat menyetujui/menolak dalam 1 klik.
-- 🔧 **Sistem Tiket Keluhan & Perbaikan (Maintenance)** – Penghuni dapat melaporkan kerusakan fasilitas kamar (AC, kran bocor, listrik) lengkap dengan foto kendala. Pengelola dapat memperbarui status (*Menunggu -> Diproses -> Selesai*) beserta catatan solusinya.
 - 📢 **Papan Pengumuman Kost (Broadcast)** – Pengelola dapat menyiarkan pengumuman penting (*Info, Penting, Urgent*) yang langsung tampil di dashboard dan portal penghuni.
 - 📄 **Surat Perjanjian Sewa Kost (SPK)** – Generator kontrak sewa kamar kost standar hukum siap cetak mencakup identitas para pihak, pasal hak & kewajiban, tata tertib kost, dan kolom tanda tangan bermaterai.
 - 📱 **Peringatan Jatuh Tempo Cerdas (H-3)** – Indikator warna jatuh tempo (hijau, kuning H-3, merah telat) dan tautan WhatsApp pengingat otomatis.
@@ -28,7 +27,7 @@ Aplikasi web manajemen kost modern dengan dukungan **Cloud Database & Cloud Auth
 ### 4. ⚡ Performa, Offline & Cloud Modern
 - 📱 **PWA (Progressive Web App)** – Dilengkapi `manifest.json` dan `sw.js` (Service Worker) sehingga dapat di-install langsung di layar utama smartphone Android/iOS layaknya aplikasi native Play Store.
 - ⚡ **Supabase Realtime Sync** – Pembaruan data di satu perangkat langsung tersinkronisasi otomatis ke perangkat lainnya secara real-time tanpa perlu refresh browser.
-- ☁️ **1-Click Cloud Migration** – Pindahkan seluruh data lokal (kamar, penghuni, pembayaran, pengeluaran, keluhan) ke Supabase Cloud dengan sekali klik.
+- ☁️ **1-Click Cloud Migration** – Pindahkan seluruh data lokal (kamar, penghuni, pembayaran, pengeluaran) ke Supabase Cloud dengan sekali klik.
 
 ---
 

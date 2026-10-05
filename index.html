@@ -234,7 +234,7 @@
           </div>
         </div>
 
-        <!-- Notifikasi Cepat: Keluhan Pending & Konfirmasi Bayar Pending -->
+        <!-- Notifikasi Cepat: Konfirmasi Bayar Pending -->
         <div id="dash-alerts-row" style="margin-bottom:20px;display:none"></div>
 
         <div class="two-col">
@@ -477,22 +477,6 @@
         </div>
       </section>
 
-      <!-- PAGE: KELUHAN & PERBAIKAN (Manager - FITUR BARU) -->
-      <section class="page" id="page-keluhan">
-        <div class="kpi-row" id="kpi-keluhan-row"></div>
-        <div class="toolbar">
-          <div class="toolbar-left">
-            <select class="sel" id="filter-status-keluhan">
-              <option value="">Semua Status Keluhan</option>
-              <option value="menunggu">Menunggu Ditanggapi</option>
-              <option value="diproses">Sedang Dikerjakan</option>
-              <option value="selesai">Sudah Selesai</option>
-            </select>
-          </div>
-        </div>
-        <div class="keluhan-grid" id="keluhan-grid"></div>
-      </section>
-
       <!-- PAGE: PENGATURAN (Manager) -->
       <section class="page" id="page-pengaturan">
         <div class="settings-layout">
@@ -650,7 +634,7 @@
                       <span>🌐</span> <span>Penyimpanan Web Cloud (Database Langsung)</span>
                     </div>
                     <div style="font-size:0.78rem;color:var(--text-2);margin-top:4px;line-height:1.4">
-                      Aplikasi diatur untuk menyimpan seluruh penambahan data (penghuni, kamar, pembayaran, pengeluaran, keluhan) langsung ke database web Supabase, bukan hanya di local storage.
+                      Aplikasi diatur untuk menyimpan seluruh penambahan data (penghuni, kamar, pembayaran, pengeluaran) langsung ke database web Supabase, bukan hanya di local storage.
                     </div>
                   </div>
                   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
@@ -668,7 +652,7 @@
               <hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
 
               <h3 style="font-size:0.88rem;font-weight:700;margin-bottom:8px">Migrasi Data Lokal ke Supabase Cloud</h3>
-              <p class="text-muted" style="font-size:0.78rem;margin-bottom:14px">Upload seluruh data kamar, penghuni, pembayaran, pengeluaran, keluhan, dan profil kost yang ada di browser ini ke Supabase Cloud sekaligus.</p>
+              <p class="text-muted" style="font-size:0.78rem;margin-bottom:14px">Upload seluruh data kamar, penghuni, pembayaran, pengeluaran, dan profil kost yang ada di browser ini ke Supabase Cloud sekaligus.</p>
               <button type="button" class="btn-primary" id="btn-migrate-local-cloud" style="background:var(--purple);border-color:var(--purple)">
                 ☁️ Upload Seluruh Data ke Supabase Cloud
               </button>
@@ -696,7 +680,7 @@
               <h2 class="settings-title">Manajemen Data</h2>
               <div class="action-list">
                 <div class="action-item">
-                  <div><p class="action-title">Backup Seluruh Data</p><p class="text-muted">Unduh semua data (kamar, penghuni, pengeluaran, keluhan, transaksi) sebagai file JSON.</p></div>
+                  <div><p class="action-title">Backup Seluruh Data</p><p class="text-muted">Unduh semua data (kamar, penghuni, pengeluaran, transaksi) sebagai file JSON.</p></div>
                   <button class="btn-outline" id="btn-backup">Backup JSON</button>
                 </div>
                 <div class="action-item">
@@ -942,17 +926,6 @@
         </div>
       </form>
     </div>
-  </div>
-</div>
-
-<!-- ====== MODAL: TANGGAPI KELUHAN ====== -->
-<div class="modal-overlay" id="modal-keluhan-manager">
-  <div class="modal" style="max-width:540px">
-    <div class="modal-head">
-      <h2 class="modal-title">Tindak Lanjut Keluhan Penghuni</h2>
-      <button class="modal-x" id="modal-keluhan-manager-close">✕</button>
-    </div>
-    <div class="modal-body" id="modal-keluhan-manager-body"></div>
   </div>
 </div>
 
@@ -1308,7 +1281,7 @@
       <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:12px 14px;margin-bottom:16px">
         <div style="font-weight:700;color:var(--primary);margin-bottom:4px">💡 Mengapa data belum tersimpan langsung ke web?</div>
         <div style="font-size:0.83rem;color:var(--text-2);line-height:1.45">
-          Supabase secara default mengaktifkan <em>Row Level Security (RLS)</em> yang menolak penyimpanan data dari web browser. Jalankan skrip di bawah ini <strong>sekali saja</strong> di SQL Editor Supabase Anda agar semua data penghuni, kamar, pembayaran, pengeluaran &amp; keluhan otomatis tersimpan langsung ke web!
+          Supabase secara default mengaktifkan <em>Row Level Security (RLS)</em> yang menolak penyimpanan data dari web browser. Jalankan skrip di bawah ini <strong>sekali saja</strong> di SQL Editor Supabase Anda agar semua data penghuni, kamar, pembayaran &amp; pengeluaran otomatis tersimpan langsung ke web!
         </div>
       </div>
 

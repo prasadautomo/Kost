@@ -1,7 +1,7 @@
 /* ============================================================
    SIKOST – app.js  v4.1 (Enterprise Cloud & Offline PWA Edition)
    Supabase Auth · Realtime Sync · Strict RLS · Finansial & Operasional
-   Auto Image Compression · Kwitansi & Kontrak Sewa · Tiket Keluhan
+   Auto Image Compression · Kwitansi & Kontrak Sewa
    ============================================================ */
 'use strict';
 
@@ -495,10 +495,7 @@ function generateInitialMultiKostData() {
     { id: 'exp_1_3', tanggal: `${bln}-05`, kategori: 'Kebersihan/Sampah', jumlah: 150000, keterangan: 'Iuran sampah RT & kebersihan lorong', createdBy: 'Gavin Utomo' },
     { id: 'exp_1_4', tanggal: `${bln}-07`, kategori: 'Perbaikan/Maintenance', jumlah: 250000, keterangan: 'Servis kran air wastafel lantai 1', createdBy: 'Gavin Utomo' }
   ];
-  const keluhan1 = [
-    { id: 'klh_1_1', penghuniId: 'p_rizky', kamar: '103', judul: 'Kran kamar mandi menetes terus', kategori: 'Air/Plumbing', deskripsi: 'Kran air di kamar mandi tidak bisa ditutup rapat, menetes semalaman.', status: 'selesai', responManager: 'Kran sudah diganti dengan yang baru oleh tukang ledeng tgl 7.', tglLapor: `${bln}-06T10:00:00Z`, tglSelesai: `${bln}-07T14:00:00Z` },
-    { id: 'klh_1_2', penghuniId: 'p_dimas', kamar: '101', judul: 'Remote AC baterai habis & AC kurang dingin', kategori: 'AC', deskripsi: 'Remote AC tidak merespon saat ditekan.', status: 'diproses', responManager: 'Teknisi AC dijadwalkan cuci AC besok.', tglLapor: `${bln}-10T12:30:00Z`, tglSelesai: null }
-  ];
+  const keluhan1 = [];
 
 
   // CABANG 2: Kost Graha Asri Dago (Bandung)
@@ -542,9 +539,7 @@ function generateInitialMultiKostData() {
     { id: 'exp_2_2', tanggal: `${bln}-03`, kategori: 'WiFi/Internet', jumlah: 500000, keterangan: 'Biznet Fiber 150 Mbps Dago', createdBy: 'Gavin Utomo' },
     { id: 'exp_2_3', tanggal: `${bln}-06`, kategori: 'Kebersihan/Sampah', jumlah: 200000, keterangan: 'Perawatan taman & kebersihan lorong Dago', createdBy: 'Gavin Utomo' }
   ];
-  const keluhan2 = [
-    { id: 'klh_2_1', penghuniId: 'p_bdg_chandra', kamar: 'B-01', judul: 'Lampu koridor lantai 2 redup', kategori: 'Listrik', deskripsi: 'Lampu LED koridor depan kamar B-01 berkedip', status: 'selesai', responManager: 'Diganti bohlam LED Philips 14W.', tglLapor: `${bln}-04T18:00:00Z`, tglSelesai: `${bln}-05T10:00:00Z` }
-  ];
+  const keluhan2 = [];
 
 
   // CABANG 3: Kost Puri Indah Tebet (Jakarta Selatan)
@@ -588,9 +583,7 @@ function generateInitialMultiKostData() {
     { id: 'exp_3_2', tanggal: `${bln}-03`, kategori: 'WiFi/Internet', jumlah: 650000, keterangan: 'First Media Corporate Dedicated 200 Mbps', createdBy: 'Gavin Utomo' },
     { id: 'exp_3_3', tanggal: `${bln}-05`, kategori: 'Perbaikan/Maintenance', jumlah: 800000, keterangan: 'Iuran satpam & cleaning service lingkungan Tebet', createdBy: 'Gavin Utomo' }
   ];
-  const keluhan3 = [
-    { id: 'klh_3_1', penghuniId: 'p_jkt_haris', kamar: '201', judul: 'Suhu air water heater kurang panas', kategori: 'Fasilitas Kamar', deskripsi: 'Pemanas air otomatis mati setelah 2 menit', status: 'selesai', responManager: 'Termostat water heater diservis dan normal kembali.', tglLapor: `${bln}-05T20:00:00Z`, tglSelesai: `${bln}-06T15:00:00Z` }
-  ];
+  const keluhan3 = [];
 
 
   // CABANG 4: Kost Surya Kencana Gubeng (Surabaya)
@@ -634,9 +627,7 @@ function generateInitialMultiKostData() {
     { id: 'exp_4_2', tanggal: `${bln}-04`, kategori: 'WiFi/Internet', jumlah: 420000, keterangan: 'MyRepublic Ultra Fast 100 Mbps Surabaya', createdBy: 'Gavin Utomo' },
     { id: 'exp_4_3', tanggal: `${bln}-07`, kategori: 'Lainnya', jumlah: 160000, keterangan: 'Isi ulang galon air minum & dispenser lantai 1-2', createdBy: 'Gavin Utomo' }
   ];
-  const keluhan4 = [
-    { id: 'klh_4_1', penghuniId: 'p_sby_ilham', kamar: 'U-01', judul: 'Galon air dispenser lantai 2 habis', kategori: 'Fasilitas Bersama', deskripsi: 'Dispenser air minum lantai 2 sudah kosong', status: 'selesai', responManager: 'Galon baru sudah diantarkan dan dipasang.', tglLapor: `${bln}-06T09:00:00Z`, tglSelesai: `${bln}-06T11:00:00Z` }
-  ];
+  const keluhan4 = [];
 
 
   // CABANG 5: Kost Cendana Residence (Malang)
@@ -680,9 +671,7 @@ function generateInitialMultiKostData() {
     { id: 'exp_5_2', tanggal: `${bln}-04`, kategori: 'WiFi/Internet', jumlah: 380000, keterangan: 'Indihome 100 Mbps Lowokwaru', createdBy: 'Gavin Utomo' },
     { id: 'exp_5_3', tanggal: `${bln}-06`, kategori: 'Kebersihan/Sampah', jumlah: 120000, keterangan: 'Iuran kebersihan RT & pembuangan sampah', createdBy: 'Gavin Utomo' }
   ];
-  const keluhan5 = [
-    { id: 'klh_5_1', penghuniId: 'p_mlg_salsabila', kamar: '05', judul: 'Gantungan jemuran balkon perlu diperkuat', kategori: 'Balkon', deskripsi: 'Tali kawat jemuran di balkon kamar 05 kendur', status: 'selesai', responManager: 'Kawat jemuran diganti kawat baja baru.', tglLapor: `${bln}-05T14:00:00Z`, tglSelesai: `${bln}-06T10:00:00Z` }
-  ];
+  const keluhan5 = [];
 
 
   const properties = [
@@ -1373,7 +1362,6 @@ ALTER TABLE IF EXISTS public.penghuni DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.kamar DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.pembayaran DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.pengeluaran DISABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS public.keluhan DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.kost_pengaturan DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.profiles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.pengumuman DISABLE ROW LEVEL SECURITY;
@@ -1389,9 +1377,6 @@ CREATE POLICY "pembayaran_web_all" ON public.pembayaran FOR ALL TO anon, authent
 
 DROP POLICY IF EXISTS "pengeluaran_web_all" ON public.pengeluaran;
 CREATE POLICY "pengeluaran_web_all" ON public.pengeluaran FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-
-DROP POLICY IF EXISTS "keluhan_web_all" ON public.keluhan;
-CREATE POLICY "keluhan_web_all" ON public.keluhan FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "kost_web_all" ON public.kost_pengaturan;
 CREATE POLICY "kost_web_all" ON public.kost_pengaturan FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
@@ -1442,7 +1427,7 @@ async function checkSupabaseWritePermission(notify = true) {
     if (notify) {
       confirm_dlg(
         '🎉 Izin Penyimpanan Web Sempurna!',
-        'Supabase Cloud telah mengizinkan penyimpanan penuh dari web browser!<br><br>Seluruh data penghuni, kamar, pembayaran, pengeluaran &amp; keluhan yang Anda tambahkan akan otomatis tersimpan langsung ke web.',
+        'Supabase Cloud telah mengizinkan penyimpanan penuh dari web browser!<br><br>Seluruh data penghuni, kamar, pembayaran, dan pengeluaran yang Anda tambahkan akan otomatis tersimpan langsung ke web.',
         () => {},
         'Mantap!'
       );
@@ -1511,27 +1496,7 @@ const DB = {
         }
       }
 
-      // 5. Keluhan
-      const { data: klhList, error: klhErr } = await sbClient.from('keluhan').select('*').order('created_at', { ascending: false });
-      if (!klhErr && Array.isArray(klhList)) {
-        if (klhList.length > 0 || (window.self === window.top)) {
-          S.keluhan = klhList.map(x => ({
-            id: x.id,
-            penghuniId: x.penghuni_id,
-            kamar: x.kamar,
-            judul: x.judul,
-            kategori: x.kategori,
-            deskripsi: x.deskripsi,
-            foto: x.foto,
-            status: x.status,
-            responManager: x.respon_manager,
-            tglLapor: x.tgl_lapor,
-            tglSelesai: x.tgl_selesai
-          }));
-        }
-      }
-
-      // 6. Kost Pengaturan
+      // 5. Kost Pengaturan
       const { data: kRow, error: kostErr } = await sbClient.from('kost_pengaturan').select('*').limit(1).maybeSingle();
       if (!kostErr && kRow) {
         S.kost = {
@@ -1573,7 +1538,6 @@ const DB = {
         if ($('page-kamar')?.classList.contains('active')) renderKamar();
         if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
         if ($('page-pengeluaran')?.classList.contains('active')) renderPengeluaran();
-        if ($('page-keluhan')?.classList.contains('active')) renderKeluhan();
         if ($('page-pengaturan')?.classList.contains('active')) renderPengaturan();
         if ($('sb-kost-name')) $('sb-kost-name').textContent = S.kost.nama || 'Nama Kost Manager';
       }
@@ -1736,34 +1700,6 @@ const DB = {
     }
   },
 
-  async saveKeluhan(klh) {
-    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
-    try {
-      const payload = {
-        id: klh.id,
-        penghuni_id: klh.penghuniId,
-        kamar: klh.kamar,
-        judul: klh.judul,
-        kategori: klh.kategori || 'Lainnya',
-        deskripsi: klh.deskripsi,
-        foto: klh.foto || null,
-        status: klh.status || 'menunggu',
-        respon_manager: klh.responManager || null,
-        tgl_lapor: klh.tglLapor,
-        tgl_selesai: klh.tglSelesai || null
-      };
-      const { data, error } = await sbClient.from('keluhan').upsert(payload);
-      if (error) {
-        DB.handleSupabaseError(error, 'Keluhan');
-        return { ok: false, error };
-      }
-      return { ok: true, data };
-    } catch (e) {
-      DB.handleSupabaseError(e, 'Keluhan');
-      return { ok: false, error: e };
-    }
-  },
-
   async saveKost() {
     if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
     try {
@@ -1805,7 +1741,6 @@ const DB = {
       for (const p of S.penghuni) await this.savePenghuni(p);
       for (const pb of S.pembayaran) await this.savePembayaran(pb);
       for (const exp of S.pengeluaran) await this.savePengeluaran(exp);
-      for (const klh of S.keluhan) await this.saveKeluhan(klh);
 
       if (!silent) toast('Semua data lokal berhasil diunggah ke Supabase Cloud! 🎉');
       await this.fetchData(true);
@@ -2475,7 +2410,6 @@ const NAV_MANAGER = [
   { id:'kamar',       icon:'🛏',  label:'Kamar' },
   { id:'pembayaran',  icon:'💳', label:'Pembayaran', badgePending:true },
   { id:'pengeluaran', icon:'💸', label:'Pengeluaran' },
-  { id:'keluhan',     icon:'🛠️', label:'Keluhan', badgeKeluhan:true },
   { id:'pengaturan',  icon:'⚙',  label:'Pengaturan' },
 ];
 
@@ -2512,13 +2446,6 @@ function updateSidebarBadges() {
     bBayar.style.display = pendingBayar > 0 ? 'inline-block' : 'none';
     bBayar.style.background = 'var(--orange)';
   }
-  const pendingKeluhan = S.keluhan.filter(k => k.status === 'menunggu').length;
-  const bKeluhan = $('badge-keluhan');
-  if (bKeluhan) {
-    bKeluhan.textContent = pendingKeluhan;
-    bKeluhan.style.display = pendingKeluhan > 0 ? 'inline-block' : 'none';
-    bKeluhan.style.background = 'var(--red)';
-  }
 }
 
 function renderUserChip() {
@@ -2542,7 +2469,6 @@ const PAGE_TITLES = {
   kamar:       'Manajemen Kamar',
   pembayaran:  'Pembayaran & Tagihan',
   pengeluaran: 'Pengeluaran & Pembukuan',
-  keluhan:     'Tiket Keluhan & Perbaikan',
   pengaturan:  'Pengaturan Sistem',
   profil:      'Profil Akun'
 };
@@ -2562,7 +2488,6 @@ function navigateTo(page) {
   if (page === 'kamar')       renderKamar();
   if (page === 'pembayaran')  renderPembayaran();
   if (page === 'pengeluaran') renderPengeluaran();
-  if (page === 'keluhan')     renderKeluhan();
   if (page === 'pengaturan')  renderPengaturan();
   if (page === 'profil')      renderProfil();
 
@@ -2624,14 +2549,11 @@ function renderDashActionCenter() {
 
   dueItems.sort((a,b) => a.diff - b.diff);
 
-  // 2. Keluhan Fasilitas Baru
-  const complaintItems = S.keluhan.filter(k => k.status === 'menunggu').map(k => ({ type: 'keluhan', k }));
-
-  // 3. Kamar Siap Huni (Kosong)
+  // 2. Kamar Siap Huni (Kosong)
   const occRooms = new Set(aktif.map(p => p.kamar).filter(Boolean));
   const emptyRooms = S.kamar.filter(k => !occRooms.has(k.no)).map(k => ({ type: 'kamar_kosong', k }));
 
-  // 4. Pengingat Jatuh Tempo Kontrak Sewa (Lease Expiry)
+  // 3. Pengingat Jatuh Tempo Kontrak Sewa (Lease Expiry)
   const contractItems = [];
   aktif.forEach(p => {
     const exp = getContractExpiryStatus(p);
@@ -2641,7 +2563,7 @@ function renderDashActionCenter() {
   });
   contractItems.sort((a, b) => a.exp.diffDays - b.exp.diffDays);
 
-  const totalActions = dueItems.length + complaintItems.length + emptyRooms.length + contractItems.length;
+  const totalActions = dueItems.length + emptyRooms.length + contractItems.length;
 
   if (totalActions === 0) {
     container.style.display = 'none';
@@ -2652,10 +2574,9 @@ function renderDashActionCenter() {
 
   let displayItems = [];
   if (activeActionFilter === 'tagihan') displayItems = dueItems;
-  else if (activeActionFilter === 'keluhan') displayItems = complaintItems;
   else if (activeActionFilter === 'kamar') displayItems = emptyRooms;
   else if (activeActionFilter === 'kontrak') displayItems = contractItems;
-  else displayItems = [...contractItems.slice(0, 3), ...dueItems.slice(0, 3), ...complaintItems.slice(0, 2), ...emptyRooms.slice(0, 2)];
+  else displayItems = [...contractItems.slice(0, 3), ...dueItems.slice(0, 3), ...emptyRooms.slice(0, 2)];
 
   container.innerHTML = `
     <div class="dash-action-header">
@@ -2675,9 +2596,6 @@ function renderDashActionCenter() {
         </button>
         <button type="button" class="dash-action-tab ${activeActionFilter === 'tagihan' ? 'active' : ''}" onclick="switchActionFilter('tagihan')">
           ⚠️ Tagihan (${dueItems.length})
-        </button>
-        <button type="button" class="dash-action-tab ${activeActionFilter === 'keluhan' ? 'active' : ''}" onclick="switchActionFilter('keluhan')">
-          🛠️ Keluhan (${complaintItems.length})
         </button>
         <button type="button" class="dash-action-tab ${activeActionFilter === 'kamar' ? 'active' : ''}" onclick="switchActionFilter('kamar')">
           🛏️ Kamar Kosong (${emptyRooms.length})
@@ -2735,27 +2653,6 @@ function renderDashActionCenter() {
                 </button>
                 <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${p.id}', '${curMonth}')" title="Tandai langsung lunas">
                   <span class="material-symbols-outlined" style="font-size:14px">check_circle</span> 1-Klik Lunas
-                </button>
-              </div>
-            </div>
-          `;
-        } else if (item.type === 'keluhan') {
-          const { k } = item;
-          return `
-            <div class="action-card">
-              <div class="action-card-top">
-                <div class="action-card-main">
-                  <div class="action-room-badge purple">${k.kamar || '–'}</div>
-                  <div style="min-width:0">
-                    <div class="action-card-title">${k.judul || 'Keluhan Fasilitas'}</div>
-                    <div class="action-card-sub">${fmtD(k.tglLapor)} · Menunggu penanganan</div>
-                  </div>
-                </div>
-                <span class="badge badge-purple">Menunggu</span>
-              </div>
-              <div class="action-card-actions">
-                <button type="button" class="btn-primary btn-sm" onclick="openResponKeluhan('${k.id}')">
-                  <span class="material-symbols-outlined" style="font-size:14px">build</span> Tindak Lanjut →
                 </button>
               </div>
             </div>
@@ -3025,11 +2922,10 @@ function renderDashboard() {
     </div>
   `;
 
-  // Baris Notifikasi Cepat (Keluhan Pending & Konfirmasi Transfer Pending)
+  // Baris Notifikasi Cepat (Konfirmasi Transfer Pending)
   const alertsRow = $('dash-alerts-row');
   if (alertsRow) {
     const pendingBayar = S.pembayaran.filter(pb => pb.status === 'menunggu').length;
-    const pendingKeluhan = S.keluhan.filter(k => k.status === 'menunggu').length;
     let alertsHtml = '';
 
     if (pendingBayar > 0) {
@@ -3040,16 +2936,6 @@ function renderDashboard() {
             <div><strong>${pendingBayar} Pembayaran Menunggu Verifikasi</strong><div style="font-size:0.75rem;color:var(--text-3)">Ada bukti transfer sewa yang belum disetujui.</div></div>
           </div>
           <button class="btn-primary btn-sm" onclick="navigateTo('pembayaran')">Review Pembayaran →</button>
-        </div>`;
-    }
-    if (pendingKeluhan > 0) {
-      alertsHtml += `
-        <div class="dash-alert-item danger">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:1.3rem">🛠️</span>
-            <div><strong>${pendingKeluhan} Tiket Keluhan Baru</strong><div style="font-size:0.75rem;color:var(--text-3)">Anak kost melaporkan kendala fasilitas kamar.</div></div>
-          </div>
-          <button class="btn-danger btn-sm" onclick="navigateTo('keluhan')">Tindak Lanjut →</button>
         </div>`;
     }
 
@@ -4987,97 +4873,6 @@ window.hapusPengeluaran = function(id) {
   }, 'Hapus');
 };
 
-// ── KELUHAN & PERBAIKAN (MAINTENANCE) ─────────────────────────
-function renderKeluhan() {
-  const filter = $('filter-status-keluhan')?.value || '';
-  const list = S.keluhan.filter(k => !filter || k.status === filter);
-
-  const pending = S.keluhan.filter(k => k.status === 'menunggu').length;
-  const diproses = S.keluhan.filter(k => k.status === 'diproses').length;
-  const selesai = S.keluhan.filter(k => k.status === 'selesai').length;
-
-  $('kpi-keluhan-row').innerHTML = `
-    <div class="kpi"><div class="kpi-label">Menunggu Respon</div><div class="kpi-value" style="color:var(--orange)">${pending}</div><div class="kpi-sub">tiket baru</div></div>
-    <div class="kpi"><div class="kpi-label">Sedang Diproses</div><div class="kpi-value" style="color:var(--accent-light)">${diproses}</div><div class="kpi-sub">dalam penanganan</div></div>
-    <div class="kpi"><div class="kpi-label">Selesai</div><div class="kpi-value" style="color:var(--green)">${selesai}</div><div class="kpi-sub">keluhan tuntas</div></div>
-    <div class="kpi"><div class="kpi-label">Total Tiket</div><div class="kpi-value">${S.keluhan.length}</div><div class="kpi-sub">riwayat keluhan</div></div>
-  `;
-
-  $('keluhan-grid').innerHTML = list.map(k => {
-    const p = S.penghuni.find(x => x.id === k.penghuniId);
-    let stBadge = '<span class="badge badge-orange">Menunggu</span>';
-    if (k.status === 'diproses') stBadge = '<span class="badge badge-blue">Sedang Diproses</span>';
-    if (k.status === 'selesai') stBadge = '<span class="badge badge-green">Selesai</span>';
-
-    return `
-      <div class="keluhan-card">
-        <div class="keluhan-header">
-          <div>
-            <div class="keluhan-title">${k.judul}</div>
-            <div class="keluhan-meta">Kamar ${k.kamar || p?.kamar || '–'} · Pelapor: <strong>${p?.nama || 'Penghuni'}</strong> · ${fmtD(k.tglLapor)}</div>
-          </div>
-          ${stBadge}
-        </div>
-        <div class="keluhan-desc">${k.deskripsi}</div>
-        ${k.foto ? `<a href="${k.foto}" target="_blank"><img class="keluhan-img" src="${k.foto}" alt="Foto Kendala"/></a>` : ''}
-        ${k.responManager ? `<div class="keluhan-response-box"><strong>Respon Pengelola:</strong><br>${k.responManager}</div>` : ''}
-        <div style="margin-top:auto;display:flex;gap:6px;justify-content:flex-end">
-          <button class="btn-primary btn-sm" onclick="openResponKeluhan('${k.id}')">Tanggapi / Update</button>
-        </div>
-      </div>
-    `;
-  }).join('') || `<div class="empty-state" style="grid-column:1/-1"><div class="empty-emoji">🛠️</div><p class="empty-title">Tidak ada keluhan</p><p class="empty-sub">Fasilitas kost dalam kondisi prima.</p></div>`;
-}
-
-$('filter-status-keluhan').addEventListener('change', renderKeluhan);
-
-window.openResponKeluhan = function(id) {
-  const k = S.keluhan.find(x => x.id === id); if (!k) return;
-  const p = S.penghuni.find(x => x.id === k.penghuniId);
-
-  $('modal-keluhan-manager-body').innerHTML = `
-    <form id="form-respon-keluhan">
-      <div style="margin-bottom:12px">
-        <strong>${k.judul}</strong> (Kamar ${k.kamar || p?.kamar || '–'})
-        <div style="font-size:0.8rem;color:var(--text-3);margin-top:2px">${k.deskripsi}</div>
-      </div>
-      <div class="fg" style="margin-bottom:12px">
-        <label>Status Penanganan</label>
-        <select id="field-respon-status" class="fc">
-          <option value="menunggu"${k.status==='menunggu'?' selected':''}>Menunggu</option>
-          <option value="diproses"${k.status==='diproses'?' selected':''}>Sedang Dikerjakan / Diproses</option>
-          <option value="selesai"${k.status==='selesai'?' selected':''}>Sudah Selesai Diperbaiki</option>
-        </select>
-      </div>
-      <div class="fg" style="margin-bottom:16px">
-        <label>Catatan Solusi / Tanggapan untuk Penghuni</label>
-        <textarea id="field-respon-teks" class="fc" rows="3" placeholder="Contoh: Teknisi telah memeriksa dan mengganti bagian yang rusak.">${k.responManager||''}</textarea>
-      </div>
-      <div class="modal-foot" style="padding:0">
-        <button type="button" class="btn-ghost" onclick="closeModal('modal-keluhan-manager')">Batal</button>
-        <button type="submit" class="btn-primary">Simpan Tanggapan</button>
-      </div>
-    </form>
-  `;
-
-  $('form-respon-keluhan').addEventListener('submit', async function(ev) {
-    ev.preventDefault();
-    k.status = $('field-respon-status').value;
-    k.responManager = $('field-respon-teks').value.trim();
-    if (k.status === 'selesai' && !k.tglSelesai) k.tglSelesai = new Date().toISOString();
-    LS.save();
-    closeModal('modal-keluhan-manager');
-    renderKeluhan();
-    toast('Status keluhan diperbarui! ✅');
-    await DB.saveKeluhan(k);
-    updateSidebarBadges();
-  });
-
-  openModal('modal-keluhan-manager');
-};
-
-$('modal-keluhan-manager-close').addEventListener('click', () => closeModal('modal-keluhan-manager'));
-
 // ── PROFIL AKUN ───────────────────────────────────────────────
 function renderProfil() {
   $('profil-info').innerHTML = `
@@ -5531,12 +5326,12 @@ $('input-restore').addEventListener('change', function() {
     try {
       const d = JSON.parse(e.target.result);
       if (!d.penghuni) throw new Error();
-      confirm_dlg('Restore Data', 'Ini akan memulihkan data penghuni, kamar, pembayaran, pengeluaran, dan keluhan. Lanjutkan?', () => {
+      confirm_dlg('Restore Data', 'Ini akan memulihkan data penghuni, kamar, pembayaran, dan pengeluaran. Lanjutkan?', () => {
         S.penghuni    = d.penghuni || [];
         S.kamar       = d.kamar || [];
         S.pembayaran  = d.pembayaran || [];
         S.pengeluaran = d.pengeluaran || [];
-        S.keluhan     = d.keluhan || [];
+        S.keluhan     = [];
         S.kost        = d.kost || S.kost;
         if (S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
           S.propertiesData[S.activeKostId] = {
@@ -5545,7 +5340,7 @@ $('input-restore').addEventListener('change', function() {
             kamar: [...S.kamar],
             pembayaran: [...S.pembayaran],
             pengeluaran: [...S.pengeluaran],
-            keluhan: [...S.keluhan]
+            keluhan: []
           };
         }
         LS.save();
@@ -5560,7 +5355,7 @@ $('input-restore').addEventListener('change', function() {
 });
 
 $('btn-hapus-semua').addEventListener('click', () => {
-  confirm_dlg('Hapus Semua Data Operasional', 'Hapus SEMUA data penghuni, kamar, pembayaran, pengeluaran, dan tiket keluhan?', () => {
+  confirm_dlg('Hapus Semua Data Operasional', 'Hapus SEMUA data penghuni, kamar, pembayaran, dan pengeluaran?', () => {
     S.penghuni = []; S.kamar = []; S.pembayaran = []; S.pengeluaran = []; S.keluhan = [];
     if (S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
       S.propertiesData[S.activeKostId].penghuni = [];
@@ -5690,8 +5485,8 @@ function setupSupabaseUI() {
         return;
       }
       btnVerifyDb.disabled = true;
-      btnVerifyDb.textContent = 'Memeriksa 7 Tabel...';
-      const tables = ['kost_pengaturan', 'kamar', 'penghuni', 'pembayaran', 'pengeluaran', 'keluhan', 'profiles'];
+      btnVerifyDb.textContent = 'Memeriksa 6 Tabel...';
+      const tables = ['kost_pengaturan', 'kamar', 'penghuni', 'pembayaran', 'pengeluaran', 'profiles'];
       let activeCount = 0;
       for (const t of tables) {
         try {
@@ -5704,7 +5499,7 @@ function setupSupabaseUI() {
       if (activeCount === tables.length) {
         confirm_dlg(
           'Skrip Database Supabase Sempurna! 🎉',
-          `Semua ${activeCount} dari ${tables.length} tabel database (kost_pengaturan, kamar, penghuni, pembayaran, pengeluaran, keluhan, profiles) telah AKTIF dan siap digunakan di Supabase Cloud Anda!`,
+          `Semua ${activeCount} dari ${tables.length} tabel database (kost_pengaturan, kamar, penghuni, pembayaran, pengeluaran, profiles) telah AKTIF dan siap digunakan di Supabase Cloud Anda!`,
           () => {},
           'Selesai'
         );
@@ -5735,7 +5530,7 @@ function setupSupabaseUI() {
   const btnMigrate = $('btn-migrate-local-cloud');
   if (btnMigrate) {
     btnMigrate.addEventListener('click', () => {
-      confirm_dlg('Migrasi Data ke Cloud', 'Upload semua data kamar, penghuni, pembayaran, pengeluaran, keluhan, dan profil ke Supabase Cloud?', () => {
+      confirm_dlg('Migrasi Data ke Cloud', 'Upload semua data kamar, penghuni, pembayaran, pengeluaran, dan profil ke Supabase Cloud?', () => {
         DB.uploadLocalToCloud();
       }, 'Upload ke Cloud');
     });

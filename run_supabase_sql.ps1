@@ -59,7 +59,6 @@ $tables = @(
     @{ name = "penghuni";        desc = "Data Anak Kost dan Kontak Darurat" },
     @{ name = "pembayaran";      desc = "Transaksi dan Kwitansi Pembayaran" },
     @{ name = "pengeluaran";     desc = "Catatan Pengeluaran dan Laba Bersih" },
-    @{ name = "keluhan";         desc = "Tiket Kerusakan dan Perbaikan Kamar" },
     @{ name = "profiles";        desc = "Profil User dan Role Keamanan RLS" }
 )
 
