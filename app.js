@@ -183,6 +183,28 @@ function compressImage(file, maxWidth = 900, maxHeight = 900, quality = 0.75) {
   });
 }
 
+// ── PERFORMANCE UTILITIES (Zero-Lag Debounce & Throttle) ─────────
+function debounce(fn, wait = 150) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+window.debounce = debounce;
+
+function throttle(fn, limit = 200) {
+  let waiting = false;
+  return function(...args) {
+    if (!waiting) {
+      fn.apply(this, args);
+      waiting = true;
+      setTimeout(() => { waiting = false; }, limit);
+    }
+  };
+}
+window.throttle = throttle;
+
 // ── HELPER KALKULASI TANGGAL & KONTRAK SEWA ────────────────────
 function addDaysYMD(days, baseDateStr = null) {
   const d = baseDateStr ? new Date(baseDateStr) : new Date();
@@ -2814,31 +2836,39 @@ function renderCharts() {
     }
   };
 
-  // Chart Cashflow (Pemasukan vs Pengeluaran & Laba)
-  if (CHARTS.cashflow) CHARTS.cashflow.destroy();
+  // Chart Cashflow (Pemasukan vs Pengeluaran & Laba) - In-place Zero-Lag Update
   const ctxCashflow = $('chart-cashflow');
   if (ctxCashflow) {
-    CHARTS.cashflow = new Chart(ctxCashflow, {
-      type: 'bar',
-      data: {
-        labels: ['Pemasukan', 'Pengeluaran', 'Laba Bersih'],
-        datasets: [{
-          data: [totalPemasukan, totalPengeluaran, Math.max(0, laba)],
-          backgroundColor: ['#10b981', '#f43f5e', '#6366f1'],
-          borderRadius: 8,
-          borderSkipped: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: tick, font: { family:'Plus Jakarta Sans', size:11, weight:'600' } }, grid: { display: false } },
-          y: { ticks: { color: tick, font: { family:'Plus Jakarta Sans', size:10 }, callback: v => 'Rp ' + (v/1000).toLocaleString('id-ID') + 'k' }, grid: { color: grid } }
+    if (CHARTS.cashflow && CHARTS.cashflow.ctx) {
+      CHARTS.cashflow.data.datasets[0].data = [totalPemasukan, totalPengeluaran, Math.max(0, laba)];
+      if (CHARTS.cashflow.options?.scales?.x?.ticks) CHARTS.cashflow.options.scales.x.ticks.color = tick;
+      if (CHARTS.cashflow.options?.scales?.y?.ticks) CHARTS.cashflow.options.scales.y.ticks.color = tick;
+      if (CHARTS.cashflow.options?.scales?.y?.grid) CHARTS.cashflow.options.scales.y.grid.color = grid;
+      CHARTS.cashflow.update('none');
+    } else {
+      if (CHARTS.cashflow) try { CHARTS.cashflow.destroy(); } catch (e) {}
+      CHARTS.cashflow = new Chart(ctxCashflow, {
+        type: 'bar',
+        data: {
+          labels: ['Pemasukan', 'Pengeluaran', 'Laba Bersih'],
+          datasets: [{
+            data: [totalPemasukan, totalPengeluaran, Math.max(0, laba)],
+            backgroundColor: ['#10b981', '#f43f5e', '#6366f1'],
+            borderRadius: 8,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: tick, font: { family:'Plus Jakarta Sans', size:11, weight:'600' } }, grid: { display: false } },
+            y: { ticks: { color: tick, font: { family:'Plus Jakarta Sans', size:10 }, callback: v => 'Rp ' + (v/1000).toLocaleString('id-ID') + 'k' }, grid: { color: grid } }
+          }
         }
-      }
-    });
+      });
+    }
     $('cashflow-legend').innerHTML = `
       <div class="legend-item"><span class="legend-dot" style="background:#10b981"></span>Pemasukan: ${rp(totalPemasukan)}</div>
       <div class="legend-item"><span class="legend-dot" style="background:#f43f5e"></span>Pengeluaran: ${rp(totalPengeluaran)}</div>
@@ -2846,32 +2876,42 @@ function renderCharts() {
     `;
   }
 
-  // Chart Status Hunian
-  if (CHARTS.status) CHARTS.status.destroy();
+  // Chart Status Hunian - In-place Zero-Lag Update
   const ctxStatus = $('chart-status');
   if (ctxStatus) {
-    CHARTS.status = new Chart(ctxStatus, {
-      type: 'doughnut',
-      data: {
-        labels: ['Aktif', 'Tidak Aktif'],
-        datasets: [{ data: [aktif, nonAktif], backgroundColor: ['#10b981', '#64748b'], borderWidth: 0, hoverOffset: 6 }]
-      },
-      options: donut
-    });
+    if (CHARTS.status && CHARTS.status.ctx) {
+      CHARTS.status.data.datasets[0].data = [aktif, nonAktif];
+      CHARTS.status.update('none');
+    } else {
+      if (CHARTS.status) try { CHARTS.status.destroy(); } catch (e) {}
+      CHARTS.status = new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+          labels: ['Aktif', 'Tidak Aktif'],
+          datasets: [{ data: [aktif, nonAktif], backgroundColor: ['#10b981', '#64748b'], borderWidth: 0, hoverOffset: 6 }]
+        },
+        options: donut
+      });
+    }
   }
 
-  // Chart Kendaraan
-  if (CHARTS.kendaraan) CHARTS.kendaraan.destroy();
+  // Chart Kendaraan - In-place Zero-Lag Update
   const ctxKen = $('chart-kendaraan');
   if (ctxKen) {
-    CHARTS.kendaraan = new Chart(ctxKen, {
-      type: 'doughnut',
-      data: {
-        labels: ['Motor', 'Mobil', 'Motor & Mobil', 'Tidak Ada'],
-        datasets: [{ data: [motor, mobil, both, noKen], backgroundColor: ['#6366f1', '#a855f7', '#f59e0b', '#64748b'], borderWidth: 0, hoverOffset: 6 }]
-      },
-      options: donut
-    });
+    if (CHARTS.kendaraan && CHARTS.kendaraan.ctx) {
+      CHARTS.kendaraan.data.datasets[0].data = [motor, mobil, both, noKen];
+      CHARTS.kendaraan.update('none');
+    } else {
+      if (CHARTS.kendaraan) try { CHARTS.kendaraan.destroy(); } catch (e) {}
+      CHARTS.kendaraan = new Chart(ctxKen, {
+        type: 'doughnut',
+        data: {
+          labels: ['Motor', 'Mobil', 'Motor & Mobil', 'Tidak Ada'],
+          datasets: [{ data: [motor, mobil, both, noKen], backgroundColor: ['#6366f1', '#a855f7', '#f59e0b', '#64748b'], borderWidth: 0, hoverOffset: 6 }]
+        },
+        options: donut
+      });
+    }
   }
 }
 
@@ -2954,7 +2994,19 @@ function renderPenghuni() {
   }
 }
 
-$('cari-penghuni').addEventListener('input', renderPenghuni);
+let searchPenghuniTimer;
+$('cari-penghuni').addEventListener('input', function(e) {
+  if (e && e.isTrusted === false) {
+    renderPenghuni();
+    return;
+  }
+  clearTimeout(searchPenghuniTimer);
+  if (!this.value) {
+    renderPenghuni();
+  } else {
+    searchPenghuniTimer = setTimeout(renderPenghuni, 100);
+  }
+});
 $('filter-status').addEventListener('change', renderPenghuni);
 $('filter-kendaraan').addEventListener('change', renderPenghuni);
 $('btn-grid-view').addEventListener('click', () => { currentView='grid'; $('btn-grid-view').classList.add('active'); $('btn-list-view').classList.remove('active'); renderPenghuni(); });
@@ -4247,35 +4299,41 @@ function renderPengeluaranCharts(list) {
   const catValues = Object.values(catMap);
   const catPalette = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'];
 
-  if (CHARTS.pengeluaranKat) {
-    try { CHARTS.pengeluaranKat.destroy(); } catch (e) {}
-  }
+  // 1. Chart Komposisi Kategori (Donut) - In-place Zero-Lag Update
   const ctxKat = $('chart-pengeluaran-kategori');
   if (ctxKat) {
     if (catValues.length === 0) {
       catLabels.push('Belum Ada Data');
       catValues.push(1);
     }
-    CHARTS.pengeluaranKat = new Chart(ctxKat, {
-      type: 'doughnut',
-      data: {
-        labels: catLabels,
-        datasets: [{
-          data: catValues,
-          backgroundColor: catPalette.slice(0, catLabels.length),
-          borderWidth: 0,
-          hoverOffset: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '65%',
-        plugins: {
-          legend: { display: false }
+    if (CHARTS.pengeluaranKat && CHARTS.pengeluaranKat.ctx) {
+      CHARTS.pengeluaranKat.data.labels = catLabels;
+      CHARTS.pengeluaranKat.data.datasets[0].data = catValues;
+      CHARTS.pengeluaranKat.data.datasets[0].backgroundColor = catPalette.slice(0, catLabels.length);
+      CHARTS.pengeluaranKat.update('none');
+    } else {
+      if (CHARTS.pengeluaranKat) try { CHARTS.pengeluaranKat.destroy(); } catch (e) {}
+      CHARTS.pengeluaranKat = new Chart(ctxKat, {
+        type: 'doughnut',
+        data: {
+          labels: catLabels,
+          datasets: [{
+            data: catValues,
+            backgroundColor: catPalette.slice(0, catLabels.length),
+            borderWidth: 0,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '65%',
+          plugins: {
+            legend: { display: false }
+          }
         }
-      }
-    });
+      });
+    }
 
     const legendEl = $('pengeluaran-kategori-legend');
     if (legendEl) {
@@ -4292,7 +4350,7 @@ function renderPengeluaranCharts(list) {
     }
   }
 
-  // 2. Chart Tren Pengeluaran 6 Bulan Terakhir
+  // 2. Chart Tren Pengeluaran 6 Bulan Terakhir - In-place Zero-Lag Update
   const now = new Date();
   const monthsTren = [];
   for (let i = 5; i >= 0; i--) {
@@ -4312,33 +4370,40 @@ function renderPengeluaranCharts(list) {
       .reduce((s, x) => s + (Number(x.jumlah) || 0), 0);
   });
 
-  if (CHARTS.pengeluaranTren) {
-    try { CHARTS.pengeluaranTren.destroy(); } catch (e) {}
-  }
   const ctxTren = $('chart-pengeluaran-tren');
   if (ctxTren) {
-    CHARTS.pengeluaranTren = new Chart(ctxTren, {
-      type: 'bar',
-      data: {
-        labels: trenLabels,
-        datasets: [{
-          label: 'Pengeluaran',
-          data: trenValues,
-          backgroundColor: '#f43f5e',
-          borderRadius: 6,
-          borderSkipped: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: tick, font: { family:'Plus Jakarta Sans', size:11, weight:'600' } }, grid: { display: false } },
-          y: { ticks: { color: tick, font: { family:'Plus Jakarta Sans', size:10 }, callback: v => 'Rp ' + (v/1000).toLocaleString('id-ID') + 'k' }, grid: { color: grid } }
+    if (CHARTS.pengeluaranTren && CHARTS.pengeluaranTren.ctx) {
+      CHARTS.pengeluaranTren.data.labels = trenLabels;
+      CHARTS.pengeluaranTren.data.datasets[0].data = trenValues;
+      if (CHARTS.pengeluaranTren.options?.scales?.x?.ticks) CHARTS.pengeluaranTren.options.scales.x.ticks.color = tick;
+      if (CHARTS.pengeluaranTren.options?.scales?.y?.ticks) CHARTS.pengeluaranTren.options.scales.y.ticks.color = tick;
+      if (CHARTS.pengeluaranTren.options?.scales?.y?.grid) CHARTS.pengeluaranTren.options.scales.y.grid.color = grid;
+      CHARTS.pengeluaranTren.update('none');
+    } else {
+      if (CHARTS.pengeluaranTren) try { CHARTS.pengeluaranTren.destroy(); } catch (e) {}
+      CHARTS.pengeluaranTren = new Chart(ctxTren, {
+        type: 'bar',
+        data: {
+          labels: trenLabels,
+          datasets: [{
+            label: 'Pengeluaran',
+            data: trenValues,
+            backgroundColor: '#f43f5e',
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: tick, font: { family:'Plus Jakarta Sans', size:11, weight:'600' } }, grid: { display: false } },
+            y: { ticks: { color: tick, font: { family:'Plus Jakarta Sans', size:10 }, callback: v => 'Rp ' + (v/1000).toLocaleString('id-ID') + 'k' }, grid: { color: grid } }
+          }
         }
-      }
-    });
+      });
+    }
 
     const trenLegendEl = $('pengeluaran-tren-legend');
     if (trenLegendEl) {
@@ -4391,7 +4456,19 @@ window.exportPengeluaranCsv = exportPengeluaranCsv;
 
 $('filter-bulan-pengeluaran')?.addEventListener('change', renderPengeluaran);
 $('filter-kategori-pengeluaran')?.addEventListener('change', renderPengeluaran);
-$('cari-pengeluaran')?.addEventListener('input', renderPengeluaran);
+let searchPengeluaranTimer;
+$('cari-pengeluaran')?.addEventListener('input', function(e) {
+  if (e && e.isTrusted === false) {
+    renderPengeluaran();
+    return;
+  }
+  clearTimeout(searchPengeluaranTimer);
+  if (!this.value) {
+    renderPengeluaran();
+  } else {
+    searchPengeluaranTimer = setTimeout(renderPengeluaran, 100);
+  }
+});
 $('btn-export-pengeluaran-csv')?.addEventListener('click', exportPengeluaranCsv);
 
 window.openModalCatatPengeluaran = function() {
@@ -4960,13 +5037,18 @@ document.querySelectorAll('.tag-var').forEach(tag => {
   });
 });
 
-$('set-wa-template')?.addEventListener('input', renderWaPreview);
-$('set-bank-nama')?.addEventListener('input', renderWaPreview);
-$('set-bank-rekening')?.addEventListener('input', renderWaPreview);
-$('set-bank-atas-nama')?.addEventListener('input', renderWaPreview);
-$('set-nama-kost')?.addEventListener('input', renderWaPreview);
-$('set-pemilik')?.addEventListener('input', renderWaPreview);
-$('set-tempo-default')?.addEventListener('input', renderWaPreview);
+let waPreviewTimer;
+function onWaSettingInput(e) {
+  if (e && e.isTrusted === false) {
+    renderWaPreview();
+    return;
+  }
+  clearTimeout(waPreviewTimer);
+  waPreviewTimer = setTimeout(renderWaPreview, 120);
+}
+['set-wa-template','set-bank-nama','set-bank-rekening','set-bank-atas-nama','set-nama-kost','set-pemilik','set-tempo-default'].forEach(id => {
+  $(id)?.addEventListener('input', onWaSettingInput);
+});
 
 $('btn-reset-wa-template')?.addEventListener('click', () => {
   if ($('set-wa-template')) {
@@ -5596,8 +5678,18 @@ function setupNewFeatureEvents() {
 
   const inputSpotlight = $('spotlight-input');
   if (inputSpotlight) {
-    inputSpotlight.addEventListener('input', function() {
-      renderSpotlightResults(this.value);
+    let spotlightTimer;
+    inputSpotlight.addEventListener('input', function(e) {
+      if (e && e.isTrusted === false) {
+        renderSpotlightResults(this.value);
+        return;
+      }
+      clearTimeout(spotlightTimer);
+      if (!this.value) {
+        renderSpotlightResults('');
+      } else {
+        spotlightTimer = setTimeout(() => renderSpotlightResults(this.value), 80);
+      }
     });
   }
 
