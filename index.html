@@ -642,6 +642,29 @@
                 </div>
               </form>
 
+              <!-- Panel Status Penyimpanan Web Cloud Langsung -->
+              <div style="margin-top:20px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:12px;padding:16px;max-width:540px">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+                  <div>
+                    <div style="font-weight:700;color:var(--primary);font-size:0.92rem;display:flex;align-items:center;gap:6px">
+                      <span>🌐</span> <span>Penyimpanan Web Cloud (Database Langsung)</span>
+                    </div>
+                    <div style="font-size:0.78rem;color:var(--text-2);margin-top:4px;line-height:1.4">
+                      Aplikasi diatur untuk menyimpan seluruh penambahan data (penghuni, kamar, pembayaran, pengeluaran, keluhan) langsung ke database web Supabase, bukan hanya di local storage.
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+                    <button type="button" class="btn-primary btn-sm" id="btn-open-sql-guide">
+                      📋 Aktifkan Akses Web (SQL 1-Klik)
+                    </button>
+                    <button type="button" class="btn-outline btn-sm" id="btn-check-web-storage">
+                      🧪 Uji Izin Simpan Web
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+
               <hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
 
               <h3 style="font-size:0.88rem;font-weight:700;margin-bottom:8px">Migrasi Data Lokal ke Supabase Cloud</h3>
@@ -1273,6 +1296,51 @@
   </div>
 </div>
 
+
+<!-- ====== MODAL: AKTIFKAN PENYIMPANAN WEB (SUPABASE SQL RLS) ====== -->
+<div class="modal-overlay" id="modal-supabase-rls">
+  <div class="modal" style="max-width:620px;padding:0;overflow:hidden">
+    <div class="modal-head" style="padding:16px 20px;border-bottom:1px solid var(--border)">
+      <h2 class="modal-title">🌐 Aktifkan Penyimpanan Web Supabase (Cloud Storage)</h2>
+      <button type="button" class="modal-x" id="modal-supabase-rls-close">✕</button>
+    </div>
+    <div style="padding:20px;max-height:80vh;overflow-y:auto">
+      <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+        <div style="font-weight:700;color:var(--primary);margin-bottom:4px">💡 Mengapa data belum tersimpan langsung ke web?</div>
+        <div style="font-size:0.83rem;color:var(--text-2);line-height:1.45">
+          Supabase secara default mengaktifkan <em>Row Level Security (RLS)</em> yang menolak penyimpanan data dari web browser. Jalankan skrip di bawah ini <strong>sekali saja</strong> di SQL Editor Supabase Anda agar semua data penghuni, kamar, pembayaran, pengeluaran &amp; keluhan otomatis tersimpan langsung ke web!
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <label style="font-size:0.82rem;font-weight:700">Skrip SQL Izin Web Supabase:</label>
+        <button type="button" class="btn-primary btn-sm" id="btn-copy-sql-rls">📋 Salin Skrip SQL</button>
+      </div>
+
+      <pre id="code-sql-rls" style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.75rem;max-height:180px;overflow:auto;color:#cbd5e1;font-family:monospace;white-space:pre-wrap;user-select:all"></pre>
+
+      <div style="margin-top:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="font-weight:700;font-size:0.85rem;margin-bottom:8px">Langkah Cepat (1 Menit):</div>
+        <ol style="margin:0;padding-left:20px;font-size:0.82rem;color:var(--text-2);line-height:1.6">
+          <li>Klik tombol <strong>"📋 Salin Skrip SQL"</strong> di atas.</li>
+          <li>Buka <strong>Supabase SQL Editor</strong> di tab baru dengan tombol di bawah.</li>
+          <li>Tempelkan skrip (Ctrl+V) dan klik tombol hijau <strong>"RUN"</strong> (Ctrl+Enter).</li>
+          <li>Kembali ke sini dan klik <strong>"🧪 Uji Izin Simpan Web"</strong>. Selesai!</li>
+        </ol>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;flex-wrap:wrap;gap:8px">
+        <a href="https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/sql/new" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none">
+          🚀 Buka Supabase SQL Editor
+        </a>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn-outline" id="btn-modal-test-web">🧪 Uji Izin Simpan Web</button>
+          <button type="button" class="btn-ghost" id="btn-modal-close-rls">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ====== TOAST ====== -->
 <div class="toast-wrap" id="toast-wrap"></div>

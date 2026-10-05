@@ -247,119 +247,44 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================================
--- STRICT ROW LEVEL SECURITY (RLS) & POLICIES
 -- ============================================================
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.kost_pengaturan ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.penghuni ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.kamar ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.pembayaran ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.pengeluaran ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.keluhan ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.pengumuman ENABLE ROW LEVEL SECURITY;
+-- ROW LEVEL SECURITY (RLS) & WEB CLOUD STORAGE ACCESS
+-- ============================================================
+-- Mengizinkan web app menyimpan dan membaca data langsung ke Supabase Cloud (anon & authenticated)
+ALTER TABLE IF EXISTS public.penghuni DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.kamar DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.pembayaran DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.pengeluaran DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.keluhan DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.kost_pengaturan DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.pengumuman DISABLE ROW LEVEL SECURITY;
 
--- 1. Profiles
-DROP POLICY IF EXISTS "profiles_all" ON public.profiles;
-CREATE POLICY "profiles_select_own_or_manager" ON public.profiles
-  FOR SELECT TO authenticated
-  USING (id = auth.uid() OR public.is_manager());
+-- Policy terbuka jika RLS diaktifkan kembali oleh admin
+DROP POLICY IF EXISTS "penghuni_web_all" ON public.penghuni;
+CREATE POLICY "penghuni_web_all" ON public.penghuni FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "profiles_update_own_or_manager" ON public.profiles
-  FOR UPDATE TO authenticated
-  USING (id = auth.uid() OR public.is_manager())
-  WITH CHECK (id = auth.uid() OR public.is_manager());
+DROP POLICY IF EXISTS "kamar_web_all" ON public.kamar;
+CREATE POLICY "kamar_web_all" ON public.kamar FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "profiles_insert_own_or_manager" ON public.profiles
-  FOR INSERT TO authenticated
-  WITH CHECK (id = auth.uid() OR public.is_manager());
+DROP POLICY IF EXISTS "pembayaran_web_all" ON public.pembayaran;
+CREATE POLICY "pembayaran_web_all" ON public.pembayaran FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "profiles_delete_manager" ON public.profiles
-  FOR DELETE TO authenticated
-  USING (public.is_manager());
+DROP POLICY IF EXISTS "pengeluaran_web_all" ON public.pengeluaran;
+CREATE POLICY "pengeluaran_web_all" ON public.pengeluaran FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- 2. Kost Pengaturan (Boleh dibaca semua, hanya diedit Manager)
-DROP POLICY IF EXISTS "kost_all" ON public.kost_pengaturan;
-DROP POLICY IF EXISTS "kost_auth_all" ON public.kost_pengaturan;
-DROP POLICY IF EXISTS "kost_anon_select" ON public.kost_pengaturan;
+DROP POLICY IF EXISTS "keluhan_web_all" ON public.keluhan;
+CREATE POLICY "keluhan_web_all" ON public.keluhan FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "kost_read_all" ON public.kost_pengaturan
-  FOR SELECT TO authenticated, anon
-  USING (true);
+DROP POLICY IF EXISTS "kost_web_all" ON public.kost_pengaturan;
+CREATE POLICY "kost_web_all" ON public.kost_pengaturan FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "kost_manage_manager" ON public.kost_pengaturan
-  FOR ALL TO authenticated
-  USING (public.is_manager())
-  WITH CHECK (public.is_manager());
+DROP POLICY IF EXISTS "profiles_web_all" ON public.profiles;
+CREATE POLICY "profiles_web_all" ON public.profiles FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- 3. Penghuni (Manager akses penuh, Penghuni hanya data miliknya)
-DROP POLICY IF EXISTS "penghuni_auth_all" ON public.penghuni;
-CREATE POLICY "penghuni_manager_all" ON public.penghuni
-  FOR ALL TO authenticated
-  USING (public.is_manager())
-  WITH CHECK (public.is_manager());
+DROP POLICY IF EXISTS "pengumuman_web_all" ON public.pengumuman;
+CREATE POLICY "pengumuman_web_all" ON public.pengumuman FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "penghuni_read_own" ON public.penghuni
-  FOR SELECT TO authenticated
-  USING (id = public.get_my_penghuni_id());
-
--- 4. Kamar (Semua bisa lihat status kamar, Manager bisa kelola)
-DROP POLICY IF EXISTS "kamar_auth_all" ON public.kamar;
-CREATE POLICY "kamar_read_all" ON public.kamar
-  FOR SELECT TO authenticated, anon
-  USING (true);
-
-CREATE POLICY "kamar_manager_manage" ON public.kamar
-  FOR ALL TO authenticated
-  USING (public.is_manager())
-  WITH CHECK (public.is_manager());
-
--- 5. Pembayaran (Manager kelola semua, Penghuni bisa baca pembayaran miliknya & kirim konfirmasi)
-DROP POLICY IF EXISTS "pembayaran_auth_all" ON public.pembayaran;
-CREATE POLICY "pembayaran_manager_all" ON public.pembayaran
-  FOR ALL TO authenticated
-  USING (public.is_manager())
-  WITH CHECK (public.is_manager());
-
-CREATE POLICY "pembayaran_penghuni_select" ON public.pembayaran
-  FOR SELECT TO authenticated
-  USING (penghuni_id = public.get_my_penghuni_id());
-
-CREATE POLICY "pembayaran_penghuni_insert" ON public.pembayaran
-  FOR INSERT TO authenticated
-  WITH CHECK (penghuni_id = public.get_my_penghuni_id());
-
--- 6. Pengeluaran (Hanya Manager yang boleh akses & kelola)
-DROP POLICY IF EXISTS "pengeluaran_manager_all" ON public.pengeluaran;
-CREATE POLICY "pengeluaran_manager_all" ON public.pengeluaran
-  FOR ALL TO authenticated
-  USING (public.is_manager())
-  WITH CHECK (public.is_manager());
-
--- 7. Keluhan / Maintenance
-DROP POLICY IF EXISTS "keluhan_manager_all" ON public.keluhan;
-CREATE POLICY "keluhan_manager_all" ON public.keluhan
-  FOR ALL TO authenticated
-  USING (public.is_manager())
-  WITH CHECK (public.is_manager());
-
-CREATE POLICY "keluhan_penghuni_own" ON public.keluhan
-  FOR SELECT TO authenticated
-  USING (penghuni_id = public.get_my_penghuni_id());
-
-CREATE POLICY "keluhan_penghuni_insert" ON public.keluhan
-  FOR INSERT TO authenticated
-  WITH CHECK (penghuni_id = public.get_my_penghuni_id());
-
--- 8. Pengumuman
-DROP POLICY IF EXISTS "pengumuman_read_all" ON public.pengumuman;
-CREATE POLICY "pengumuman_read_all" ON public.pengumuman
-  FOR SELECT TO authenticated
-  USING (true);
-
-CREATE POLICY "pengumuman_manager_all" ON public.pengumuman
-  FOR ALL TO authenticated
-  USING (public.is_manager())
-  WITH CHECK (public.is_manager());
 
 -- ============================================================
 -- ENABLE SUPABASE REALTIME REPLICATION

@@ -788,6 +788,9 @@ function seedDemoDataForTesting() {
     { id: 'akun_mgr_prasada', nama: 'Prasada Utomo (Manager)', email: 'prasadautomo@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null }
   ];
   LS.save();
+  if (typeof renderGoogleAccounts === 'function') {
+    renderGoogleAccounts();
+  }
 }
 // Alias untuk backward compatibility
 const seedDemoData = initDefaultMultiKostData;
@@ -1359,92 +1362,197 @@ function mapBayarFromDb(r) {
   };
 }
 
+// ── SUPABASE RLS & WEB STORAGE HELPER ────────────────────────
+const SUPABASE_WEB_STORAGE_SQL = `-- SIKOST: AKTIFKAN PENYIMPANAN WEB CLOUD (SUPABASE)
+-- Jalankan skrip SQL ini di Supabase Dashboard:
+-- 1. Buka https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/sql/new
+-- 2. Salin dan tempel (Paste) seluruh teks SQL di bawah ini
+-- 3. Klik tombol hijau "RUN" (atau tekan Ctrl+Enter)
+
+ALTER TABLE IF EXISTS public.penghuni DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.kamar DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.pembayaran DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.pengeluaran DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.keluhan DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.kost_pengaturan DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.pengumuman DISABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "penghuni_web_all" ON public.penghuni;
+CREATE POLICY "penghuni_web_all" ON public.penghuni FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "kamar_web_all" ON public.kamar;
+CREATE POLICY "kamar_web_all" ON public.kamar FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "pembayaran_web_all" ON public.pembayaran;
+CREATE POLICY "pembayaran_web_all" ON public.pembayaran FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "pengeluaran_web_all" ON public.pengeluaran;
+CREATE POLICY "pengeluaran_web_all" ON public.pengeluaran FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "keluhan_web_all" ON public.keluhan;
+CREATE POLICY "keluhan_web_all" ON public.keluhan FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "kost_web_all" ON public.kost_pengaturan;
+CREATE POLICY "kost_web_all" ON public.kost_pengaturan FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "profiles_web_all" ON public.profiles;
+CREATE POLICY "profiles_web_all" ON public.profiles FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "pengumuman_web_all" ON public.pengumuman;
+CREATE POLICY "pengumuman_web_all" ON public.pengumuman FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+INSERT INTO public.kost_pengaturan (id, nama, pemilik, alamat, hp, total_kamar)
+VALUES ('default', 'Nama Kost Manager', '', '', '', 0)
+ON CONFLICT (id) DO UPDATE SET nama = EXCLUDED.nama, updated_at = NOW();`;
+
+function showSupabaseRlsModal() {
+  const codeEl = $('code-sql-rls');
+  if (codeEl) codeEl.textContent = SUPABASE_WEB_STORAGE_SQL;
+  openModal('modal-supabase-rls');
+}
+window.showSupabaseRlsModal = showSupabaseRlsModal;
+
+async function checkSupabaseWritePermission(notify = true) {
+  if (!sbClient) {
+    if (notify) toast('Supabase belum terhubung! Atur konfigurasi terlebih dahulu.', 'err');
+    return { ok: false, error: 'Belum terhubung' };
+  }
+  const testId = '__probe_' + Date.now();
+  try {
+    const { error: insErr } = await sbClient.from('penghuni').insert({
+      id: testId,
+      nama: '__probe_test__',
+      kamar: '__probe__',
+      hp: '0000000000',
+      tgl_masuk: new Date().toISOString().split('T')[0]
+    });
+    if (insErr) {
+      if (insErr.code === '42501' || insErr.message?.includes('row-level security')) {
+        if (notify) {
+          toast('⚠️ Supabase menolak izin simpan (RLS 42501). Buka Bantuan SQL!', 'err');
+          showSupabaseRlsModal();
+        }
+        return { ok: false, code: '42501', error: insErr };
+      }
+      if (notify) toast('Uji simpan gagal: ' + (insErr.message || insErr.code), 'err');
+      return { ok: false, error: insErr };
+    }
+    await sbClient.from('penghuni').delete().eq('id', testId);
+    if (notify) {
+      confirm_dlg(
+        '🎉 Izin Penyimpanan Web Sempurna!',
+        'Supabase Cloud telah mengizinkan penyimpanan penuh dari web browser!<br><br>Seluruh data penghuni, kamar, pembayaran, pengeluaran &amp; keluhan yang Anda tambahkan akan otomatis tersimpan langsung ke web.',
+        () => {},
+        'Mantap!'
+      );
+    }
+    return { ok: true };
+  } catch (err) {
+    if (notify) toast('Uji simpan gagal: ' + err.message, 'err');
+    return { ok: false, error: err };
+  }
+}
+window.checkSupabaseWritePermission = checkSupabaseWritePermission;
+
 // ── DB CLOUD SYNC LAYER ──────────────────────────────────────
 const DB = {
+  handleSupabaseError(error, entityName) {
+    if (!error) return;
+    console.error(`Gagal menyimpan ${entityName} ke Supabase:`, error);
+    if (error.code === '42501' || error.message?.includes('row-level security')) {
+      toast(`⚠️ Belum tersimpan di Web: Izin RLS Supabase membatasi penulisan. Silakan klik "Aktifkan Akses Web (SQL 1-Klik)" di Pengaturan!`, 'err');
+      showSupabaseRlsModal();
+    } else {
+      toast(`⚠️ Gagal simpan ${entityName} ke Web: ${error.message || error.code}`, 'err');
+    }
+  },
+
   async fetchData(renderNow = true) {
     if (!sbClient) return;
     try {
-      // 1. Penghuni
-      const { data: pList } = await sbClient.from('penghuni').select('*').order('created_at', { ascending: false });
-      if (pList && pList.length > 0) S.penghuni = pList.map(mapPenghuniFromDb);
-
-      // 2. Kamar
-      const { data: kList } = await sbClient.from('kamar').select('*').order('no', { ascending: true });
-      if (kList && kList.length > 0) {
-        S.kamar = kList;
-      }
-
-      // 3. Pembayaran
-      const { data: bList } = await sbClient.from('pembayaran').select('*');
-      if (bList && bList.length > 0) S.pembayaran = bList.map(mapBayarFromDb);
-
-      // 4. Pengeluaran
-      const { data: expList } = await sbClient.from('pengeluaran').select('*').order('tanggal', { ascending: false });
-      if (expList && expList.length > 0) S.pengeluaran = expList.map(x => ({
-        id: x.id,
-        tanggal: x.tanggal,
-        kategori: x.kategori,
-        jumlah: Number(x.jumlah) || 0,
-        keterangan: x.keterangan || '',
-        buktiNota: x.bukti_nota,
-        createdBy: x.created_by
-      }));
-
-      // 5. Keluhan
-      const { data: klhList } = await sbClient.from('keluhan').select('*').order('created_at', { ascending: false });
-      if (klhList && klhList.length > 0) S.keluhan = klhList.map(x => ({
-        id: x.id,
-        penghuniId: x.penghuni_id,
-        kamar: x.kamar,
-        judul: x.judul,
-        kategori: x.kategori,
-        deskripsi: x.deskripsi,
-        foto: x.foto,
-        status: x.status,
-        responManager: x.respon_manager,
-        tglLapor: x.tgl_lapor,
-        tglSelesai: x.tgl_selesai
-      }));
-
-      // 6. Kost Pengaturan
-      const { data: kRow } = await sbClient.from('kost_pengaturan').select('*').limit(1).maybeSingle();
-      if (kRow) {
-        const localUpdatedAt = Number(localStorage.getItem('sk3_kost_updated_at')) || (S.kost?.updatedAt ? Number(S.kost.updatedAt) : 0);
-        const cloudUpdatedAt = kRow.updated_at ? new Date(kRow.updated_at).getTime() : 0;
-        const cloudIsDefaultSeed = (!kRow.nama || kRow.nama === 'SiKost' || kRow.nama === 'SiKost Makmur' || kRow.nama === 'Kost Griya Harmoni');
-        const localHasCustomName = S.kost.nama && S.kost.nama !== 'SiKost' && S.kost.nama !== 'SiKost Makmur' && S.kost.nama !== 'Kost Griya Harmoni';
-
-        // Jika local memiliki data kustom atau data lokal lebih baru: pertahankan lokal dan sync balik ke cloud
-        if (localHasCustomName || (localUpdatedAt > 0 && (localUpdatedAt >= cloudUpdatedAt || cloudIsDefaultSeed))) {
-          // Jangan biarkan cloud menimpa! Sync balik data kustom lokal ke cloud jika manager
-          await DB.saveKost();
-        } else if (cloudUpdatedAt > localUpdatedAt && !cloudIsDefaultSeed) {
-          // Hanya muat dari cloud jika cloud memang valid dan lebih baru
-          S.kost = {
-            ...S.kost,
-            nama: kRow.nama || S.kost.nama || 'SiKost',
-            pemilik: kRow.pemilik || S.kost.pemilik || '',
-            alamat: kRow.alamat || S.kost.alamat || '',
-            hp: kRow.hp || S.kost.hp || '',
-            totalKamar: kRow.total_kamar || S.kost.totalKamar || 10,
-            bankNama: kRow.bank_nama || S.kost.bankNama || '',
-            bankRekening: kRow.bank_rekening || S.kost.bankRekening || '',
-            bankAtasNama: kRow.bank_atas_nama || S.kost.bankAtasNama || '',
-            qrisUrl: kRow.qris_url || S.kost.qrisUrl || '',
-            updatedAt: cloudUpdatedAt
-          };
-          localStorage.setItem('sk3_kost', JSON.stringify(S.kost));
-          localStorage.setItem('sk3_kost_updated_at', cloudUpdatedAt.toString());
-          if (S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
-            S.propertiesData[S.activeKostId].kost = { ...S.kost };
-          }
+      // 1. Penghuni (Cloud-First: sinkron langsung dari web database)
+      const { data: pList, error: pErr } = await sbClient.from('penghuni').select('*').order('created_at', { ascending: false });
+      if (!pErr && Array.isArray(pList)) {
+        if (pList.length > 0 || (window.self === window.top)) {
+          S.penghuni = pList.map(mapPenghuniFromDb);
         }
       }
 
-      // 8. Profiles (Jika Manager)
+      // 2. Kamar
+      const { data: kList, error: kErr } = await sbClient.from('kamar').select('*').order('no', { ascending: true });
+      if (!kErr && Array.isArray(kList)) {
+        if (kList.length > 0 || (window.self === window.top)) {
+          S.kamar = kList;
+        }
+      }
+
+      // 3. Pembayaran
+      const { data: bList, error: bErr } = await sbClient.from('pembayaran').select('*');
+      if (!bErr && Array.isArray(bList)) {
+        if (bList.length > 0 || (window.self === window.top)) {
+          S.pembayaran = bList.map(mapBayarFromDb);
+        }
+      }
+
+      // 4. Pengeluaran
+      const { data: expList, error: expErr } = await sbClient.from('pengeluaran').select('*').order('tanggal', { ascending: false });
+      if (!expErr && Array.isArray(expList)) {
+        if (expList.length > 0 || (window.self === window.top)) {
+          S.pengeluaran = expList.map(x => ({
+            id: x.id,
+            tanggal: x.tanggal,
+            kategori: x.kategori,
+            jumlah: Number(x.jumlah) || 0,
+            keterangan: x.keterangan || '',
+            buktiNota: x.bukti_nota,
+            createdBy: x.created_by
+          }));
+        }
+      }
+
+      // 5. Keluhan
+      const { data: klhList, error: klhErr } = await sbClient.from('keluhan').select('*').order('created_at', { ascending: false });
+      if (!klhErr && Array.isArray(klhList)) {
+        if (klhList.length > 0 || (window.self === window.top)) {
+          S.keluhan = klhList.map(x => ({
+            id: x.id,
+            penghuniId: x.penghuni_id,
+            kamar: x.kamar,
+            judul: x.judul,
+            kategori: x.kategori,
+            deskripsi: x.deskripsi,
+            foto: x.foto,
+            status: x.status,
+            responManager: x.respon_manager,
+            tglLapor: x.tgl_lapor,
+            tglSelesai: x.tgl_selesai
+          }));
+        }
+      }
+
+      // 6. Kost Pengaturan
+      const { data: kRow, error: kostErr } = await sbClient.from('kost_pengaturan').select('*').limit(1).maybeSingle();
+      if (!kostErr && kRow) {
+        S.kost = {
+          ...S.kost,
+          nama: kRow.nama || S.kost.nama || 'Nama Kost Manager',
+          pemilik: kRow.pemilik || S.kost.pemilik || '',
+          alamat: kRow.alamat || S.kost.alamat || '',
+          hp: kRow.hp || S.kost.hp || '',
+          totalKamar: kRow.total_kamar || S.kost.totalKamar || 0,
+          bankNama: kRow.bank_nama || S.kost.bankNama || '',
+          bankRekening: kRow.bank_rekening || S.kost.bankRekening || '',
+          bankAtasNama: kRow.bank_atas_nama || S.kost.bankAtasNama || '',
+          qrisUrl: kRow.qris_url || S.kost.qrisUrl || '',
+          updatedAt: kRow.updated_at ? new Date(kRow.updated_at).getTime() : Date.now()
+        };
+      }
+
+      // 7. Profiles (Jika Manager)
       if (currentUser?.role === 'manager') {
-        const { data: prList } = await sbClient.from('profiles').select('*');
-        if (prList) {
+        const { data: prList, error: prErr } = await sbClient.from('profiles').select('*');
+        if (!prErr && Array.isArray(prList)) {
           S.akun = prList.map(p => ({
             id: p.id,
             nama: p.nama,
@@ -1455,6 +1563,7 @@ const DB = {
         }
       }
 
+      // Cermin ke memori dan cache lokal
       LS.save();
 
       if (renderNow) {
@@ -1466,7 +1575,7 @@ const DB = {
         if ($('page-pengeluaran')?.classList.contains('active')) renderPengeluaran();
         if ($('page-keluhan')?.classList.contains('active')) renderKeluhan();
         if ($('page-pengaturan')?.classList.contains('active')) renderPengaturan();
-        if ($('sb-kost-name')) $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
+        if ($('sb-kost-name')) $('sb-kost-name').textContent = S.kost.nama || 'Nama Kost Manager';
       }
     } catch (e) {
       console.warn('Gagal sinkron data Supabase:', e);
@@ -1474,108 +1583,215 @@ const DB = {
   },
 
   async savePenghuni(d) {
-    if (sbClient) {
-      try { await sbClient.from('penghuni').upsert(mapPenghuniToDb(d)); } catch (e) { console.warn(e); }
+    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
+    try {
+      const payload = mapPenghuniToDb(d);
+      const { data, error } = await sbClient.from('penghuni').upsert(payload);
+      if (error) {
+        DB.handleSupabaseError(error, 'Penghuni');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Penghuni');
+      return { ok: false, error: e };
     }
   },
+
   async deletePenghuni(id) {
-    if (sbClient) {
-      try { await sbClient.from('penghuni').delete().eq('id', id); } catch (e) { console.warn(e); }
+    if (!sbClient) return { ok: false };
+    try {
+      const { data, error } = await sbClient.from('penghuni').delete().eq('id', id);
+      if (error) {
+        DB.handleSupabaseError(error, 'Penghuni');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Penghuni');
+      return { ok: false, error: e };
     }
   },
+
   async saveKamar(k) {
-    if (sbClient) {
-      try {
-        await sbClient.from('kamar').upsert({
-          id: k.id,
-          no: k.no,
-          lantai: k.lantai || '1',
-          tipe: k.tipe || 'Standar',
-          harga: Number(k.harga) || 0,
-          fasilitas: k.fasilitas || ''
-        });
-      } catch (e) { console.warn(e); }
+    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
+    try {
+      const payload = {
+        id: k.id,
+        no: k.no,
+        lantai: k.lantai || '1',
+        tipe: k.tipe || 'Standar',
+        harga: Number(k.harga) || 0,
+        fasilitas: k.fasilitas || ''
+      };
+      const { data, error } = await sbClient.from('kamar').upsert(payload);
+      if (error) {
+        DB.handleSupabaseError(error, 'Kamar');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Kamar');
+      return { ok: false, error: e };
     }
   },
+
   async deleteKamar(id) {
-    if (sbClient) {
-      try { await sbClient.from('kamar').delete().eq('id', id); } catch (e) { console.warn(e); }
+    if (!sbClient) return { ok: false };
+    try {
+      const { data, error } = await sbClient.from('kamar').delete().eq('id', id);
+      if (error) {
+        DB.handleSupabaseError(error, 'Kamar');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Kamar');
+      return { ok: false, error: e };
     }
   },
+
   async savePembayaran(pb) {
-    if (sbClient) {
-      try { await sbClient.from('pembayaran').upsert(mapBayarToDb(pb)); } catch (e) { console.warn(e); }
+    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
+    try {
+      const payload = mapBayarToDb(pb);
+      const { data, error } = await sbClient.from('pembayaran').upsert(payload);
+      if (error) {
+        DB.handleSupabaseError(error, 'Pembayaran');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Pembayaran');
+      return { ok: false, error: e };
     }
   },
+
   async deletePembayaran(penghuniId, bulan) {
-    if (sbClient) {
-      try { await sbClient.from('pembayaran').delete().match({ penghuni_id: penghuniId, bulan: bulan }); } catch (e) { console.warn(e); }
+    if (!sbClient) return { ok: false };
+    try {
+      const { data, error } = await sbClient.from('pembayaran').delete().match({ penghuni_id: penghuniId, bulan: bulan });
+      if (error) {
+        DB.handleSupabaseError(error, 'Pembayaran');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Pembayaran');
+      return { ok: false, error: e };
     }
   },
+
   async deletePembayaranById(id) {
-    if (sbClient && id) {
-      try { await sbClient.from('pembayaran').delete().eq('id', id); } catch (e) { console.warn(e); }
+    if (!sbClient || !id) return { ok: false };
+    try {
+      const { data, error } = await sbClient.from('pembayaran').delete().eq('id', id);
+      if (error) {
+        DB.handleSupabaseError(error, 'Pembayaran');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Pembayaran');
+      return { ok: false, error: e };
     }
   },
+
   async savePengeluaran(exp) {
-    if (sbClient) {
-      try {
-        await sbClient.from('pengeluaran').upsert({
-          id: exp.id,
-          tanggal: exp.tanggal,
-          kategori: exp.kategori,
-          jumlah: Number(exp.jumlah) || 0,
-          keterangan: exp.keterangan || '',
-          bukti_nota: exp.buktiNota || null,
-          created_by: exp.createdBy || currentUser?.nama
-        });
-      } catch (e) { console.warn(e); }
+    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
+    try {
+      const payload = {
+        id: exp.id,
+        tanggal: exp.tanggal,
+        kategori: exp.kategori,
+        jumlah: Number(exp.jumlah) || 0,
+        keterangan: exp.keterangan || '',
+        bukti_nota: exp.buktiNota || null,
+        created_by: exp.createdBy || currentUser?.nama
+      };
+      const { data, error } = await sbClient.from('pengeluaran').upsert(payload);
+      if (error) {
+        DB.handleSupabaseError(error, 'Pengeluaran');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Pengeluaran');
+      return { ok: false, error: e };
     }
   },
+
   async deletePengeluaran(id) {
-    if (sbClient) {
-      try { await sbClient.from('pengeluaran').delete().eq('id', id); } catch (e) { console.warn(e); }
+    if (!sbClient) return { ok: false };
+    try {
+      const { data, error } = await sbClient.from('pengeluaran').delete().eq('id', id);
+      if (error) {
+        DB.handleSupabaseError(error, 'Pengeluaran');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Pengeluaran');
+      return { ok: false, error: e };
     }
   },
+
   async saveKeluhan(klh) {
-    if (sbClient) {
-      try {
-        await sbClient.from('keluhan').upsert({
-          id: klh.id,
-          penghuni_id: klh.penghuniId,
-          kamar: klh.kamar,
-          judul: klh.judul,
-          kategori: klh.kategori || 'Lainnya',
-          deskripsi: klh.deskripsi,
-          foto: klh.foto || null,
-          status: klh.status || 'menunggu',
-          respon_manager: klh.responManager || null,
-          tgl_lapor: klh.tglLapor,
-          tgl_selesai: klh.tglSelesai || null
-        });
-      } catch (e) { console.warn(e); }
+    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
+    try {
+      const payload = {
+        id: klh.id,
+        penghuni_id: klh.penghuniId,
+        kamar: klh.kamar,
+        judul: klh.judul,
+        kategori: klh.kategori || 'Lainnya',
+        deskripsi: klh.deskripsi,
+        foto: klh.foto || null,
+        status: klh.status || 'menunggu',
+        respon_manager: klh.responManager || null,
+        tgl_lapor: klh.tglLapor,
+        tgl_selesai: klh.tglSelesai || null
+      };
+      const { data, error } = await sbClient.from('keluhan').upsert(payload);
+      if (error) {
+        DB.handleSupabaseError(error, 'Keluhan');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Keluhan');
+      return { ok: false, error: e };
     }
   },
 
   async saveKost() {
-    if (sbClient) {
-      try {
-        await sbClient.from('kost_pengaturan').upsert({
-          id: 'default',
-          nama: S.kost.nama,
-          pemilik: S.kost.pemilik,
-          alamat: S.kost.alamat,
-          hp: S.kost.hp,
-          total_kamar: Number(S.kost.totalKamar) || 10,
-          bank_nama: S.kost.bankNama || '',
-          bank_rekening: S.kost.bankRekening || '',
-          bank_atas_nama: S.kost.bankAtasNama || '',
-          qris_url: S.kost.qrisUrl || '',
-          updated_at: new Date().toISOString()
-        });
-      } catch (e) { console.warn(e); }
+    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
+    try {
+      const payload = {
+        id: 'default',
+        nama: S.kost.nama,
+        pemilik: S.kost.pemilik,
+        alamat: S.kost.alamat,
+        hp: S.kost.hp,
+        total_kamar: Number(S.kost.totalKamar) || 0,
+        bank_nama: S.kost.bankNama || '',
+        bank_rekening: S.kost.bankRekening || '',
+        bank_atas_nama: S.kost.bankAtasNama || '',
+        qris_url: S.kost.qrisUrl || '',
+        updated_at: new Date().toISOString()
+      };
+      const { data, error } = await sbClient.from('kost_pengaturan').upsert(payload);
+      if (error) {
+        DB.handleSupabaseError(error, 'Pengaturan Kost');
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      DB.handleSupabaseError(e, 'Pengaturan Kost');
+      return { ok: false, error: e };
     }
   },
+
 
   async uploadLocalToCloud(silent = false) {
     if (!sbClient) {
@@ -4160,9 +4376,7 @@ window.tolakBayar = async function(pbId) {
     if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
     if ($('page-kamar')?.classList.contains('active')) renderKamar();
     toast('Konfirmasi pembayaran ditolak.');
-    if (sbClient) {
-      try { await sbClient.from('pembayaran').delete().eq('id', pbId); } catch {}
-    }
+    await DB.deletePembayaranById(pbId);
     updateSidebarBadges();
   }, 'Tolak');
 };
@@ -5526,6 +5740,43 @@ function setupSupabaseUI() {
       }, 'Upload ke Cloud');
     });
   }
+
+  // Web Storage / SQL Guide Modal Handlers
+  $('btn-open-sql-guide')?.addEventListener('click', showSupabaseRlsModal);
+  $('btn-check-web-storage')?.addEventListener('click', () => checkSupabaseWritePermission(true));
+  $('btn-modal-test-web')?.addEventListener('click', () => checkSupabaseWritePermission(true));
+  $('btn-copy-sql-rls')?.addEventListener('click', () => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(SUPABASE_WEB_STORAGE_SQL).then(() => {
+        toast('📋 Skrip SQL berhasil disalin! Buka Supabase SQL Editor dan jalankan (Run).', 'ok');
+      }).catch(() => {
+        const codeEl = $('code-sql-rls');
+        if (codeEl) {
+          const range = document.createRange();
+          range.selectNodeContents(codeEl);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          document.execCommand('copy');
+          toast('📋 Skrip SQL disalin ke clipboard!', 'ok');
+        }
+      });
+    } else {
+      const codeEl = $('code-sql-rls');
+      if (codeEl) {
+        const range = document.createRange();
+        range.selectNodeContents(codeEl);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.execCommand('copy');
+        toast('📋 Skrip SQL disalin ke clipboard!', 'ok');
+      }
+    }
+  });
+  $('modal-supabase-rls-close')?.addEventListener('click', () => closeModal('modal-supabase-rls'));
+  $('btn-modal-close-rls')?.addEventListener('click', () => closeModal('modal-supabase-rls'));
+  $('modal-supabase-rls')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-supabase-rls'); });
 }
 
 // ── SIDEBAR & MENU TOGGLE ─────────────────────────────────────
