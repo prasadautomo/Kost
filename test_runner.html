@@ -117,6 +117,9 @@
       if (typeof win.renderGoogleAccounts === 'function') {
         win.renderGoogleAccounts();
       }
+      if (typeof win.seedDemoDataForTesting === 'function') {
+        win.seedDemoDataForTesting();
+      }
       await new Promise(r => setTimeout(r, 600));
 
       // -------------------------------------------------------------

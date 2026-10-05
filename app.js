@@ -5,7 +5,7 @@
    ============================================================ */
 'use strict';
 
-// ── STATE ────────────────────────────────────────────────────
+// ── STATE (BERSIH DARI DATA DUMMY) ───────────────────────────
 let S = {
   penghuni:   [],
   kamar:      [],
@@ -14,20 +14,31 @@ let S = {
   keluhan:    [], // [{id, penghuniId, kamar, judul, kategori, deskripsi, foto, status, responManager, tglLapor, tglSelesai}]
   akun:       [],
   kost: {
-    nama: 'Kost Griya Harmoni',
-    pemilik: 'Gavin Utomo',
-    kota: 'Sleman, Yogyakarta',
-    alamat: 'Jl. Kaliurang KM 5, Gg. Megatruh No. 12, Sleman, DI Yogyakarta',
-    hp: '081234567890',
-    totalKamar: 8,
-    bankNama: 'Bank BCA',
-    bankRekening: '8465-1234-90',
-    bankAtasNama: 'Gavin Utomo',
+    nama: 'Nama Kost Manager',
+    pemilik: '',
+    kota: '',
+    alamat: '',
+    hp: '',
+    totalKamar: 0,
+    bankNama: '',
+    bankRekening: '',
+    bankAtasNama: '',
     qrisUrl: ''
   },
   activeKostId: 'kost_1',
-  properties: [],
-  propertiesData: {}
+  properties: [
+    { id: 'kost_1', nama: 'Nama Kost Manager', kota: '', alamat: '', hp: '', pemilik: '', totalKamar: 0 }
+  ],
+  propertiesData: {
+    kost_1: {
+      kost: { id: 'kost_1', nama: 'Nama Kost Manager', pemilik: '', kota: '', alamat: '', hp: '', totalKamar: 0, bankNama: '', bankRekening: '', bankAtasNama: '', qrisUrl: '' },
+      kamar: [],
+      penghuni: [],
+      pembayaran: [],
+      pengeluaran: [],
+      keluhan: []
+    }
+  }
 };
 window.S = S;
 
@@ -693,7 +704,40 @@ function generateInitialMultiKostData() {
   return { properties, propertiesData };
 }
 
-// ── INITIAL MULTI-KOST DATA INITIALIZER ──────────────────────
+function getCleanInitialState() {
+  const defaultKost = {
+    id: 'kost_1',
+    nama: 'Nama Kost Manager',
+    pemilik: '',
+    kota: '',
+    alamat: '',
+    hp: '',
+    totalKamar: 0,
+    bankNama: '',
+    bankRekening: '',
+    bankAtasNama: '',
+    qrisUrl: ''
+  };
+
+  const properties = [
+    { id: 'kost_1', nama: defaultKost.nama, kota: '', alamat: '', hp: '', pemilik: '', totalKamar: 0 }
+  ];
+
+  const propertiesData = {
+    kost_1: {
+      kost: { ...defaultKost },
+      kamar: [],
+      penghuni: [],
+      pembayaran: [],
+      pengeluaran: [],
+      keluhan: []
+    }
+  };
+
+  return { properties, propertiesData, defaultKost };
+}
+
+// ── INITIAL DATA INITIALIZER (DEFAULT: BERSIH / EMPTY SLATE) ──────────────
 function initDefaultMultiKostData(force = false) {
   if (!force && S.propertiesData && Object.keys(S.propertiesData).length > 0) return;
 
@@ -711,12 +755,26 @@ function initDefaultMultiKostData(force = false) {
     }
   }
 
+  const clean = getCleanInitialState();
+  S.properties = clean.properties;
+  S.propertiesData = clean.propertiesData;
+  S.activeKostId = 'kost_1';
+  S.kost = { ...clean.defaultKost };
+  S.kamar = [];
+  S.penghuni = [];
+  S.pembayaran = [];
+  S.pengeluaran = [];
+  S.keluhan = [];
+
+  LS.save();
+}
+
+function seedDemoDataForTesting() {
   const initData = generateInitialMultiKostData();
   S.properties = initData.properties;
   S.propertiesData = initData.propertiesData;
-  S.activeKostId = S.activeKostId || 'kost_1';
-
-  const cur = S.propertiesData[S.activeKostId] || S.propertiesData[Object.keys(S.propertiesData)[0]];
+  S.activeKostId = 'kost_1';
+  const cur = S.propertiesData['kost_1'];
   if (cur) {
     S.kost = { ...cur.kost };
     S.kamar = [...(cur.kamar || [])];
@@ -725,18 +783,18 @@ function initDefaultMultiKostData(force = false) {
     S.pengeluaran = [...(cur.pengeluaran || [])];
     S.keluhan = [...(cur.keluhan || [])];
   }
-
   S.akun = [
     { id: 'akun_mgr_gavin', nama: 'Gavin Utomo (Owner)', email: 'gavinutomo4@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null },
     { id: 'akun_mgr_prasada', nama: 'Prasada Utomo (Manager)', email: 'prasadautomo@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null }
   ];
-
   LS.save();
 }
 // Alias untuk backward compatibility
 const seedDemoData = initDefaultMultiKostData;
 window.initDefaultMultiKostData = initDefaultMultiKostData;
 window.seedDemoData = seedDemoData;
+window.seedDemoDataForTesting = seedDemoDataForTesting;
+window.getCleanInitialState = getCleanInitialState;
 
 // ── MULTI-KOST SWITCHER & HANDLERS ────────────────────────────
 function switchKost(targetKostId) {
@@ -1012,6 +1070,24 @@ const LS = {
       }
     } else {
       initDefaultMultiKostData(true);
+    }
+
+    // Auto-clean: Hapus data demo bawaan yang belum dihapus di localStorage pengguna
+    const isMockData = (S.penghuni || []).some(p => ['p_dimas', 'p_anisa', 'p_kevin', 'p_sarah', 'p_fajar', 'p_rian'].includes(p.id)) ||
+                       (S.kamar || []).some(k => k.id === 'km_101' && k.tipe === 'Deluxe AC') ||
+                       (S.properties && S.properties.length === 5 && S.properties.some(p => p.nama === 'Kost Graha Asri Dago'));
+    if (isMockData) {
+      const clean = getCleanInitialState();
+      S.properties = clean.properties;
+      S.propertiesData = clean.propertiesData;
+      S.activeKostId = 'kost_1';
+      S.kost = { ...clean.defaultKost };
+      S.penghuni = [];
+      S.kamar = [];
+      S.pembayaran = [];
+      S.pengeluaran = [];
+      S.keluhan = [];
+      LS.save();
     }
 
     const rawAkun = localStorage.getItem('sk3_akun');
