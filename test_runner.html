@@ -108,7 +108,15 @@
       const win = iframe.contentWindow;
       const doc = iframe.contentDocument;
 
-      // Tunggu inisialisasi app.js
+      // Tunggu inisialisasi app.js & pastikan mulai dari kondisi login screen bersih
+      if (win.currentUser || win.LS?.loadSession?.()) {
+        win.currentUser = null;
+        win.LS?.clearSession?.();
+        win.showScreen('screen-login');
+      }
+      if (typeof win.renderGoogleAccounts === 'function') {
+        win.renderGoogleAccounts();
+      }
       await new Promise(r => setTimeout(r, 600));
 
       // -------------------------------------------------------------
@@ -127,6 +135,9 @@
       // -------------------------------------------------------------
       const b2 = renderTestSection('Test 2: Login Google sebagai Manager Gavin Utomo');
       const inlineList = doc.getElementById('inline-google-accounts-list');
+      if ((!inlineList || !inlineList.children.length) && typeof win.renderGoogleAccounts === 'function') {
+        win.renderGoogleAccounts();
+      }
       logAssertion(b2, inlineList !== null && inlineList.children.length > 0, 'Daftar akun Google 1-klik terpasang di login card');
       
       const gavinCard = Array.from(inlineList.children).find(c => c.innerHTML.includes('gavinutomo4@gmail.com'));
@@ -232,6 +243,28 @@
       const tbodyBayar = doc.getElementById('tbody-pembayaran');
       logAssertion(b6, tbodyBayar.children.length > 0, 'Tabel pembayaran terisi data tagihan');
       logAssertion(b6, tbodyBayar.innerHTML.includes('📱 WA'), 'Tombol WhatsApp Tagihan tersedia di tabel pembayaran');
+
+      // Uji alur Batalkan Pembayaran Lunas
+      const tandaiBtn = Array.from(tbodyBayar.querySelectorAll('button')).find(b => b.textContent.includes('Tandai Lunas'));
+      if (tandaiBtn) {
+        tandaiBtn.click();
+        await new Promise(r => setTimeout(r, 150));
+      }
+      const batalBtn = Array.from(tbodyBayar.querySelectorAll('button')).find(b => b.textContent.includes('Batalkan'));
+      logAssertion(b6, !!batalBtn, 'Tombol "Batalkan" tersedia pada baris pembayaran lunas');
+      
+      if (batalBtn) {
+        batalBtn.click();
+        await new Promise(r => setTimeout(r, 100));
+        const modalConfirm = doc.getElementById('modal-confirm');
+        logAssertion(b6, modalConfirm?.classList.contains('open') && doc.getElementById('confirm-title')?.textContent.includes('Batalkan'), 'Modal konfirmasi pembatalan terbuka dengan aman');
+        
+        // Klik konfirmasi batalkan
+        doc.getElementById('confirm-ok').click();
+        await new Promise(r => setTimeout(r, 150));
+        logAssertion(b6, !modalConfirm?.classList.contains('open'), 'Modal konfirmasi tertutup setelah konfirmasi pembatalan');
+        logAssertion(b6, tbodyBayar.innerHTML.includes('Tandai Lunas'), 'Status berhasil dikembalikan menjadi Belum Bayar dengan tombol Tandai Lunas');
+      }
 
       // -------------------------------------------------------------
       // TEST 7: Theme Toggle (Dark <-> Light)

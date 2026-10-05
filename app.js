@@ -1436,6 +1436,11 @@ const DB = {
       try { await sbClient.from('pembayaran').delete().match({ penghuni_id: penghuniId, bulan: bulan }); } catch (e) { console.warn(e); }
     }
   },
+  async deletePembayaranById(id) {
+    if (sbClient && id) {
+      try { await sbClient.from('pembayaran').delete().eq('id', id); } catch (e) { console.warn(e); }
+    }
+  },
   async savePengeluaran(exp) {
     if (sbClient) {
       try {
@@ -1689,6 +1694,7 @@ function renderGoogleAccounts() {
 }
 
 // Render akun Google langsung saat script dimuat
+window.renderGoogleAccounts = renderGoogleAccounts;
 try { renderGoogleAccounts(); } catch (e) { console.warn(e); }
 
 function openModalGoogle() {
@@ -3820,7 +3826,7 @@ function renderPembayaran() {
   const blnLabel = new Date(y, mo - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
   const aktif = S.penghuni.filter(p => p.status === 'aktif');
-  const payments = S.pembayaran.filter(pb => pb.bulan === bln);
+  const payments = S.pembayaran.filter(pb => pb.bulan === bln || (typeof pb.bulan === 'string' && pb.bulan.startsWith(bln)));
   const lunas = payments.filter(pb => pb.status === 'lunas');
   const pending = payments.filter(pb => pb.status === 'menunggu');
   const belum = Math.max(0, aktif.length - lunas.length);
@@ -3842,7 +3848,7 @@ function renderPembayaran() {
       panelPending.style.display = 'block';
       countPending.textContent = `${pending.length} Menunggu Verifikasi`;
       tbodyPending.innerHTML = pending.map(pb => {
-        const p = S.penghuni.find(x => x.id === pb.penghuniId);
+        const p = S.penghuni.find(x => x.id === pb.penghuniId || x.id === pb.penghuni_id);
         return `<tr>
           <td><strong>${p?.nama || '–'}</strong></td>
           <td>Kamar ${p?.kamar || '–'}</td>
@@ -3852,8 +3858,8 @@ function renderPembayaran() {
           <td>${pb.buktiTransfer ? `<a href="${pb.buktiTransfer}" target="_blank"><img src="${pb.buktiTransfer}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border)"/></a>` : '–'}</td>
           <td>
             <div style="display:flex;gap:6px">
-              <button class="btn-primary btn-sm" onclick="setujuiBayar('${pb.id}')">✅ Setujui</button>
-              <button class="btn-danger btn-sm" onclick="tolakBayar('${pb.id}')">❌ Tolak</button>
+              <button type="button" class="btn-primary btn-sm" onclick="setujuiBayar('${pb.id}')">✅ Setujui</button>
+              <button type="button" class="btn-danger btn-sm" onclick="tolakBayar('${pb.id}')">❌ Tolak</button>
             </div>
           </td>
         </tr>`;
@@ -3868,13 +3874,13 @@ function renderPembayaran() {
   const nowDay = new Date().getDate();
 
   $('tbody-pembayaran').innerHTML = aktif.filter(p => {
-    const pb = payments.find(x => x.penghuniId === p.id);
+    const pb = payments.find(x => x.penghuniId === p.id || x.penghuni_id === p.id);
     const isLunas = pb?.status === 'lunas';
     if (filterStat === 'lunas') return isLunas;
     if (filterStat === 'belum') return !isLunas;
     return true;
   }).map(p => {
-    const pb = payments.find(x => x.penghuniId === p.id);
+    const pb = payments.find(x => x.penghuniId === p.id || x.penghuni_id === p.id);
     const isLunas = pb?.status === 'lunas';
     const isPending = pb?.status === 'menunggu';
 
@@ -3899,8 +3905,8 @@ function renderPembayaran() {
     if (isLunas) {
       aksiCell = `
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="btn-ghost btn-sm" onclick="showKwitansi('${p.id}','${bln}')">🧾 Kwitansi</button>
-          <button class="btn-outline btn-sm" onclick="batalBayar('${p.id}','${bln}')" title="Batalkan status lunas">Batalkan</button>
+          <button type="button" class="btn-ghost btn-sm" onclick="showKwitansi('${p.id}','${bln}')">🧾 Kwitansi</button>
+          <button type="button" class="btn-outline btn-sm" onclick="batalBayar('${pb?.id || ''}','${p.id}','${bln}')" title="Batalkan status lunas">Batalkan</button>
         </div>`;
     } else if (isPending) {
       aksiCell = `
@@ -4002,15 +4008,58 @@ window.tandaiBayar = async function(pid, bln, jumlah) {
   updateSidebarBadges();
 };
 
-window.batalBayar = async function(pid, bln) {
-  S.pembayaran = S.pembayaran.filter(pb => !(pb.penghuniId === pid && pb.bulan === bln));
-  LS.save();
-  renderPembayaran();
-  if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
-  if ($('page-kamar')?.classList.contains('active')) renderKamar();
-  toast('Status pembayaran direset.');
-  await DB.deletePembayaran(pid, bln);
-  updateSidebarBadges();
+window.batalBayar = function(arg1, arg2, arg3) {
+  let pbId = '', pid = '', bln = '';
+  if (arg3 !== undefined) {
+    pbId = arg1; pid = arg2; bln = arg3;
+  } else {
+    pid = arg1; bln = arg2;
+    const found = S.pembayaran.find(x => (x.penghuniId === pid || x.penghuni_id === pid) && (x.bulan === bln || (typeof x.bulan === 'string' && x.bulan.startsWith(bln))));
+    if (found) pbId = found.id;
+  }
+
+  const p = S.penghuni.find(x => x.id === pid);
+  const namaPenghuni = p ? p.nama : 'Penghuni';
+  const kamarPenghuni = p?.kamar ? ` (Kamar ${p.kamar})` : '';
+
+  confirm_dlg(
+    'Batalkan Pembayaran Lunas',
+    `Apakah Anda yakin ingin membatalkan status pembayaran lunas untuk <strong>${namaPenghuni}</strong>${kamarPenghuni}?<br><br><span style="color:var(--text-3);font-size:0.85rem">Status tagihan sewa akan dikembalikan menjadi <strong>Belum Bayar</strong>.</span>`,
+    async () => {
+      // 1. Filter out from S.pembayaran
+      S.pembayaran = S.pembayaran.filter(pb => {
+        if (pbId && pb.id === pbId) return false;
+        const matchesPid = (pb.penghuniId === pid || pb.penghuni_id === pid);
+        const matchesBln = (pb.bulan === bln || (typeof pb.bulan === 'string' && pb.bulan.startsWith(bln)));
+        if (matchesPid && matchesBln) return false;
+        return true;
+      });
+
+      // 2. Sinkronkan ke bucket propertiesData cabang aktif jika ada
+      if (S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
+        S.propertiesData[S.activeKostId].pembayaran = [...S.pembayaran];
+      }
+
+      // 3. Simpan state ke LocalStorage
+      LS.save();
+
+      // 4. Perbarui tampilan halaman
+      renderPembayaran();
+      if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+      if ($('page-kamar')?.classList.contains('active')) renderKamar();
+
+      // 5. Berikan notifikasi toast berhasil
+      toast(`Status pembayaran ${namaPenghuni} berhasil dibatalkan menjadi Belum Bayar.`, 'ok');
+
+      // 6. Hapus dari database cloud Supabase
+      if (pbId) {
+        await DB.deletePembayaranById(pbId);
+      }
+      await DB.deletePembayaran(pid, bln);
+      updateSidebarBadges();
+    },
+    'Batalkan Lunas'
+  );
 };
 
 window.setujuiBayar = async function(pbId) {
@@ -4047,7 +4096,7 @@ let activeKwitansiData = null;
 
 window.showKwitansi = function(penghuniId, bulan) {
   const p = S.penghuni.find(x => x.id === penghuniId);
-  const pb = S.pembayaran.find(x => x.penghuniId === penghuniId && x.bulan === bulan);
+  const pb = S.pembayaran.find(x => (x.penghuniId === penghuniId || x.penghuni_id === penghuniId) && (x.bulan === bulan || (typeof x.bulan === 'string' && x.bulan.startsWith(bulan))));
   if (!p || !pb) return;
 
   const safeBln = bulan || thisMonth();
