@@ -3406,4 +3406,26 @@ textarea.fc {
   }
 }
 
+/* Quick Duration Buttons (Perpanjang Kontrak) */
+.quick-dur-btn {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  transition: all var(--t);
+  cursor: pointer;
+}
+.quick-dur-btn.active {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+.action-room-badge.orange {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--orange);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
 

@@ -293,6 +293,36 @@
       logAssertion(b8, doc.getElementById('page-dashboard').classList.contains('active'), 'Halaman default Manager adalah Dashboard');
 
       // -------------------------------------------------------------
+      // TEST 9: Pengingat Jatuh Tempo Kontrak Sewa (Lease Expiry)
+      // -------------------------------------------------------------
+      const b9 = renderTestSection('Test 9: Pengingat Jatuh Tempo Kontrak Sewa');
+
+      // 1. Validasi Helper getContractExpiryStatus
+      logAssertion(b9, typeof win.getContractExpiryStatus === 'function', 'Helper getContractExpiryStatus tersedia di scope window');
+      const testExp = win.getContractExpiryStatus({ status: 'aktif', tglKeluar: win.addDaysYMD(5) });
+      logAssertion(b9, testExp && testExp.isUrgent === true && testExp.status === 'critical', 'Deteksi kontrak kritis H-5 akurat (status critical, isUrgent true)');
+
+      // 2. Tab Kontrak Habis di Action Center Dashboard
+      doc.getElementById('nav-dashboard').click();
+      await new Promise(r => setTimeout(r, 150));
+      const dashActionEl = doc.getElementById('dash-action-center');
+      logAssertion(b9, dashActionEl !== null, 'Action Center Dashboard terpasang');
+      logAssertion(b9, dashActionEl.innerHTML.includes('Kontrak Habis'), 'Tab "Kontrak Habis" terintegrasi di Action Center Dashboard');
+
+      // 3. Filter Kontrak Kritis di Halaman Penghuni
+      doc.getElementById('nav-penghuni').click();
+      await new Promise(r => setTimeout(r, 150));
+      const filterStatus = doc.getElementById('filter-status');
+      logAssertion(b9, filterStatus && filterStatus.innerHTML.includes('kontrak_habis'), 'Opsi filter "Kontrak Kritis (≤ 14 Hari)" tersedia pada dropdown status');
+
+      // 4. Modal Perpanjang Masa Sewa & Handlers
+      const modalRenew = doc.getElementById('modal-perpanjang-kontrak');
+      logAssertion(b9, modalRenew !== null, 'Modal Perpanjang Masa Sewa Kontrak tersedia di DOM');
+      logAssertion(b9, typeof win.openModalPerpanjangKontrak === 'function', 'Function openModalPerpanjangKontrak tersedia');
+      logAssertion(b9, typeof win.kirimWaKontrak === 'function', 'Function kirimWaKontrak WhatsApp 1-klik tersedia');
+      logAssertion(b9, typeof win.checkoutPenghuni === 'function', 'Function checkoutPenghuni 1-klik tersedia');
+
+      // -------------------------------------------------------------
       // REKAPITULASI HASIL TEST
       // -------------------------------------------------------------
       const summaryTitle = document.getElementById('summary-title');

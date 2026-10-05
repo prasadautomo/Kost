@@ -183,6 +183,77 @@ function compressImage(file, maxWidth = 900, maxHeight = 900, quality = 0.75) {
   });
 }
 
+// ── HELPER KALKULASI TANGGAL & KONTRAK SEWA ────────────────────
+function addDaysYMD(days, baseDateStr = null) {
+  const d = baseDateStr ? new Date(baseDateStr) : new Date();
+  d.setDate(d.getDate() + Number(days));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+window.addDaysYMD = addDaysYMD;
+
+function addMonthsYMD(months, baseDateStr = null) {
+  const d = baseDateStr ? new Date(baseDateStr) : new Date();
+  d.setMonth(d.getMonth() + Number(months));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+window.addMonthsYMD = addMonthsYMD;
+
+function getContractExpiryStatus(p) {
+  if (!p || (p.status && p.status !== 'aktif')) return null;
+  if (!p.tglKeluar) return null;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const expiry = new Date(p.tglKeluar);
+  expiry.setHours(0, 0, 0, 0);
+  if (isNaN(expiry.getTime())) return null;
+
+  const diffTime = expiry.getTime() - now.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return {
+      diffDays,
+      status: 'expired',
+      label: `Lewat ${Math.abs(diffDays)} Hari!`,
+      badgeClass: 'badge-red',
+      isUrgent: true
+    };
+  } else if (diffDays === 0) {
+    return {
+      diffDays,
+      status: 'today',
+      label: 'Habis Hari Ini!',
+      badgeClass: 'badge-red',
+      isUrgent: true
+    };
+  } else if (diffDays <= 7) {
+    return {
+      diffDays,
+      status: 'critical',
+      label: `Sisa ${diffDays} Hari`,
+      badgeClass: 'badge-orange',
+      isUrgent: true
+    };
+  } else if (diffDays <= 14) {
+    return {
+      diffDays,
+      status: 'warning',
+      label: `Sisa ${diffDays} Hari`,
+      badgeClass: 'badge-blue',
+      isUrgent: true
+    };
+  } else {
+    return {
+      diffDays,
+      status: 'normal',
+      label: `Sisa ${diffDays} Hari`,
+      badgeClass: 'badge-gray',
+      isUrgent: false
+    };
+  }
+}
+window.getContractExpiryStatus = getContractExpiryStatus;
+
 // ── MULTI-KOST SEED DATA GENERATOR (5 CABANG TERPISAH) ─────────
 function generateInitialMultiKostData() {
   const bln = thisMonth();
@@ -219,6 +290,7 @@ function generateInitialMultiKostData() {
       kamar: '101',
       lantai: '1',
       tglMasuk: '2025-08-01',
+      tglKeluar: addDaysYMD(5),
       nik: '3201123456780001',
       gender: 'Laki-laki',
       tempatLahir: 'Jakarta',
@@ -247,6 +319,7 @@ function generateInitialMultiKostData() {
       kamar: '102',
       lantai: '1',
       tglMasuk: '2025-06-15',
+      tglKeluar: addDaysYMD(12),
       nik: '3302198765430002',
       gender: 'Perempuan',
       tempatLahir: 'Semarang',
@@ -274,6 +347,7 @@ function generateInitialMultiKostData() {
       kamar: '103',
       lantai: '1',
       tglMasuk: '2025-09-01',
+      tglKeluar: addDaysYMD(30),
       nik: '3273112233440003',
       gender: 'Laki-laki',
       tempatLahir: 'Bandung',
@@ -301,6 +375,7 @@ function generateInitialMultiKostData() {
       kamar: '201',
       lantai: '2',
       tglMasuk: '2025-04-10',
+      tglKeluar: addDaysYMD(-2),
       nik: '3171056677880004',
       gender: 'Laki-laki',
       tempatLahir: 'Surabaya',
@@ -328,6 +403,7 @@ function generateInitialMultiKostData() {
       kamar: '202',
       lantai: '2',
       tglMasuk: '2025-07-01',
+      tglKeluar: addDaysYMD(60),
       nik: '3578012345670005',
       gender: 'Perempuan',
       tempatLahir: 'Malang',
@@ -356,6 +432,7 @@ function generateInitialMultiKostData() {
       kamar: '203',
       lantai: '2',
       tglMasuk: '2025-10-01',
+      tglKeluar: addDaysYMD(180),
       nik: '3374023456780006',
       gender: 'Laki-laki',
       tempatLahir: 'Solo',
@@ -2234,7 +2311,17 @@ function renderDashActionCenter() {
   const occRooms = new Set(aktif.map(p => p.kamar).filter(Boolean));
   const emptyRooms = S.kamar.filter(k => !occRooms.has(k.no)).map(k => ({ type: 'kamar_kosong', k }));
 
-  const totalActions = dueItems.length + complaintItems.length + emptyRooms.length;
+  // 4. Pengingat Jatuh Tempo Kontrak Sewa (Lease Expiry)
+  const contractItems = [];
+  aktif.forEach(p => {
+    const exp = getContractExpiryStatus(p);
+    if (exp && (exp.isUrgent || exp.status === 'expired')) {
+      contractItems.push({ type: 'kontrak', p, exp });
+    }
+  });
+  contractItems.sort((a, b) => a.exp.diffDays - b.exp.diffDays);
+
+  const totalActions = dueItems.length + complaintItems.length + emptyRooms.length + contractItems.length;
 
   if (totalActions === 0) {
     container.style.display = 'none';
@@ -2247,7 +2334,8 @@ function renderDashActionCenter() {
   if (activeActionFilter === 'tagihan') displayItems = dueItems;
   else if (activeActionFilter === 'keluhan') displayItems = complaintItems;
   else if (activeActionFilter === 'kamar') displayItems = emptyRooms;
-  else displayItems = [...dueItems.slice(0, 4), ...complaintItems.slice(0, 2), ...emptyRooms.slice(0, 2)];
+  else if (activeActionFilter === 'kontrak') displayItems = contractItems;
+  else displayItems = [...contractItems.slice(0, 3), ...dueItems.slice(0, 3), ...complaintItems.slice(0, 2), ...emptyRooms.slice(0, 2)];
 
   container.innerHTML = `
     <div class="dash-action-header">
@@ -2262,6 +2350,9 @@ function renderDashActionCenter() {
         <button type="button" class="dash-action-tab ${activeActionFilter === 'all' ? 'active' : ''}" onclick="switchActionFilter('all')">
           Semua (${totalActions})
         </button>
+        <button type="button" class="dash-action-tab ${activeActionFilter === 'kontrak' ? 'active' : ''}" onclick="switchActionFilter('kontrak')">
+          ⏳ Kontrak Habis (${contractItems.length})
+        </button>
         <button type="button" class="dash-action-tab ${activeActionFilter === 'tagihan' ? 'active' : ''}" onclick="switchActionFilter('tagihan')">
           ⚠️ Tagihan (${dueItems.length})
         </button>
@@ -2275,7 +2366,35 @@ function renderDashActionCenter() {
     </div>
     <div class="dash-action-grid">
       ${displayItems.map(item => {
-        if (item.type === 'tagihan') {
+        if (item.type === 'kontrak') {
+          const { p, exp } = item;
+          const isExpired = exp.status === 'expired' || exp.status === 'today';
+          return `
+            <div class="action-card">
+              <div class="action-card-top">
+                <div class="action-card-main">
+                  <div class="action-room-badge ${isExpired ? 'danger' : 'orange'}">${p.kamar || '–'}</div>
+                  <div style="min-width:0">
+                    <div class="action-card-title">${p.nama}</div>
+                    <div class="action-card-sub">Berakhir: <strong>${fmtD(p.tglKeluar)}</strong> · ${rp(p.sewa)}/bln</div>
+                  </div>
+                </div>
+                <span class="badge ${exp.badgeClass}">${exp.label}</span>
+              </div>
+              <div class="action-card-actions">
+                <button type="button" class="btn-wa btn-sm" onclick="kirimWaKontrak('${p.id}')" title="Kirim WA Konfirmasi Kontrak">
+                  <span class="material-symbols-outlined" style="font-size:14px">chat</span> WA
+                </button>
+                <button type="button" class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${p.id}')" title="Perpanjang Masa Sewa">
+                  <span class="material-symbols-outlined" style="font-size:14px">update</span> Perpanjang
+                </button>
+                <button type="button" class="btn-danger btn-sm" onclick="checkoutPenghuni('${p.id}')" title="Selesaikan sewa & kosongkan kamar">
+                  <span class="material-symbols-outlined" style="font-size:14px">logout</span> Checkout
+                </button>
+              </div>
+            </div>
+          `;
+        } else if (item.type === 'tagihan') {
           const { p, statusLabel, badgeClass } = item;
           const isLate = badgeClass === 'badge-red';
           return `
@@ -2352,6 +2471,104 @@ function renderDashActionCenter() {
 window.switchActionFilter = function(f) {
   activeActionFilter = f;
   renderDashActionCenter();
+};
+
+window.kirimWaKontrak = function(pid) {
+  const p = S.penghuni.find(x => x.id === pid);
+  if (!p) return;
+  if (!p.hp) {
+    toast('Nomor WhatsApp penghuni belum diisi!', true);
+    return;
+  }
+  const cleanHp = p.hp.replace(/\D/g, '').replace(/^0/, '62');
+  const kostName = S.kost?.nama || 'SiKost';
+  const exp = getContractExpiryStatus(p);
+  const tglStr = p.tglKeluar ? fmtD(p.tglKeluar) : 'segera';
+
+  let msg = `Halo Kak ${p.nama}, semoga selalu sehat.\n\nKami dari pengelola *${kostName}* ingin menginfokan bahwa masa sewa kamar Kakak (*Kamar ${p.kamar || '–'}*) `;
+  if (exp.status === 'expired' || exp.status === 'today') {
+    msg += `telah berakhir pada tanggal *${tglStr}* (${exp.label}).\n\n`;
+  } else {
+    msg += `akan berakhir pada tanggal *${tglStr}* (${exp.label}).\n\n`;
+  }
+  msg += `Apakah Kakak berencana untuk memperpanjang masa sewa untuk periode berikutnya? Mohon konfirmasinya ya Kak agar kami dapat menyiapkan administrasi perpanjangan kontrak sewa atau persiapan checkout kamar.\n\nTerima kasih banyak atas perhatiannya! 🙏`;
+
+  window.open(`https://wa.me/${cleanHp}?text=${encodeURIComponent(msg)}`, '_blank');
+  toast('Membuka WhatsApp konfirmasi kontrak...');
+};
+
+window.openModalPerpanjangKontrak = function(pid) {
+  const p = S.penghuni.find(x => x.id === pid);
+  if (!p) return;
+
+  const idEl = $('renew-penghuni-id');
+  const namaEl = $('renew-penghuni-nama');
+  const metaEl = $('renew-penghuni-meta');
+  const badgeEl = $('renew-status-badge');
+  const dateInfoEl = $('renew-current-date-info');
+  const tglInput = $('renew-tgl-keluar');
+  const sewaInput = $('renew-sewa');
+  const catatanInput = $('renew-catatan');
+
+  if (idEl) idEl.value = p.id;
+  if (namaEl) namaEl.textContent = p.nama;
+  if (metaEl) metaEl.textContent = `Kamar ${p.kamar || '–'} · Sewa saat ini: ${rp(p.sewa)}/bln`;
+
+  const exp = getContractExpiryStatus(p);
+  if (badgeEl) {
+    badgeEl.className = `badge ${exp.badgeClass}`;
+    badgeEl.textContent = exp.label;
+  }
+
+  if (dateInfoEl) {
+    dateInfoEl.innerHTML = `Masa sewa saat ini berakhir pada: <strong>${p.tglKeluar ? fmtD(p.tglKeluar) : 'Belum ditentukan'}</strong> (${exp.label})`;
+  }
+
+  if (sewaInput) sewaInput.value = p.sewa || '';
+  if (catatanInput) catatanInput.value = '';
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  let baseForNew = p.tglKeluar;
+  if (!baseForNew || baseForNew < todayStr) {
+    baseForNew = todayStr;
+  }
+
+  const durBtns = document.querySelectorAll('.quick-dur-btn');
+  durBtns.forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-months') === '3');
+  });
+
+  if (tglInput) {
+    tglInput.value = addMonthsYMD(3, baseForNew);
+  }
+
+  openModal('modal-perpanjang-kontrak');
+};
+
+window.checkoutPenghuni = function(pid) {
+  const p = S.penghuni.find(x => x.id === pid);
+  if (!p) return;
+  const roomNo = p.kamar || '–';
+
+  confirm_dlg(
+    'Checkout & Selesaikan Sewa',
+    `Selesaikan masa sewa dan proses checkout untuk "${p.nama}" (Kamar ${roomNo})? Status penghuni akan diubah menjadi "Tidak Aktif" dan kamar akan menjadi kosong siap huni.`,
+    async () => {
+      p.status = 'tidak aktif';
+      p.tglKeluar = new Date().toISOString().slice(0, 10);
+
+      LS.save();
+      renderPenghuni();
+      if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+      if ($('page-kamar')?.classList.contains('active')) renderKamar();
+      if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
+      updateSidebarBadges();
+
+      toast(`Penghuni ${p.nama} berhasil checkout. Kamar ${roomNo} kini kosong.`);
+      await DB.savePenghuni(p);
+    },
+    'Checkout Sekarang'
+  );
 };
 
 // ── DASHBOARD (Manager) ───────────────────────────────────────
@@ -2665,7 +2882,13 @@ function getPenghuniFiltered() {
   const fk = $('filter-kendaraan')?.value || '';
   return S.penghuni.filter(p => {
     const mQ = !q || (p.nama||'').toLowerCase().includes(q) || (p.nik||'').toLowerCase().includes(q) || (p.kamar||'').toLowerCase().includes(q);
-    const mS = !fs || p.status === fs;
+    let mS = true;
+    if (fs === 'kontrak_habis') {
+      const exp = getContractExpiryStatus(p);
+      mS = p.status === 'aktif' && exp.isUrgent;
+    } else if (fs) {
+      mS = p.status === fs;
+    }
     const mK = !fk || p.kendaraan === fk;
     return mQ && mS && mK;
   });
@@ -2681,6 +2904,10 @@ function renderPenghuni() {
     $('penghuni-list-wrap').style.display = 'none';
     $('penghuni-grid').innerHTML = list.map(p => {
       const av = p.foto ? `<img class="pg-avatar" src="${p.foto}" alt="${p.nama}"/>` : `<div class="pg-avatar-ph">${init(p.nama)}</div>`;
+      const exp = p.status === 'aktif' ? getContractExpiryStatus(p) : null;
+      const contractBadge = (exp && exp.isUrgent)
+        ? `<span class="badge ${exp.badgeClass}" title="Kontrak berakhir: ${fmtD(p.tglKeluar)}">⏳ ${exp.label}</span>`
+        : '';
       return `
         <div class="pg-card ${p.status!=='aktif'?'inactive':''}" onclick="openDetail('${p.id}')">
           ${av}
@@ -2688,11 +2915,13 @@ function renderPenghuni() {
           <div class="pg-meta">Kamar ${p.kamar||'–'} · Lantai ${p.lantai||'1'}</div>
           <div class="pg-tags">
             ${p.status==='aktif'?'<span class="badge badge-green">Aktif</span>':'<span class="badge badge-gray">Keluar</span>'}
+            ${contractBadge}
             ${p.kendaraan&&p.kendaraan!=='tidak ada'?`<span class="badge badge-blue">${p.kendaraan}</span>`:''}
           </div>
           <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:10px">${rp(p.sewa)}/bln</div>
           <div class="pg-actions" onclick="event.stopPropagation()">
             <button class="btn-outline btn-sm" onclick="openEdit('${p.id}')">Edit</button>
+            <button class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${p.id}')" title="Perpanjang Masa Sewa Kontrak">🔄 Kontrak</button>
             <button class="btn-danger btn-sm" onclick="hapusPenghuni('${p.id}')">Hapus</button>
           </div>
         </div>`;
@@ -2700,21 +2929,28 @@ function renderPenghuni() {
   } else {
     $('penghuni-grid').style.display = 'none';
     $('penghuni-list-wrap').style.display = isEmpty ? 'none' : 'block';
-    $('tbody-penghuni').innerHTML = list.map((p, idx) => `
-      <tr onclick="openDetail('${p.id}')" style="cursor:pointer">
-        <td>${idx + 1}</td>
-        <td><strong>${p.nama}</strong><br><small style="color:var(--text-4)">${p.hp||'–'}</small></td>
-        <td onclick="event.stopPropagation()">${maskNik(p.nik, p.id)}</td>
-        <td>Kamar ${p.kamar||'–'}</td>
-        <td>${p.hp||'–'}</td>
-        <td>${p.kendaraan||'tidak ada'}</td>
-        <td>${rp(p.sewa)}</td>
-        <td>${p.deposit ? rp(p.deposit) : '–'}</td>
-        <td>${p.status==='aktif'?'<span class="badge badge-green">Aktif</span>':'<span class="badge badge-gray">Keluar</span>'}</td>
-        <td onclick="event.stopPropagation()">
-          <button class="btn-outline btn-sm" onclick="openEdit('${p.id}')">Edit</button>
-        </td>
-      </tr>`).join('');
+    $('tbody-penghuni').innerHTML = list.map((p, idx) => {
+      const exp = p.status === 'aktif' ? getContractExpiryStatus(p) : null;
+      const statusBadge = p.status === 'aktif'
+        ? (exp && exp.isUrgent ? `<span class="badge ${exp.badgeClass}">⏳ ${exp.label}</span>` : '<span class="badge badge-green">Aktif</span>')
+        : '<span class="badge badge-gray">Keluar</span>';
+      return `
+        <tr onclick="openDetail('${p.id}')" style="cursor:pointer">
+          <td>${idx + 1}</td>
+          <td><strong>${p.nama}</strong><br><small style="color:var(--text-4)">${p.hp||'–'}</small></td>
+          <td onclick="event.stopPropagation()">${maskNik(p.nik, p.id)}</td>
+          <td>Kamar ${p.kamar||'–'}</td>
+          <td>${p.hp||'–'}</td>
+          <td>${p.kendaraan||'tidak ada'}</td>
+          <td>${rp(p.sewa)}</td>
+          <td>${p.deposit ? rp(p.deposit) : '–'}</td>
+          <td>${statusBadge}</td>
+          <td onclick="event.stopPropagation()" style="display:flex;gap:4px">
+            <button class="btn-outline btn-sm" onclick="openEdit('${p.id}')">Edit</button>
+            <button class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${p.id}')" title="Perpanjang Kontrak">🔄</button>
+          </td>
+        </tr>`;
+    }).join('');
   }
 }
 
@@ -3024,6 +3260,7 @@ window.openDetail = function(id) {
   const av = p.foto ? `<img class="d-avatar" src="${p.foto}" alt="${p.nama}"/>` : `<div class="d-avatar-ph">${init(p.nama)}</div>`;
 
   $('detail-title').textContent = p.nama;
+  const exp = getContractExpiryStatus(p);
   $('detail-body').innerHTML = `
     <div class="detail-hero">
       ${av}
@@ -3031,6 +3268,7 @@ window.openDetail = function(id) {
         <div class="d-name">${p.nama}</div>
         <div class="d-tags">
           ${p.status==='aktif'?'<span class="badge badge-green">Aktif</span>':'<span class="badge badge-gray">Keluar</span>'}
+          ${p.status==='aktif'?`<span class="badge ${exp.badgeClass}">Kontrak: ${exp.label}</span>`:''}
           ${pb?.status==='lunas'?'<span class="badge badge-green">Lunas Bulan Ini</span>':'<span class="badge badge-red">Belum Bayar</span>'}
           <span class="badge badge-blue">Kamar ${p.kamar||'–'}</span>
         </div>
@@ -3056,7 +3294,8 @@ window.openDetail = function(id) {
       <div class="d-section">
         <h4>💳 Keuangan &amp; Sewa</h4>
         <div class="d-row"><div class="d-key">Sewa Bulanan</div><div class="d-val">${rp(p.sewa)}</div></div>
-        <div class="d-row"><div class="d-key">Jatuh Tempo</div><div class="d-val">${p.tempo?'Tanggal '+p.tempo+' setiap bulan':'–'}</div></div>
+        <div class="d-row"><div class="d-key">Jatuh Tempo Bulanan</div><div class="d-val">${p.tempo?'Tanggal '+p.tempo+' setiap bulan':'–'}</div></div>
+        <div class="d-row"><div class="d-key">Masa Kontrak Berakhir</div><div class="d-val"><strong>${p.tglKeluar ? fmtD(p.tglKeluar) + ' (' + exp.label + ')' : 'Belum ditentukan'}</strong></div></div>
         <div class="d-row"><div class="d-key">Uang Jaminan / Deposit</div><div class="d-val" style="color:var(--orange)">${p.deposit?rp(p.deposit):'Rp 0'} ${p.catatanDeposit?'('+p.catatanDeposit+')':''}</div></div>
         <div class="d-row"><div class="d-key">Status Bulan Ini</div><div class="d-val">${pb?.status==='lunas'?'✅ Lunas':'❌ Belum Bayar'}</div></div>
       </div>
@@ -3090,6 +3329,71 @@ $('btn-edit-detail').addEventListener('click', () => { closeModal('modal-detail'
 $('btn-hapus-detail').addEventListener('click', () => { closeModal('modal-detail'); hapusPenghuni(detailId); });
 $('btn-print-detail').addEventListener('click', () => { const p = S.penghuni.find(x => x.id === detailId); if (p) printKartu(p); });
 $('btn-print-spk').addEventListener('click', () => { const p = S.penghuni.find(x => x.id === detailId); if (p) printSpk(p); });
+$('btn-renew-detail')?.addEventListener('click', () => {
+  closeModal('modal-detail');
+  openModalPerpanjangKontrak(detailId);
+});
+
+// Modal Perpanjang Kontrak Event Listeners
+$('modal-perpanjang-close')?.addEventListener('click', () => closeModal('modal-perpanjang-kontrak'));
+$('btn-batal-perpanjang')?.addEventListener('click', () => closeModal('modal-perpanjang-kontrak'));
+$('modal-perpanjang-kontrak')?.addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal('modal-perpanjang-kontrak');
+});
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.quick-dur-btn');
+  if (!btn) return;
+  const container = btn.closest('#quick-duration-btns');
+  if (!container) return;
+
+  container.querySelectorAll('.quick-dur-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const months = parseInt(btn.getAttribute('data-months'), 10) || 1;
+  const pid = $('renew-penghuni-id')?.value;
+  const p = S.penghuni.find(x => x.id === pid);
+  const todayStr = new Date().toISOString().slice(0, 10);
+  let baseDate = p?.tglKeluar || todayStr;
+  if (baseDate < todayStr) baseDate = todayStr;
+
+  const tglInput = $('renew-tgl-keluar');
+  if (tglInput) {
+    tglInput.value = addMonthsYMD(months, baseDate);
+  }
+});
+
+$('form-perpanjang-kontrak')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const pid = $('renew-penghuni-id')?.value;
+  const p = S.penghuni.find(x => x.id === pid);
+  if (!p) return;
+
+  const newTgl = $('renew-tgl-keluar')?.value;
+  if (!newTgl) {
+    toast('Harap tentukan tanggal berakhir kontrak baru!', true);
+    return;
+  }
+  const newSewa = Number($('renew-sewa')?.value) || p.sewa;
+  const catatan = $('renew-catatan')?.value.trim();
+
+  p.tglKeluar = newTgl;
+  p.sewa = newSewa;
+  if (catatan) {
+    p.catatan = (p.catatan ? p.catatan + ' | ' : '') + `Perpanjang s.d ${fmtD(newTgl)} (${catatan})`;
+  }
+
+  LS.save();
+  closeModal('modal-perpanjang-kontrak');
+  renderPenghuni();
+  if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
+  if ($('page-kamar')?.classList.contains('active')) renderKamar();
+  if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
+  updateSidebarBadges();
+
+  toast(`✅ Kontrak sewa ${p.nama} berhasil diperpanjang hingga ${fmtD(newTgl)}!`);
+  await DB.savePenghuni(p);
+});
 
 // ── CETAK SURAT PERJANJIAN SEWA KOST (SPK) ────────────────────
 window.printSpk = function(p) {
@@ -3140,10 +3444,11 @@ window.printSpk = function(p) {
   <div class="pasal-title">PASAL 1 – OBJEK SEWA &amp; FASILITAS</div>
   <p>PIHAK PERTAMA menyewakan kepada PIHAK KEDUA 1 (satu) unit Kamar Nomor <strong>${p.kamar || '–'}</strong> (Lantai ${p.lantai || '1'}) di ${S.kost.nama || 'Kost'} beserta fasilitas yang melekat pada kamar tersebut.</p>
 
-  <div class="pasal-title">PASAL 2 – HARGA SEWA &amp; CARA PEMBAYARAN</div>
+  <div class="pasal-title">PASAL 2 – HARGA SEWA &amp; JANGKA WAKTU</div>
   <p>1. Biaya sewa kamar disepakati sebesar <strong>${rp(p.sewa)}</strong> per bulan.<br>
      2. Pembayaran wajib dilakukan selambat-lambatnya tanggal <strong>${p.tempo || '1'}</strong> setiap bulannya.<br>
-     3. PIHAK KEDUA telah menyerahkan Uang Jaminan (Deposit) sebesar <strong>${p.deposit ? rp(p.deposit) : 'Rp 0'}</strong> yang akan dikembalikan secara utuh pada saat masa sewa berakhir setelah dipastikan tidak ada tunggakan dan kerusakan fasilitas.</p>
+     3. Jangka waktu sewa berlaku sejak tanggal <strong>${fmtD(p.tglMasuk)}</strong> sampai dengan tanggal <strong>${p.tglKeluar ? fmtD(p.tglKeluar) : 'tidak ditentukan'}</strong>.<br>
+     4. PIHAK KEDUA telah menyerahkan Uang Jaminan (Deposit) sebesar <strong>${p.deposit ? rp(p.deposit) : 'Rp 0'}</strong> yang akan dikembalikan secara utuh pada saat masa sewa berakhir setelah dipastikan tidak ada tunggakan dan kerusakan fasilitas.</p>
 
   <div class="pasal-title">PASAL 3 – TATA TERTIB &amp; LARANGAN</div>
   <p>1. PIHAK KEDUA wajib menjaga kebersihan, ketertiban, dan keamanan lingkungan kost.<br>
