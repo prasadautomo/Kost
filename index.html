@@ -10,6 +10,7 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#6366f1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="SiKost" />
 
@@ -711,10 +712,6 @@
               <h2 class="settings-title">Manajemen Data</h2>
               <div class="action-list">
                 <div class="action-item">
-                  <div><p class="action-title">⚡ Muat Data Contoh / Demo Lengkap</p><p class="text-muted">Isi otomatis dengan 8 kamar, penghuni aktif, pengeluaran operasional, tiket keluhan, dan riwayat pembayaran.</p></div>
-                  <button class="btn-primary btn-sm" id="btn-seed-demo">Muat Data Demo</button>
-                </div>
-                <div class="action-item">
                   <div><p class="action-title">Backup Seluruh Data</p><p class="text-muted">Unduh semua data (kamar, penghuni, pengeluaran, keluhan, transaksi) sebagai file JSON.</p></div>
                   <button class="btn-outline" id="btn-backup">Backup JSON</button>
                 </div>
@@ -1173,11 +1170,8 @@
         </div>
       </div>
 
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
-        <button type="button" class="btn-primary" id="btn-proto-simulasi" style="padding:8px 16px;font-size:0.82rem">
-          🧪 Gunakan Akun Demo Dulu
-        </button>
-        <button type="button" class="btn-ghost" id="btn-proto-close" style="font-size:0.82rem">
+      <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:16px">
+        <button type="button" class="btn-primary" id="btn-proto-close" style="padding:8px 20px;font-size:0.82rem">
           Tutup
         </button>
       </div>

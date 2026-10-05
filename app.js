@@ -86,7 +86,7 @@ function initSupabase() {
 async function testSupabaseConnection(url, key) {
   if (!url || !key) return { success: false, message: 'URL dan Key tidak boleh kosong.' };
   try {
-    const testClient = window.supabase.createClient(url, key, { auth: { persistSession: false } });
+    const testClient = (sbClient && sbClient.supabaseUrl === url) ? sbClient : window.supabase.createClient(url, key, { auth: { persistSession: false } });
     const { error } = await testClient.from('kost_pengaturan').select('id').limit(1);
     if (error && error.message && (error.message.includes('FetchError') || error.message.includes('Failed to fetch'))) {
       return { success: false, message: 'Gagal terhubung ke host Supabase. Periksa URL Anda.' };
@@ -594,9 +594,9 @@ function generateInitialMultiKostData() {
   return { properties, propertiesData };
 }
 
-// ── DEMO SEED DATA GENERATOR ─────────────────────────────────
-function seedDemoData(force = false) {
-  if (!force && S.propertiesData && S.propertiesData.kost_1 && S.propertiesData.kost_5) return;
+// ── INITIAL MULTI-KOST DATA INITIALIZER ──────────────────────
+function initDefaultMultiKostData(force = false) {
+  if (!force && S.propertiesData && Object.keys(S.propertiesData).length > 0) return;
 
   // Cek apakah ada data yang tersimpan sebelumnya di localStorage
   if (!force && typeof localStorage !== 'undefined') {
@@ -604,7 +604,7 @@ function seedDemoData(force = false) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed && parsed.kost_1 && parsed.kost_5) {
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
           S.propertiesData = parsed;
           return;
         }
@@ -617,13 +617,15 @@ function seedDemoData(force = false) {
   S.propertiesData = initData.propertiesData;
   S.activeKostId = S.activeKostId || 'kost_1';
 
-  const cur = S.propertiesData[S.activeKostId] || S.propertiesData.kost_1;
-  S.kost = { ...cur.kost };
-  S.kamar = [...cur.kamar];
-  S.penghuni = [...cur.penghuni];
-  S.pembayaran = [...cur.pembayaran];
-  S.pengeluaran = [...cur.pengeluaran];
-  S.keluhan = [...cur.keluhan];
+  const cur = S.propertiesData[S.activeKostId] || S.propertiesData[Object.keys(S.propertiesData)[0]];
+  if (cur) {
+    S.kost = { ...cur.kost };
+    S.kamar = [...(cur.kamar || [])];
+    S.penghuni = [...(cur.penghuni || [])];
+    S.pembayaran = [...(cur.pembayaran || [])];
+    S.pengeluaran = [...(cur.pengeluaran || [])];
+    S.keluhan = [...(cur.keluhan || [])];
+  }
 
   S.akun = [
     { id: 'akun_mgr_gavin', nama: 'Gavin Utomo (Owner)', email: 'gavinutomo4@gmail.com', pwHash: 'd3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791', role: 'manager', penghuniId: null },
@@ -632,6 +634,10 @@ function seedDemoData(force = false) {
 
   LS.save();
 }
+// Alias untuk backward compatibility
+const seedDemoData = initDefaultMultiKostData;
+window.initDefaultMultiKostData = initDefaultMultiKostData;
+window.seedDemoData = seedDemoData;
 
 // ── MULTI-KOST SWITCHER & HANDLERS ────────────────────────────
 function switchKost(targetKostId) {
@@ -872,10 +878,14 @@ const LS = {
         const rawProps = localStorage.getItem('sk3_properties');
         if (rawProps) S.properties = JSON.parse(rawProps);
 
-        if (!S.propertiesData.kost_1 || !S.propertiesData.kost_5) {
-          seedDemoData(true);
+        const branchKeys = Object.keys(S.propertiesData || {});
+        if (branchKeys.length === 0) {
+          initDefaultMultiKostData(true);
         } else {
-          const cur = S.propertiesData[S.activeKostId] || S.propertiesData.kost_1;
+          if (!S.propertiesData[S.activeKostId]) {
+            S.activeKostId = branchKeys[0];
+          }
+          const cur = S.propertiesData[S.activeKostId] || S.propertiesData[branchKeys[0]];
           S.kost = { ...cur.kost };
 
           // Muat override sk3_kost mandiri jika ada
@@ -898,11 +908,11 @@ const LS = {
           S.keluhan = cur.keluhan || [];
         }
       } catch (e) {
-        console.warn('Load multi-kost failed, fallback to seed:', e);
-        seedDemoData(true);
+        console.warn('Load multi-kost failed, fallback to init:', e);
+        initDefaultMultiKostData(true);
       }
     } else {
-      seedDemoData(true);
+      initDefaultMultiKostData(true);
     }
 
     const rawAkun = localStorage.getItem('sk3_akun');
@@ -1035,8 +1045,11 @@ function confirm_dlg(title, msg, cb, btnLabel='Ya, Lanjutkan') {
 }
 
 const $ = id => document.getElementById(id);
-const openModal  = id => { const el=$(id); if(el) el.classList.add('open'); };
-const closeModal = id => { const el=$(id); if(el) el.classList.remove('open'); };
+window.$ = $;
+function openModal(id) { const el = document.getElementById(id); if (el) el.classList.add('open'); }
+function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('open'); }
+window.openModal = openModal;
+window.closeModal = closeModal;
 
 // ── PASSWORD TOGGLE ──────────────────────────────────────────
 document.addEventListener('click', e => {
@@ -1678,30 +1691,30 @@ async function handleGoogleUserProfile(profile) {
   const nama = profile.name || email.split('@')[0];
   const avatar = profile.picture || '';
 
-  // STRICT SECURITY RULE: gavinutomo4@gmail.com & prasadautomo@gmail.com BERHAK MENJADI MANAGER!
-  const isMgr = (email === 'gavinutomo4@gmail.com' || email === 'prasadautomo@gmail.com');
-  const role = isMgr ? 'manager' : 'penghuni';
-
-  // Cek apakah email cocok dengan penghuni yang terdaftar
+  // Hak akses: Gavin Utomo & Prasada Utomo selalu Manager, akun yang sudah Manager tetap Manager
+  const isOwner = (email === 'gavinutomo4@gmail.com' || email === 'prasadautomo@gmail.com');
   const matchedP = S.penghuni.find(p => p.email && p.email.toLowerCase() === email);
-
   let akun = S.akun.find(a => a.email && a.email.toLowerCase() === email);
+  const hasExistingManager = S.akun.some(a => a.role === 'manager');
+  const determinedRole = isOwner ? 'manager' : (akun?.role ? akun.role : (!hasExistingManager ? 'manager' : (matchedP ? 'penghuni' : 'manager')));
+  const isMgr = (determinedRole === 'manager');
+
   if (!akun) {
     akun = {
       id: 'google_' + (profile.sub || uid()),
       email,
-      nama: isMgr ? (email === 'prasadautomo@gmail.com' ? (profile.name || 'Prasad Automo') : 'Gavin Utomo (Owner)') : nama,
+      nama: isOwner ? (email === 'prasadautomo@gmail.com' ? (profile.name || 'Prasada Utomo (Manager)') : 'Gavin Utomo (Owner)') : nama,
       avatar,
-      role,
+      role: determinedRole,
       penghuniId: matchedP ? matchedP.id : null,
       googleAuth: true
     };
     S.akun.push(akun);
     LS.save();
   } else {
-    akun.nama = isMgr ? (email === 'prasadautomo@gmail.com' ? (profile.name || akun.nama || 'Prasad Automo') : 'Gavin Utomo (Owner)') : (akun.nama || nama);
+    akun.nama = isOwner ? (email === 'prasadautomo@gmail.com' ? (profile.name || akun.nama || 'Prasada Utomo (Manager)') : 'Gavin Utomo (Owner)') : (akun.nama || nama);
     akun.avatar = avatar || akun.avatar;
-    akun.role = role;
+    akun.role = determinedRole;
     if (matchedP && !akun.penghuniId) akun.penghuniId = matchedP.id;
     LS.save();
   }
@@ -1915,14 +1928,6 @@ if ($('modal-google-proto-close')) {
 }
 if ($('btn-proto-close')) {
   $('btn-proto-close').addEventListener('click', () => closeModal('modal-google-protocol'));
-}
-if ($('btn-proto-simulasi')) {
-  $('btn-proto-simulasi').addEventListener('click', () => {
-    closeModal('modal-google-protocol');
-    const details = $('details-simulasi-google');
-    if (details) details.open = true;
-    openModalGoogle();
-  });
 }
 
 // ── LOGIN / REGISTER TABS (FALLBACK GUARD) ────────────────────
@@ -3757,7 +3762,7 @@ window.showKwitansi = function(penghuniId, bulan) {
         </div>
         <div style="text-align:center">
           <div style="font-size:0.75rem;color:#64748b;margin-bottom:40px">Pengelola Kost,</div>
-          <div style="font-size:0.85rem;font-weight:800;border-bottom:1px solid #000;padding-bottom:2px">${S.kost.pemilik || 'Budi Santoso'}</div>
+          <div style="font-size:0.85rem;font-weight:800;border-bottom:1px solid #000;padding-bottom:2px">${S.kost.pemilik || 'Pengelola Kost'}</div>
         </div>
       </div>
     </div>
@@ -4845,19 +4850,6 @@ $('btn-hapus-semua').addEventListener('click', () => {
   }, 'Ya, Hapus Semua');
 });
 
-const btnSeed = $('btn-seed-demo');
-if (btnSeed) {
-  btnSeed.addEventListener('click', () => {
-    confirm_dlg('Muat Data Contoh / Demo', 'Ini akan memuat data 8 kamar, 6 anak kost aktif, riwayat pembayaran, pengeluaran operasional, tiket keluhan, dan info rekening contoh. Lanjutkan?', () => {
-      seedDemoData(true);
-      updatePropertySwitcherUI();
-      updateSidebarBadges();
-      renderPengaturan();
-      toast('Data demo lengkap berhasil dimuat! 🎉');
-    }, 'Ya, Muat Data Demo');
-  });
-}
-
 // ── SETUP SUPABASE UI CONFIG ──────────────────────────────────
 function setupSupabaseUI() {
   const openCloudModal = () => {
@@ -5409,24 +5401,6 @@ if ('serviceWorker' in navigator) {
   const t = localStorage.getItem('sk3_theme') || 'dark';
   document.documentElement.setAttribute('data-theme', t);
   $('theme-icon').textContent = t === 'dark' ? '☀️' : '🌙';
-
-  // Demo Buttons
-  const btnDemoMgr = $('btn-demo-mgr');
-  if (btnDemoMgr) {
-    btnDemoMgr.addEventListener('click', () => {
-      seedDemoData(false);
-      let mgr = S.akun.find(a => a.email && a.email.toLowerCase() === 'gavinutomo4@gmail.com');
-      if (!mgr) {
-        mgr = { id: 'akun_mgr_gavin', nama: 'Gavin Utomo (Owner)', email: 'gavinutomo4@gmail.com', role: 'manager', penghuniId: null };
-        S.akun.push(mgr);
-        LS.save();
-      }
-      loginWithAkun(mgr);
-      toast('Selamat datang, Gavin Utomo (Manager)! 👑');
-    });
-  }
-
-
 
   // Coba inisialisasi Supabase
   const hasSb = initSupabase();

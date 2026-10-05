@@ -779,70 +779,6 @@ em {
   background: var(--border);
 }
 
-/* Demo 1-Click Cards */
-.demo-btns {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.btn-demo-manager {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--bg);
-  text-align: left;
-  transition: all var(--t);
-  position: relative;
-  overflow: hidden;
-}
-.btn-demo-manager::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; bottom: 0;
-  width: 3px;
-  background: transparent;
-  transition: background var(--t);
-}
-.btn-demo-manager:hover {
-  border-color: var(--accent-border);
-  background: var(--accent-bg);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
-}
-.btn-demo-manager:hover::before {
-  background: var(--accent);
-}
-
-.demo-icon {
-  font-size: 1.5rem;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.demo-label {
-  font-size: 0.86rem;
-  font-weight: 700;
-  color: var(--text);
-  display: block;
-}
-.demo-sub {
-  font-size: 0.74rem;
-  color: var(--text-3);
-  display: block;
-  margin-top: 1px;
-}
-
 /* ─── APP SHELL ────────────────────────────────────────────── */
 .app-shell {
   display: flex;
@@ -3442,10 +3378,11 @@ textarea.fc {
   body * {
     visibility: hidden;
   }
-  #modal-laporan-bulanan, #modal-laporan-bulanan * {
+  #modal-laporan-bulanan, #modal-laporan-bulanan *,
+  #modal-kwitansi, #modal-kwitansi * {
     visibility: visible;
   }
-  #modal-laporan-bulanan {
+  #modal-laporan-bulanan, #modal-kwitansi {
     position: absolute;
     left: 0;
     top: 0;
@@ -3456,10 +3393,13 @@ textarea.fc {
   }
   #modal-laporan-bulanan .modal-head,
   #modal-laporan-bulanan .modal-foot,
-  #modal-laporan-bulanan .modal-x {
+  #modal-laporan-bulanan .modal-x,
+  #modal-kwitansi .modal-head,
+  #modal-kwitansi .modal-foot,
+  #modal-kwitansi .modal-x {
     display: none !important;
   }
-  .laporan-sheet {
+  .laporan-sheet, .kwitansi-sheet {
     box-shadow: none !important;
     padding: 0 !important;
     width: 100% !important;

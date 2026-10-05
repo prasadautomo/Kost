@@ -45,13 +45,11 @@ Client ID ini sudah otomatis dipasang di `config.js`!
 
 ## Catatan Penting
 
-- **Mode Demo**: Jika belum mengisi Client ID, aplikasi berjalan dalam **Mode Demo** 
-  dengan login manual (tanpa Google). Cocok untuk testing lokal.
-- **File lokal**: Google Sign-In via `file://` mungkin diblokir browser.
-  Untuk hasil terbaik, jalankan via server lokal:
+- **File lokal**: Google Sign-In via `file://` diblokir oleh kebijakan keamanan browser (Google OAuth).
+  Jalankan via server web lokal:
+  ```powershell
+  powershell -File serve.ps1
   ```
-  npx serve .
-  ```
-  Lalu buka `http://localhost:3000`
-- **Manager pertama**: Akun Google pertama yang login otomatis menjadi Manager.
+  Lalu buka `http://localhost:3000` di browser.
+- **Manager pertama**: Akun Google pengelola yang login otomatis mendapatkan hak akses Manager.
   Anda bisa mengubah role di halaman **Pengaturan → Manajemen Akses**.
