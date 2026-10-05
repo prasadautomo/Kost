@@ -5,40 +5,175 @@
    ============================================================ */
 'use strict';
 
-// ── STATE (BERSIH DARI DATA DUMMY) ───────────────────────────
-let S = {
-  penghuni:   [],
-  kamar:      [],
-  pembayaran: [],
-  pengeluaran:[], // [{id, tanggal, kategori, jumlah, keterangan, buktiNota, createdBy}]
-  keluhan:    [], // [{id, penghuniId, kamar, judul, kategori, deskripsi, foto, status, responManager, tglLapor, tglSelesai}]
-  akun:       [],
-  kost: {
-    nama: 'Nama Kost Manager',
-    pemilik: '',
-    kota: '',
-    alamat: '',
-    hp: '',
-    totalKamar: 0,
-    bankNama: '',
-    bankRekening: '',
-    bankAtasNama: '',
-    qrisUrl: ''
-  },
-  activeKostId: 'kost_1',
-  properties: [
-    { id: 'kost_1', nama: 'Nama Kost Manager', kota: '', alamat: '', hp: '', pemilik: '', totalKamar: 0 }
-  ],
-  propertiesData: {
-    kost_1: {
-      kost: { id: 'kost_1', nama: 'Nama Kost Manager', pemilik: '', kota: '', alamat: '', hp: '', totalKamar: 0, bankNama: '', bankRekening: '', bankAtasNama: '', qrisUrl: '' },
-      kamar: [],
+// ── DEFAULT 5 CABANG MULTI-KOST (TERISOLASI & BERSIH) ─────────────
+function getCleanInitialState() {
+  const branches = [
+    {
+      kost: {
+        id: 'kost_1',
+        nama: 'Nama Kost Manager',
+        pemilik: 'Gavin Utomo',
+        kota: 'Sleman, Yogyakarta',
+        alamat: 'Jl. Kaliurang KM 5, Gg. Megatruh No. 12, Sleman, DI Yogyakarta',
+        hp: '081234567890',
+        totalKamar: 8,
+        bankNama: 'Bank BCA',
+        bankRekening: '8465-1234-90',
+        bankAtasNama: 'Gavin Utomo',
+        qrisUrl: ''
+      },
+      kamar: [
+        { id: 'km_101', no: '101', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Kasur Springbed 160x200, Lemari 2 Pintu, Meja Belajar, Kamar Mandi Dalam' },
+        { id: 'km_102', no: '102', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Kasur Springbed, Lemari, Meja Belajar, Kamar Mandi Dalam' },
+        { id: 'km_103', no: '103', lantai: '1', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
+        { id: 'km_104', no: '104', lantai: '1', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
+        { id: 'km_201', no: '201', lantai: '2', tipe: 'VIP', harga: 1850000, fasilitas: 'AC, Smart TV 32", Water Heater, Meja Kerja Ergonomis, Balkon Pribadi' },
+        { id: 'km_202', no: '202', lantai: '2', tipe: 'VIP', harga: 1850000, fasilitas: 'AC, Smart TV 32", Water Heater, Meja Kerja Ergonomis, Balkon Pribadi' },
+        { id: 'km_203', no: '203', lantai: '2', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Springbed, Lemari 2 Pintu, Meja Kerja' },
+        { id: 'km_204', no: '204', lantai: '2', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur, Lemari, Meja' }
+      ]
+    },
+    {
+      kost: {
+        id: 'kost_2',
+        nama: 'Kost Graha Asri Dago',
+        pemilik: 'Gavin Utomo',
+        kota: 'Dago, Bandung',
+        alamat: 'Jl. Cisitu Lama No. 28, Dago, Coblong, Kota Bandung, Jawa Barat',
+        hp: '081388224411',
+        totalKamar: 8,
+        bankNama: 'Bank Mandiri',
+        bankRekening: '131-00-9876543-1',
+        bankAtasNama: 'Gavin Utomo',
+        qrisUrl: ''
+      },
+      kamar: [
+        { id: 'km_2_A01', no: 'A-01', lantai: '1', tipe: 'Studio Dago', harga: 1700000, fasilitas: 'AC, Kasur Queen Size, Meja Belajar Kayu Jati, Kamar Mandi Dalam' },
+        { id: 'km_2_A02', no: 'A-02', lantai: '1', tipe: 'Studio Dago', harga: 1700000, fasilitas: 'AC, Kasur Queen Size, Lemari Pakaian, Water Heater' },
+        { id: 'km_2_A03', no: 'A-03', lantai: '1', tipe: 'Deluxe Asri', harga: 1600000, fasilitas: 'AC, Kasur Springbed, Meja Kerja, KM Dalam' },
+        { id: 'km_2_A04', no: 'A-04', lantai: '1', tipe: 'Standar Bandung', harga: 1200000, fasilitas: 'Exhaust Fan, Kasur Busa, Lemari, KM Luar' },
+        { id: 'km_2_B01', no: 'B-01', lantai: '2', tipe: 'Executive Suite', harga: 1950000, fasilitas: 'AC, Smart TV, Kulkas Mini, Balkon View Bukit Dago' },
+        { id: 'km_2_B02', no: 'B-02', lantai: '2', tipe: 'Executive Suite', harga: 1950000, fasilitas: 'AC, Smart TV, Kulkas Mini, Balkon View Dago' },
+        { id: 'km_2_B03', no: 'B-03', lantai: '2', tipe: 'Deluxe Asri', harga: 1600000, fasilitas: 'AC, Kasur Springbed, Lemari 2 Pintu' },
+        { id: 'km_2_B04', no: 'B-04', lantai: '2', tipe: 'Standar Bandung', harga: 1200000, fasilitas: 'Exhaust Fan, Meja, Lemari' }
+      ]
+    },
+    {
+      kost: {
+        id: 'kost_3',
+        nama: 'Kost Puri Indah Tebet',
+        pemilik: 'Gavin Utomo',
+        kota: 'Tebet, Jakarta Selatan',
+        alamat: 'Jl. Tebet Barat Dalam VII No. 14, Tebet, Jakarta Selatan, DKI Jakarta',
+        hp: '081199887722',
+        totalKamar: 8,
+        bankNama: 'Bank BCA',
+        bankRekening: '5271-8899-00',
+        bankAtasNama: 'Gavin Utomo',
+        qrisUrl: ''
+      },
+      kamar: [
+        { id: 'km_3_101', no: '101', lantai: '1', tipe: 'Executive Studio', harga: 2500000, fasilitas: 'AC Inverter, Smart TV 40", Queen Bed, Water Heater, Meja Kerja' },
+        { id: 'km_3_102', no: '102', lantai: '1', tipe: 'Executive Studio', harga: 2500000, fasilitas: 'AC Inverter, Smart TV 40", Queen Bed, Water Heater, Meja Kerja' },
+        { id: 'km_3_103', no: '103', lantai: '1', tipe: 'Deluxe Room', harga: 2200000, fasilitas: 'AC Inverter, Single Bed 120, Lemari 2 Pintu, KM Dalam' },
+        { id: 'km_3_201', no: '201', lantai: '2', tipe: 'VIP Suite Tebet', harga: 2800000, fasilitas: 'AC, Kulkas 2 Pintu, Smart TV, Balkon Pribadi, Kamar Mandi Marmer' },
+        { id: 'km_3_202', no: '202', lantai: '2', tipe: 'VIP Suite Tebet', harga: 2800000, fasilitas: 'AC, Kulkas 2 Pintu, Smart TV, Balkon Pribadi, Kamar Mandi Marmer' },
+        { id: 'km_3_203', no: '203', lantai: '2', tipe: 'Deluxe Room', harga: 2200000, fasilitas: 'AC, Kasur Springbed, Meja Kerja Ergonomis' },
+        { id: 'km_3_301', no: '301', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' },
+        { id: 'km_3_302', no: '302', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' }
+      ]
+    },
+    {
+      kost: {
+        id: 'kost_4',
+        nama: 'Kost Surya Kencana Gubeng',
+        pemilik: 'Gavin Utomo',
+        kota: 'Gubeng, Surabaya',
+        alamat: 'Jl. Dharmawangsa Barat No. 55, Airlangga, Gubeng, Surabaya, Jawa Timur',
+        hp: '081277113399',
+        totalKamar: 8,
+        bankNama: 'Bank BNI',
+        bankRekening: '045-8899-123',
+        bankAtasNama: 'Gavin Utomo',
+        qrisUrl: ''
+      },
+      kamar: [
+        { id: 'km_4_G01', no: 'G-01', lantai: '1', tipe: 'Modern Compact AC', harga: 1650000, fasilitas: 'AC Daikin 1/2 PK, Springbed, Meja Belajar, KM Dalam Shower' },
+        { id: 'km_4_G02', no: 'G-02', lantai: '1', tipe: 'Modern Compact AC', harga: 1650000, fasilitas: 'AC Daikin 1/2 PK, Springbed, Meja Belajar, KM Dalam Shower' },
+        { id: 'km_4_G03', no: 'G-03', lantai: '1', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Exhaust Fan, Meja, Lemari 2 Pintu, KM Luar Bersih' },
+        { id: 'km_4_G04', no: 'G-04', lantai: '1', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Exhaust Fan, Meja, Lemari 2 Pintu, KM Luar Bersih' },
+        { id: 'km_4_U01', no: 'U-01', lantai: '2', tipe: 'Deluxe Airlangga', harga: 1800000, fasilitas: 'AC, Kulkas Pribadi, Kasur King Size, Smart TV 32"' },
+        { id: 'km_4_U02', no: 'U-02', lantai: '2', tipe: 'Deluxe Airlangga', harga: 1800000, fasilitas: 'AC, Kulkas Pribadi, Kasur King Size, Smart TV 32"' },
+        { id: 'km_4_U03', no: 'U-03', lantai: '2', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Kipas Angin Dinding, Kasur, Meja Belajar' },
+        { id: 'km_4_U04', no: 'U-04', lantai: '2', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Kipas Angin Dinding, Kasur, Meja Belajar' }
+      ]
+    },
+    {
+      kost: {
+        id: 'kost_5',
+        nama: 'Kost Cendana Residence',
+        pemilik: 'Gavin Utomo',
+        kota: 'Lowokwaru, Malang',
+        alamat: 'Jl. Bendungan Sigura-gura No. 42, Lowokwaru, Kota Malang, Jawa Timur',
+        hp: '081544228866',
+        totalKamar: 8,
+        bankNama: 'Bank BRI',
+        bankRekening: '0038-01-029384-50-2',
+        bankAtasNama: 'Gavin Utomo',
+        qrisUrl: ''
+      },
+      kamar: [
+        { id: 'km_5_01', no: '01', lantai: '1', tipe: 'Panorama View', harga: 1350000, fasilitas: 'Kasur Springbed Comfort, Meja Belajar Besar, Lemari 2 Pintu, KM Dalam' },
+        { id: 'km_5_02', no: '02', lantai: '1', tipe: 'Panorama View', harga: 1350000, fasilitas: 'Kasur Springbed Comfort, Meja Belajar Besar, Lemari 2 Pintu, KM Dalam' },
+        { id: 'km_5_03', no: '03', lantai: '1', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Busa Tebal, Meja, Lemari, KM Luar Bersih' },
+        { id: 'km_5_04', no: '04', lantai: '1', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Busa Tebal, Meja, Lemari, KM Luar Bersih' },
+        { id: 'km_5_05', no: '05', lantai: '2', tipe: 'Balkon Gunung', harga: 1450000, fasilitas: 'Kasur Queen, Balkon Hadap Gunung Panderman, Meja Belajar, KM Dalam' },
+        { id: 'km_5_06', no: '06', lantai: '2', tipe: 'Balkon Gunung', harga: 1450000, fasilitas: 'Kasur Queen, Balkon Hadap Gunung Panderman, Meja Belajar, KM Dalam' },
+        { id: 'km_5_07', no: '07', lantai: '2', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Springbed, Meja Kayu Pinus, Lemari' },
+        { id: 'km_5_08', no: '08', lantai: '2', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Springbed, Meja Kayu Pinus, Lemari' }
+      ]
+    }
+  ];
+
+  const properties = branches.map(b => ({
+    id: b.kost.id,
+    nama: b.kost.nama,
+    kota: b.kost.kota,
+    alamat: b.kost.alamat,
+    hp: b.kost.hp,
+    pemilik: b.kost.pemilik,
+    totalKamar: b.kost.totalKamar
+  }));
+
+  const propertiesData = {};
+  branches.forEach(b => {
+    propertiesData[b.kost.id] = {
+      kost: { ...b.kost },
+      kamar: [...b.kamar],
       penghuni: [],
       pembayaran: [],
       pengeluaran: [],
       keluhan: []
-    }
-  }
+    };
+  });
+
+  const defaultKost = { ...branches[0].kost };
+  return { properties, propertiesData, defaultKost };
+}
+
+// ── STATE (5 CABANG AKTIF, BERSIH DARI DATA DUMMY PENGHUNI) ──────
+const _initCleanState = getCleanInitialState();
+let S = {
+  penghuni:   [],
+  kamar:      [..._initCleanState.propertiesData['kost_1'].kamar],
+  pembayaran: [],
+  pengeluaran:[], // [{id, tanggal, kategori, jumlah, keterangan, buktiNota, createdBy}]
+  keluhan:    [], // [{id, penghuniId, kamar, judul, kategori, deskripsi, foto, status, responManager, tglLapor, tglSelesai}]
+  akun:       [],
+  kost:       { ..._initCleanState.defaultKost },
+  activeKostId: 'kost_1',
+  properties: _initCleanState.properties,
+  propertiesData: _initCleanState.propertiesData
 };
 window.S = S;
 
@@ -693,42 +828,9 @@ function generateInitialMultiKostData() {
   return { properties, propertiesData };
 }
 
-function getCleanInitialState() {
-  const defaultKost = {
-    id: 'kost_1',
-    nama: 'Nama Kost Manager',
-    pemilik: '',
-    kota: '',
-    alamat: '',
-    hp: '',
-    totalKamar: 0,
-    bankNama: '',
-    bankRekening: '',
-    bankAtasNama: '',
-    qrisUrl: ''
-  };
-
-  const properties = [
-    { id: 'kost_1', nama: defaultKost.nama, kota: '', alamat: '', hp: '', pemilik: '', totalKamar: 0 }
-  ];
-
-  const propertiesData = {
-    kost_1: {
-      kost: { ...defaultKost },
-      kamar: [],
-      penghuni: [],
-      pembayaran: [],
-      pengeluaran: [],
-      keluhan: []
-    }
-  };
-
-  return { properties, propertiesData, defaultKost };
-}
-
-// ── INITIAL DATA INITIALIZER (DEFAULT: BERSIH / EMPTY SLATE) ──────────────
+// ── INITIAL DATA INITIALIZER (DEFAULT: BERSIH DENGAN 5 CABANG AKTIF) ──────────────
 function initDefaultMultiKostData(force = false) {
-  if (!force && S.propertiesData && Object.keys(S.propertiesData).length > 0) return;
+  if (!force && S.propertiesData && Object.keys(S.propertiesData).length >= 5 && S.properties && S.properties.length >= 5) return;
 
   // Cek apakah ada data yang tersimpan sebelumnya di localStorage
   if (!force && typeof localStorage !== 'undefined') {
@@ -736,9 +838,13 @@ function initDefaultMultiKostData(force = false) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length >= 5) {
           S.propertiesData = parsed;
-          return;
+          const savedProps = localStorage.getItem('sk3_properties');
+          if (savedProps) {
+            try { S.properties = JSON.parse(savedProps); } catch {}
+          }
+          if (S.properties && S.properties.length >= 5) return;
         }
       } catch {}
     }
@@ -749,7 +855,7 @@ function initDefaultMultiKostData(force = false) {
   S.propertiesData = clean.propertiesData;
   S.activeKostId = 'kost_1';
   S.kost = { ...clean.defaultKost };
-  S.kamar = [];
+  S.kamar = [...clean.propertiesData['kost_1'].kamar];
   S.penghuni = [];
   S.pembayaran = [];
   S.pengeluaran = [];
@@ -1031,30 +1137,49 @@ const LS = {
         if (branchKeys.length === 0) {
           initDefaultMultiKostData(true);
         } else {
-          if (!S.propertiesData[S.activeKostId]) {
-            S.activeKostId = branchKeys[0];
-          }
-          const cur = S.propertiesData[S.activeKostId] || S.propertiesData[branchKeys[0]];
-          S.kost = { ...cur.kost };
-
-          // Muat override sk3_kost mandiri jika ada
-          if (rawKost) {
-            try {
-              const parsedKost = JSON.parse(rawKost);
-              if (parsedKost && parsedKost.nama) {
-                S.kost = { ...S.kost, ...parsedKost };
-                if (S.propertiesData[S.activeKostId]) {
-                  S.propertiesData[S.activeKostId].kost = { ...S.kost };
-                }
+          // Rehydrate cabang yang hilang agar tetap lengkap 5 cabang
+          if (branchKeys.length < 5 || !S.properties || S.properties.length < 5) {
+            const clean = getCleanInitialState();
+            if (!S.properties || S.properties.length < 5) {
+              S.properties = clean.properties;
+            }
+            if (!S.propertiesData) S.propertiesData = {};
+            clean.properties.forEach(p => {
+              if (!S.propertiesData[p.id]) {
+                S.propertiesData[p.id] = clean.propertiesData[p.id];
+              } else if (!S.propertiesData[p.id].kamar || S.propertiesData[p.id].kamar.length === 0) {
+                S.propertiesData[p.id].kamar = clean.propertiesData[p.id].kamar;
               }
-            } catch {}
+            });
+            LS.save();
           }
 
-          S.penghuni = cur.penghuni || [];
-          S.kamar = cur.kamar || [];
-          S.pembayaran = cur.pembayaran || [];
-          S.pengeluaran = cur.pengeluaran || [];
-          S.keluhan = cur.keluhan || [];
+          if (!S.propertiesData[S.activeKostId]) {
+            S.activeKostId = Object.keys(S.propertiesData)[0] || 'kost_1';
+          }
+          const cur = S.propertiesData[S.activeKostId] || S.propertiesData['kost_1'];
+          if (cur) {
+            S.kost = { ...cur.kost };
+
+            // Muat override sk3_kost mandiri jika ada
+            if (rawKost) {
+              try {
+                const parsedKost = JSON.parse(rawKost);
+                if (parsedKost && parsedKost.nama) {
+                  S.kost = { ...S.kost, ...parsedKost };
+                  if (S.propertiesData[S.activeKostId]) {
+                    S.propertiesData[S.activeKostId].kost = { ...S.kost };
+                  }
+                }
+              } catch {}
+            }
+
+            S.penghuni = cur.penghuni || [];
+            S.kamar = cur.kamar || [];
+            S.pembayaran = cur.pembayaran || [];
+            S.pengeluaran = cur.pengeluaran || [];
+            S.keluhan = cur.keluhan || [];
+          }
         }
       } catch (e) {
         console.warn('Load multi-kost failed, fallback to init:', e);
@@ -1064,21 +1189,29 @@ const LS = {
       initDefaultMultiKostData(true);
     }
 
-    // Auto-clean: Hapus data demo bawaan yang belum dihapus di localStorage pengguna
-    const isMockData = (S.penghuni || []).some(p => ['p_dimas', 'p_anisa', 'p_kevin', 'p_sarah', 'p_fajar', 'p_rian'].includes(p.id)) ||
-                       (S.kamar || []).some(k => k.id === 'km_101' && k.tipe === 'Deluxe AC') ||
-                       (S.properties && S.properties.length === 5 && S.properties.some(p => p.nama === 'Kost Graha Asri Dago'));
-    if (isMockData) {
-      const clean = getCleanInitialState();
-      S.properties = clean.properties;
-      S.propertiesData = clean.propertiesData;
-      S.activeKostId = 'kost_1';
-      S.kost = { ...clean.defaultKost };
+    // Auto-clean residu dummy tenants pada localStorage pengguna asli jika belum dibersihkan (di luar mode testing)
+    const isTestingEnv = (typeof window !== 'undefined') && (
+      window.__TEST_MODE__ ||
+      (window.location && window.location.href.includes('test_runner.html')) ||
+      (window.parent && window.parent !== window && window.parent.location && window.parent.location.href.includes('test_runner.html'))
+    );
+    const hasOldMockTenants = (S.penghuni || []).some(p => ['p_dimas', 'p_anisa', 'p_kevin', 'p_sarah', 'p_fajar', 'p_rian'].includes(p.id));
+    if (hasOldMockTenants && !isTestingEnv && !localStorage.getItem('sk3_mock_cleaned_v4')) {
       S.penghuni = [];
-      S.kamar = [];
       S.pembayaran = [];
       S.pengeluaran = [];
       S.keluhan = [];
+      if (S.propertiesData) {
+        Object.values(S.propertiesData).forEach(b => {
+          if (b) {
+            b.penghuni = [];
+            b.pembayaran = [];
+            b.pengeluaran = [];
+            b.keluhan = [];
+          }
+        });
+      }
+      localStorage.setItem('sk3_mock_cleaned_v4', '1');
       LS.save();
     }
 
