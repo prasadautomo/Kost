@@ -8,7 +8,7 @@
   
   <!-- PWA Meta Tags -->
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#6366f1" />
+  <meta name="theme-color" content="#0f766e" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -29,9 +29,6 @@
 
 <!-- ========== SCREEN: LOGIN / REGISTER ========== -->
 <div id="screen-login" class="login-screen" style="display:flex">
-  <div class="ambient-orb purple"></div>
-  <div class="ambient-orb green"></div>
-
   <div class="login-container-split">
     <!-- LEFT SIDE: Logo & Nama Kost Manager (Bersih & Minimalis) -->
     <div class="login-hero-showcase login-hero-minimal">
@@ -72,9 +69,9 @@
         <div class="login-card-footer-sec">
           <div style="display:flex;align-items:center;gap:6px;color:var(--text-3);font-size:0.75rem">
             <span class="material-symbols-outlined" style="font-size:14px;color:var(--green)">lock</span>
-            <span>Enkripsi Bank-Grade SSL 256-bit</span>
+            <span>Autentikasi Aman Google OAuth</span>
           </div>
-          <div style="font-size:0.75rem;color:var(--text-4)">Multi-Cabang &amp; Cloud Ready</div>
+          <div style="font-size:0.75rem;color:var(--text-4)">Sinkronisasi Multi-Cabang &amp; Supabase Cloud</div>
         </div>
 
         <!-- Elemen tersembunyi untuk kompatibilitas test runner dan background (100% tersembunyi dari user) -->
@@ -155,7 +152,7 @@
           <div class="property-dropdown-menu" id="property-dropdown-menu" style="display:none">
             <div class="prop-dd-header">
               <span class="prop-dd-title">🏢 5 Cabang Kost Anda</span>
-              <span class="badge" style="background:rgba(99,102,241,0.15);color:var(--accent-light);font-size:0.7rem;font-weight:700">Multi-Kost</span>
+              <span class="badge" style="background:var(--accent-bg);color:var(--accent-light);border:1px solid var(--accent-border);font-size:0.7rem;font-weight:700">Multi-Kost</span>
             </div>
             <div class="prop-dd-list" id="prop-dd-list">
               <!-- Rendered via JS -->
@@ -218,7 +215,7 @@
         <div class="kpi-row" id="kpi-row"></div>
 
         <!-- Portofolio Multi-Kost: 5 Cabang Terpisah -->
-        <div class="panel multi-kost-panel" id="multi-kost-panel" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(99,102,241,0.06),rgba(16,185,129,0.06));border:1px solid var(--border);border-radius:16px;padding:16px 20px">
+        <div class="panel multi-kost-panel" id="multi-kost-panel" style="margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
             <div>
               <div style="display:flex;align-items:center;gap:8px">
@@ -227,7 +224,7 @@
               </div>
               <p style="margin:3px 0 0;font-size:0.8rem;color:var(--text-3)">Seluruh data kamar, nama penghuni, dan pembukuan terisolasi 100% mandiri pada setiap cabang lokasi</p>
             </div>
-            <span class="badge" style="background:rgba(99,102,241,0.15);color:var(--accent-light);font-weight:700;padding:6px 12px;border-radius:20px;font-size:0.78rem">5 Lokasi Berbeda</span>
+            <span class="badge" style="background:var(--accent-bg);color:var(--accent-light);border:1px solid var(--accent-border);font-weight:700;padding:4px 10px;border-radius:var(--radius-xs);font-size:0.78rem">5 Lokasi Berbeda</span>
           </div>
           <div id="multi-kost-summary-bar" style="margin-bottom:16px"></div>
           <div class="multi-kost-grid" id="multi-kost-cards-grid">
@@ -636,7 +633,7 @@
               </form>
 
               <!-- Panel Status Penyimpanan Web Cloud Langsung -->
-              <div style="margin-top:20px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:12px;padding:16px;max-width:540px">
+              <div style="margin-top:20px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--radius);padding:16px;max-width:540px">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
                   <div>
                     <div style="font-weight:700;color:var(--primary);font-size:0.92rem;display:flex;align-items:center;gap:6px">
@@ -1291,7 +1288,7 @@
       <button type="button" class="modal-x" id="modal-supabase-rls-close">✕</button>
     </div>
     <div style="padding:20px;max-height:80vh;overflow-y:auto">
-      <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+      <div style="background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px">
         <div style="font-weight:700;color:var(--primary);margin-bottom:4px">💡 Mengapa data belum tersimpan langsung ke web?</div>
         <div style="font-size:0.83rem;color:var(--text-2);line-height:1.45">
           Supabase secara default mengaktifkan <em>Row Level Security (RLS)</em> yang menolak penyimpanan data dari web browser. Jalankan skrip di bawah ini <strong>sekali saja</strong> di SQL Editor Supabase Anda agar semua data penghuni, kamar, pembayaran &amp; pengeluaran otomatis tersimpan langsung ke web!

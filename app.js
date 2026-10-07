@@ -3172,7 +3172,7 @@ function renderDashboard() {
     <div class="kpi">
       <div class="kpi-top">
         <span class="kpi-label">Total Penghuni</span>
-        <div class="kpi-icon-badge" style="background:rgba(99,102,241,0.14);color:var(--accent-light)">
+        <div class="kpi-icon-badge" style="background:var(--accent-bg);color:var(--accent-light)">
           <span class="material-symbols-outlined" style="font-size:18px">group</span>
         </div>
       </div>
@@ -3258,7 +3258,7 @@ function renderDashboard() {
     <div class="kpi" data-page="pengeluaran" style="cursor:pointer" title="Rincian laba bersih operasional">
       <div class="kpi-top">
         <span class="kpi-label">Laba Bersih</span>
-        <div class="kpi-icon-badge" style="background:rgba(99,102,241,0.14);color:var(--accent-light)">
+        <div class="kpi-icon-badge" style="background:var(--accent-bg);color:var(--accent-light)">
           <span class="material-symbols-outlined" style="font-size:18px">trending_up</span>
         </div>
       </div>
@@ -3390,7 +3390,7 @@ function renderCharts() {
           labels: ['Pemasukan', 'Pengeluaran', 'Laba Bersih'],
           datasets: [{
             data: [totalPemasukan, totalPengeluaran, Math.max(0, laba)],
-            backgroundColor: ['#10b981', '#f43f5e', '#6366f1'],
+            backgroundColor: ['#10b981', '#f43f5e', '#0f766e'],
             borderRadius: 8,
             borderSkipped: false
           }]
@@ -3409,7 +3409,7 @@ function renderCharts() {
     $('cashflow-legend').innerHTML = `
       <div class="legend-item"><span class="legend-dot" style="background:#10b981"></span>Pemasukan: ${rp(totalPemasukan)}</div>
       <div class="legend-item"><span class="legend-dot" style="background:#f43f5e"></span>Pengeluaran: ${rp(totalPengeluaran)}</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#6366f1"></span>Laba: ${rp(laba)}</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#0f766e"></span>Laba: ${rp(laba)}</div>
     `;
   }
 
@@ -3444,7 +3444,7 @@ function renderCharts() {
         type: 'doughnut',
         data: {
           labels: ['Motor', 'Mobil', 'Motor & Mobil', 'Tidak Ada'],
-          datasets: [{ data: [motor, mobil, both, noKen], backgroundColor: ['#6366f1', '#a855f7', '#f59e0b', '#64748b'], borderWidth: 0, hoverOffset: 6 }]
+          datasets: [{ data: [motor, mobil, both, noKen], backgroundColor: ['#0f766e', '#0284c7', '#f59e0b', '#64748b'], borderWidth: 0, hoverOffset: 6 }]
         },
         options: donut
       });
@@ -6393,7 +6393,7 @@ window.openLaporanBulanan = function(targetBln = thisMonth()) {
         </div>
         <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:8px">
           <div style="font-size:0.7rem;color:#64748b;text-transform:uppercase;font-weight:700">Laba Bersih</div>
-          <div style="font-size:1rem;font-weight:800;color:${labaBersih >= 0 ? '#4f46e5' : '#e11d48'};margin-top:2px">${rp(labaBersih)}</div>
+          <div style="font-size:1rem;font-weight:800;color:${labaBersih >= 0 ? '#0f766e' : '#e11d48'};margin-top:2px">${rp(labaBersih)}</div>
           <div style="font-size:0.7rem;color:#64748b">${labaBersih >= 0 ? 'Surplus' : 'Defisit'}</div>
         </div>
         <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px;border-radius:8px">
