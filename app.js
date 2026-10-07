@@ -178,6 +178,7 @@ let S = {
 window.S = S;
 
 let currentUser  = null; // akun object
+if (typeof window !== 'undefined') window.currentUser = null;
 let editId       = null;
 let detailId     = null;
 let currentView  = 'grid';
@@ -912,24 +913,24 @@ function switchKost(targetKostId) {
   // 1. Simpan data aktif saat ini ke bucket cabangnya
   if (S.activeKostId && S.propertiesData[S.activeKostId]) {
     S.propertiesData[S.activeKostId] = {
-      kost: { ...S.kost },
-      penghuni: [...S.penghuni],
-      kamar: [...S.kamar],
-      pembayaran: [...S.pembayaran],
-      pengeluaran: [...S.pengeluaran],
-      keluhan: [...S.keluhan]
+      kost: { ...(S.kost || {}) },
+      penghuni: [...(S.penghuni || [])],
+      kamar: [...(S.kamar || [])],
+      pembayaran: [...(S.pembayaran || [])],
+      pengeluaran: [...(S.pengeluaran || [])],
+      keluhan: [...(S.keluhan || [])]
     };
   }
 
   // 2. Muat cabang sasaran
   S.activeKostId = targetKostId;
   const target = S.propertiesData[targetKostId];
-  S.kost = { ...target.kost };
-  S.penghuni = [...target.penghuni];
-  S.kamar = [...target.kamar];
-  S.pembayaran = [...target.pembayaran];
-  S.pengeluaran = [...target.pengeluaran];
-  S.keluhan = [...target.keluhan];
+  S.kost = { ...(target.kost || {}) };
+  S.penghuni = [...(target.penghuni || [])];
+  S.kamar = [...(target.kamar || [])];
+  S.pembayaran = [...(target.pembayaran || [])];
+  S.pengeluaran = [...(target.pengeluaran || [])];
+  S.keluhan = [...(target.keluhan || [])];
 
   // 3. Simpan state terisolasi
   LS.save();
@@ -948,7 +949,7 @@ function switchKost(targetKostId) {
   const activePage = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
   navigateTo(activePage);
 
-  toast(`🏢 Beralih ke ${S.kost.nama} (${target.kost.kota || (target.kost.alamat ? target.kost.alamat.split(',')[0] : 'Indonesia')})`, 'success');
+  toast(`🏢 Beralih ke ${S.kost.nama} (${target.kost?.kota || (target.kost?.alamat ? target.kost.alamat.split(',')[0] : 'Indonesia')})`, 'success');
 }
 window.switchKost = switchKost;
 
@@ -1299,11 +1300,24 @@ const LS = {
     }
 
     // Auto-clean residu dummy tenants pada localStorage pengguna asli jika belum dibersihkan (di luar mode testing)
-    const isTestingEnv = (typeof window !== 'undefined') && (
-      window.__TEST_MODE__ ||
-      (window.location && window.location.href.includes('test_runner.html')) ||
-      (window.parent && window.parent !== window && window.parent.location && window.parent.location.href.includes('test_runner.html'))
-    );
+    let isTestingEnv = false;
+    try {
+      if (typeof window !== 'undefined') {
+        if (window.__TEST_MODE__) {
+          isTestingEnv = true;
+        } else if (window.location && window.location.href && window.location.href.includes('test_runner.html')) {
+          isTestingEnv = true;
+        } else if (window.parent && window.parent !== window) {
+          try {
+            if (window.parent.location && window.parent.location.href && window.parent.location.href.includes('test_runner.html')) {
+              isTestingEnv = true;
+            }
+          } catch (_) {
+            // Protected against cross-origin iframe security restrictions
+          }
+        }
+      }
+    } catch (_) {}
     const hasOldMockTenants = (S.penghuni || []).some(p => ['p_dimas', 'p_anisa', 'p_kevin', 'p_sarah', 'p_fajar', 'p_rian'].includes(p.id));
     if (hasOldMockTenants && !isTestingEnv && !localStorage.getItem('sk3_mock_cleaned_v4')) {
       S.penghuni = [];
@@ -1359,11 +1373,22 @@ const uid  = () => Date.now().toString(36) + Math.random().toString(36).slice(2,
 const cleanNumber = n => {
   if (typeof n === 'number') return isNaN(n) ? 0 : n;
   if (!n) return 0;
-  const str = String(n).trim();
+  let str = String(n).trim();
+  str = str.replace(/,\s*(?:00|-|0)$/, '');
   const digitsOnly = str.replace(/[^\d]/g, '');
   const parsed = Number(digitsOnly);
   return isNaN(parsed) ? 0 : parsed;
 };
+
+// Normalizer nomor HP internasional WhatsApp (08... / 8... / +62...)
+function cleanPhone(raw) {
+  if (!raw) return '';
+  let clean = String(raw).replace(/\D/g, '');
+  if (clean.startsWith('0')) clean = '62' + clean.slice(1);
+  else if (!clean.startsWith('62') && clean.length >= 9) clean = '62' + clean;
+  return clean;
+}
+window.cleanPhone = cleanPhone;
 window.cleanNumber = cleanNumber;
 
 const rp = n => 'Rp ' + cleanNumber(n).toLocaleString('id-ID');
@@ -1480,8 +1505,10 @@ function toast(msg, type='ok') {
   w.appendChild(el);
   setTimeout(() => {
     el.style.opacity = '0';
-    el.style.transition = '0.3s';
-    setTimeout(() => el.remove(), 300);
+    setTimeout(() => {
+      if (el.parentNode) el.parentNode.removeChild(el);
+      else if (typeof el.remove === 'function') el.remove();
+    }, 300);
   }, 2800);
 }
 
@@ -2644,6 +2671,7 @@ function setupPropertySwitcherEvents() {
 
 function loginWithAkun(akun) {
   currentUser = akun;
+  if (typeof window !== 'undefined') window.currentUser = akun;
   LS.saveSession(akun);
   enterApp();
 }
@@ -2656,6 +2684,7 @@ $('btn-logout').addEventListener('click', async () => {
       try { await saveAllPengaturan('logout'); } catch {}
     }
     currentUser = null;
+    if (typeof window !== 'undefined') window.currentUser = null;
     LS.clearSession();
     showScreen('screen-login');
     toast('Anda telah keluar.');
@@ -2675,8 +2704,9 @@ function enterApp() {
   document.title = (S.kost?.nama || 'SiKost') + ' – Manajemen Kost Modern';
   updatePropertySwitcherUI();
   setupPropertySwitcherEvents();
-  renderPengaturan();
-  const urlPage = new URLSearchParams(window.location.search).get('page') || (location.hash ? location.hash.replace('#', '') : '');
+  const urlSearch = window.location?.search || '';
+  const urlHash   = window.location?.hash || '';
+  const urlPage = new URLSearchParams(urlSearch).get('page') || (urlHash ? urlHash.replace('#', '') : '');
   const firstPage = PAGE_TITLES[urlPage] ? urlPage : 'dashboard';
   navigateTo(firstPage);
 
@@ -2776,6 +2806,7 @@ function navigateTo(page) {
 
   updateSidebarBadges();
 }
+window.navigateTo = navigateTo;
 
 document.addEventListener('click', e => {
   const btn = e.target.closest('[data-page]');
@@ -3047,7 +3078,11 @@ window.kirimWaKontrak = function(pid, branchId = S.activeKostId) {
     toast('Nomor WhatsApp penghuni belum diisi!', true);
     return;
   }
-  const cleanHp = p.hp.replace(/\D/g, '').replace(/^0/, '62');
+  const cleanHp = cleanPhone(p.hp);
+  if (!cleanHp || cleanHp.length < 8) {
+    toast('Nomor WhatsApp penghuni tidak valid!', true);
+    return;
+  }
   const kostName = targetKost.nama || 'SiKost';
   const exp = getContractExpiryStatus(p);
   const tglStr = p.tglKeluar ? fmtD(p.tglKeluar) : 'segera';
@@ -3946,8 +3981,8 @@ window.openDetail = function(id) {
 
   const btnWa = $('btn-wa-detail');
   if (btnWa) {
-    if (p.hp) {
-      const cleanHp = p.hp.replace(/\D/g, '').replace(/^0/, '62');
+    const cleanHp = cleanPhone(p.hp);
+    if (cleanHp && cleanHp.length >= 8) {
       btnWa.href = `https://wa.me/${cleanHp}`;
       btnWa.style.display = 'inline-flex';
     } else {
@@ -4010,7 +4045,7 @@ $('form-perpanjang-kontrak')?.addEventListener('submit', async (e) => {
     return;
   }
   const newSewa = Number($('renew-sewa')?.value) || p.sewa;
-  const catatan = $('renew-catatan')?.value.trim();
+  const catatan = $('renew-catatan')?.value?.trim() || '';
 
   p.tglKeluar = newTgl;
   p.sewa = newSewa;
@@ -4976,9 +5011,9 @@ function renderPengeluaran() {
 
     // Default: bulan berjalan bila baru dimuat, pertahankan seleksi jika sudah ada
     let cur = curVal;
-    if (curVal === undefined || curVal === null || !sel.dataset.initialized) {
+    if (curVal === undefined || curVal === null || !sel.dataset?.initialized) {
       cur = thisMonth();
-      sel.dataset.initialized = 'true';
+      if (sel.dataset) sel.dataset.initialized = 'true';
     }
 
     sel.innerHTML = `<option value=""${cur === '' ? ' selected' : ''}>Semua Bulan (Riwayat Lengkap)</option>` +
@@ -5273,7 +5308,7 @@ $('cari-pengeluaran')?.addEventListener('input', function(e) {
 });
 $('btn-export-pengeluaran-csv')?.addEventListener('click', exportPengeluaranCsv);
 
-window.openModalCatatPengeluaran = function() {
+function openModalCatatPengeluaran() {
   const titleEl = $('modal-pengeluaran-title');
   if (titleEl) titleEl.textContent = 'Catat Pengeluaran Baru';
   const formEl = $('form-pengeluaran');
@@ -5291,7 +5326,8 @@ window.openModalCatatPengeluaran = function() {
 
   openModal('modal-pengeluaran');
   setTimeout(() => $('field-pengeluaran-jumlah')?.focus(), 250);
-};
+}
+window.openModalCatatPengeluaran = openModalCatatPengeluaran;
 
 $('btn-tambah-pengeluaran')?.addEventListener('click', openModalCatatPengeluaran);
 $('btn-dash-catat-pengeluaran')?.addEventListener('click', openModalCatatPengeluaran);
@@ -5474,11 +5510,11 @@ function renderWaPreview() {
   const prevEl = $('preview-wa-msg');
   if (!tplEl || !prevEl) return;
   const raw = tplEl.value || getDefaultWaTemplate();
-  const sampleBank = $('set-bank-nama')?.value.trim() || S.kost.bankNama || 'Bank BCA';
-  const sampleRek = $('set-bank-rekening')?.value.trim() || S.kost.bankRekening || '8465-1234-90';
-  const samplePemilik = $('set-bank-atas-nama')?.value.trim() || $('set-pemilik')?.value.trim() || S.kost.pemilik || 'Pengelola Kost';
-  const sampleKost = $('set-nama-kost')?.value.trim() || S.kost.nama || 'Kost Harmoni';
-  const sampleTempo = $('set-tempo-default')?.value.trim() || S.kost.tempoDefault || 5;
+  const sampleBank = $('set-bank-nama')?.value?.trim() || S.kost.bankNama || 'Bank BCA';
+  const sampleRek = $('set-bank-rekening')?.value?.trim() || S.kost.bankRekening || '8465-1234-90';
+  const samplePemilik = $('set-bank-atas-nama')?.value?.trim() || $('set-pemilik')?.value?.trim() || S.kost.pemilik || 'Pengelola Kost';
+  const sampleKost = $('set-nama-kost')?.value?.trim() || S.kost.nama || 'Kost Harmoni';
+  const sampleTempo = $('set-tempo-default')?.value?.trim?.() || $('set-tempo-default')?.value || S.kost.tempoDefault || 5;
 
   const rendered = raw
     .replace(/{nama}/g, 'Dimas Prasetyo')
@@ -5999,7 +6035,7 @@ function setupSupabaseUI() {
       e.preventDefault();
       const url = $('modal-cloud-url').value.trim();
       const key = $('modal-cloud-key').value.trim();
-      const gClientId = $('modal-google-client-id')?.value.trim();
+      const gClientId = $('modal-google-client-id')?.value?.trim() || '';
       const saveBtn = $('modal-cloud-simpan');
 
       saveBtn.disabled = true;
@@ -6356,7 +6392,7 @@ window.openLaporanBulanan = function(targetBln = thisMonth()) {
 
   const totalKamar = S.kamar.length || S.kost.totalKamar || 10;
   const kamarTerisi = new Set(aktif.map(p => p.kamar).filter(Boolean)).size;
-  const okupansiPersen = Math.round((kamarTerisi / totalKamar) * 100);
+  const okupansiPersen = totalKamar > 0 ? Math.round((kamarTerisi / totalKamar) * 100) : 0;
 
   const expCat = {};
   expenses.forEach(x => {
@@ -6432,7 +6468,7 @@ window.openLaporanBulanan = function(targetBln = thisMonth()) {
       <!-- Tanda Tangan -->
       <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px">
         <div style="font-size:0.72rem;color:#64748b">
-          Dicetak otomatis oleh SiKost pada: ${new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+          Dicetak otomatis oleh SiKost pada: ${new Date().toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}
         </div>
         <div style="text-align:center">
           <div style="font-size:0.75rem;color:#64748b;margin-bottom:48px">Pemilik / Pengelola Kost,</div>
@@ -6646,6 +6682,7 @@ if ('serviceWorker' in navigator) {
   const session = LS.loadSession();
   if (session) {
     currentUser = session;
+    if (typeof window !== 'undefined') window.currentUser = session;
     enterApp();
     return;
   }
