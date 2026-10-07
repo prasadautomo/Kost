@@ -296,6 +296,16 @@
       await new Promise(r => setTimeout(r, 200));
       logAssertion(b8, win.S.kost.nama === 'Kost Puri Indah Tebet', 'Berhasil beralih ke Cabang 3: Kost Puri Indah Tebet');
 
+      // Validasi Tindakan Mendesak pada Cabang 3 saat toggle Cabang Aktif
+      doc.getElementById('nav-dashboard').click();
+      await new Promise(r => setTimeout(r, 150));
+      const dashAction3 = doc.getElementById('dash-action-center');
+      logAssertion(b8, dashAction3 && dashAction3.style.display !== 'none', 'Action Center tampil di Cabang 3 (Kost Puri Indah Tebet)');
+      win.switchActionScope('active');
+      await new Promise(r => setTimeout(r, 150));
+      logAssertion(b8, dashAction3 && dashAction3.style.display !== 'none', 'Action Center TIDAK hilang saat menekan tombol "Cabang Aktif" di Kost Puri Indah Tebet');
+      logAssertion(b8, dashAction3.innerHTML.includes('Cabang Aktif') && dashAction3.innerHTML.includes('Semua Cabang'), 'Toggle scope tab tetap utuh dan dapat digunakan');
+
       // 3. Switch kembali ke Cabang 1: Griya Harmoni (Yogyakarta)
       win.switchKost('kost_1');
       await new Promise(r => setTimeout(r, 200));

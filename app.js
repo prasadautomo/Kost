@@ -667,11 +667,11 @@ function generateInitialMultiKostData() {
     { id: 'km_2_B04', no: 'B-04', lantai: '2', tipe: 'Standar Bandung', harga: 1200000, fasilitas: 'Exhaust Fan, Meja, Lemari' }
   ];
   const penghuni2 = [
-    { id: 'p_bdg_arya', nama: 'Arya Pratama', hp: '081211223301', kamar: 'A-01', lantai: '1', tglMasuk: '2025-05-10', nik: '3273010101990001', gender: 'Laki-laki', tempatLahir: 'Bandung', tglLahir: '2001-02-14', alamatKtp: 'Jl. Riau No. 12, Bandung', email: 'arya.pratama@itb.ac.id', pekerjaan: 'Mahasiswa Teknik Informatika ITB', status: 'aktif', sewa: 1700000, tempo: 10, deposit: 500000, catatanDeposit: 'Lunas' },
-    { id: 'p_bdg_bella', nama: 'Bella Safitri', hp: '081211223302', kamar: 'A-02', lantai: '1', tglMasuk: '2025-07-01', nik: '3273010202990002', gender: 'Perempuan', tempatLahir: 'Bogor', tglLahir: '1998-09-20', alamatKtp: 'Jl. Pajajaran No. 44, Bogor', email: 'bella.safitri.arch@gmail.com', pekerjaan: 'Arsitek PT Wijaya Karya', status: 'aktif', sewa: 1700000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
-    { id: 'p_bdg_eko', nama: 'Eko Prasetyo', hp: '081211223303', kamar: 'A-03', lantai: '1', tglMasuk: '2025-08-15', nik: '3273010303990003', gender: 'Laki-laki', tempatLahir: 'Cirebon', tglLahir: '2000-11-12', alamatKtp: 'Jl. Tuparev No. 8, Cirebon', email: 'eko.designer@creativeagency.id', pekerjaan: 'Graphic Designer Agensi Bandung', status: 'aktif', sewa: 1600000, tempo: 5, deposit: 400000, catatanDeposit: 'Lunas' },
-    { id: 'p_bdg_chandra', nama: 'Chandra Wijaya', hp: '081211223304', kamar: 'B-01', lantai: '2', tglMasuk: '2025-04-01', nik: '3273010404990004', gender: 'Laki-laki', tempatLahir: 'Jakarta', tglLahir: '1997-04-25', alamatKtp: 'Jl. Fatmawati No. 9, Jakarta Selatan', email: 'chandra.wijaya@shopee.com', pekerjaan: 'Data Analyst Shopee Bandung Hub', status: 'aktif', sewa: 1950000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
-    { id: 'p_bdg_dea', nama: 'Dea Amanda', hp: '081211223305', kamar: 'B-02', lantai: '2', tglMasuk: '2025-06-20', nik: '3273010505990005', gender: 'Perempuan', tempatLahir: 'Sukabumi', tglLahir: '2002-06-18', alamatKtp: 'Jl. Suryakencana No. 15, Sukabumi', email: 'dea.amanda@unpad.ac.id', pekerjaan: 'Mahasiswi FK Universitas Padjadjaran', status: 'aktif', sewa: 1950000, tempo: 5, deposit: 500000, catatanDeposit: 'Lunas' }
+    { id: 'p_bdg_arya', nama: 'Arya Pratama', hp: '081211223301', kamar: 'A-01', lantai: '1', tglMasuk: '2025-05-10', tglKeluar: addDaysYMD(5), nik: '3273010101990001', gender: 'Laki-laki', tempatLahir: 'Bandung', tglLahir: '2001-02-14', alamatKtp: 'Jl. Riau No. 12, Bandung', email: 'arya.pratama@itb.ac.id', pekerjaan: 'Mahasiswa Teknik Informatika ITB', status: 'aktif', sewa: 1700000, tempo: 10, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_bdg_bella', nama: 'Bella Safitri', hp: '081211223302', kamar: 'A-02', lantai: '1', tglMasuk: '2025-07-01', tglKeluar: addDaysYMD(180), nik: '3273010202990002', gender: 'Perempuan', tempatLahir: 'Bogor', tglLahir: '1998-09-20', alamatKtp: 'Jl. Pajajaran No. 44, Bogor', email: 'bella.safitri.arch@gmail.com', pekerjaan: 'Arsitek PT Wijaya Karya', status: 'aktif', sewa: 1700000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_bdg_eko', nama: 'Eko Prasetyo', hp: '081211223303', kamar: 'A-03', lantai: '1', tglMasuk: '2025-08-15', tglKeluar: addDaysYMD(180), nik: '3273010303990003', gender: 'Laki-laki', tempatLahir: 'Cirebon', tglLahir: '2000-11-12', alamatKtp: 'Jl. Tuparev No. 8, Cirebon', email: 'eko.designer@creativeagency.id', pekerjaan: 'Graphic Designer Agensi Bandung', status: 'aktif', sewa: 1600000, tempo: 5, deposit: 400000, catatanDeposit: 'Lunas' },
+    { id: 'p_bdg_chandra', nama: 'Chandra Wijaya', hp: '081211223304', kamar: 'B-01', lantai: '2', tglMasuk: '2025-04-01', tglKeluar: addDaysYMD(12), nik: '3273010404990004', gender: 'Laki-laki', tempatLahir: 'Jakarta', tglLahir: '1997-04-25', alamatKtp: 'Jl. Fatmawati No. 9, Jakarta Selatan', email: 'chandra.wijaya@shopee.com', pekerjaan: 'Data Analyst Shopee Bandung Hub', status: 'aktif', sewa: 1950000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_bdg_dea', nama: 'Dea Amanda', hp: '081211223305', kamar: 'B-02', lantai: '2', tglMasuk: '2025-06-20', tglKeluar: addDaysYMD(180), nik: '3273010505990005', gender: 'Perempuan', tempatLahir: 'Sukabumi', tglLahir: '2002-06-18', alamatKtp: 'Jl. Suryakencana No. 15, Sukabumi', email: 'dea.amanda@unpad.ac.id', pekerjaan: 'Mahasiswi FK Universitas Padjadjaran', status: 'aktif', sewa: 1950000, tempo: 5, deposit: 500000, catatanDeposit: 'Lunas' }
   ];
   const pembayaran2 = [
     { id: 'pb_2_1', penghuniId: 'p_bdg_arya', bulan: bln, jumlah: 1700000, status: 'lunas', tglBayar: `${bln}-05T11:00:00Z` },
@@ -711,11 +711,11 @@ function generateInitialMultiKostData() {
     { id: 'km_3_302', no: '302', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' }
   ];
   const penghuni3 = [
-    { id: 'p_jkt_farhan', nama: 'Farhan Ramadhan', hp: '081122334401', kamar: '101', lantai: '1', tglMasuk: '2025-03-01', nik: '3174010101980001', gender: 'Laki-laki', tempatLahir: 'Jakarta', tglLahir: '1996-08-14', alamatKtp: 'Jl. Rawamangun No. 10, Jakarta Timur', email: 'farhan.ramadhan@mandirisec.co.id', pekerjaan: 'Investment Banker SCBD', status: 'aktif', sewa: 2500000, tempo: 1, deposit: 1000000, catatanDeposit: 'Lunas' },
-    { id: 'p_jkt_gita', nama: 'Gita Permata', hp: '081122334402', kamar: '102', lantai: '1', tglMasuk: '2025-05-15', nik: '3174010202980002', gender: 'Perempuan', tempatLahir: 'Surabaya', tglLahir: '1998-03-22', alamatKtp: 'Jl. Manyar Kertoarjo No. 22, Surabaya', email: 'gita.permata@pwc.com', pekerjaan: 'Senior Tax Consultant PwC Indonesia', status: 'aktif', sewa: 2500000, tempo: 1, deposit: 1000000, catatanDeposit: 'Lunas' },
-    { id: 'p_jkt_haris', nama: 'Haris Setiawan', hp: '081122334403', kamar: '201', lantai: '2', tglMasuk: '2025-02-01', nik: '3174010303980003', gender: 'Laki-laki', tempatLahir: 'Medan', tglLahir: '1995-12-09', alamatKtp: 'Jl. Gatot Subroto No. 5, Medan', email: 'haris.setiawan@lawfirm.id', pekerjaan: 'Corporate Legal Counsel Kuningan', status: 'aktif', sewa: 2800000, tempo: 5, deposit: 1000000, catatanDeposit: 'Lunas' },
-    { id: 'p_jkt_indah', nama: 'Indah Savira', hp: '081122334404', kamar: '202', lantai: '2', tglMasuk: '2025-06-10', nik: '3174010404980004', gender: 'Perempuan', tempatLahir: 'Palembang', tglLahir: '1999-07-30', alamatKtp: 'Jl. Sudirman No. 80, Palembang', email: 'indah.savira@techunicorn.com', pekerjaan: 'HR Business Partner Tech Unicorn', status: 'aktif', sewa: 2800000, tempo: 5, deposit: 1000000, catatanDeposit: 'Lunas' },
-    { id: 'p_jkt_joko', nama: 'Joko Triyono', hp: '081122334405', kamar: '301', lantai: '3', tglMasuk: '2025-01-15', nik: '3174010505980005', gender: 'Laki-laki', tempatLahir: 'Solo', tglLahir: '1994-05-18', alamatKtp: 'Jl. Adisucipto No. 100, Solo', email: 'joko.triyono@goto.com', pekerjaan: 'Staff Backend Engineer GoTo', status: 'aktif', sewa: 3000000, tempo: 1, deposit: 1500000, catatanDeposit: 'Lunas' }
+    { id: 'p_jkt_farhan', nama: 'Farhan Ramadhan', hp: '081122334401', kamar: '101', lantai: '1', tglMasuk: '2025-03-01', tglKeluar: addDaysYMD(3), nik: '3174010101980001', gender: 'Laki-laki', tempatLahir: 'Jakarta', tglLahir: '1996-08-14', alamatKtp: 'Jl. Rawamangun No. 10, Jakarta Timur', email: 'farhan.ramadhan@mandirisec.co.id', pekerjaan: 'Investment Banker SCBD', status: 'aktif', sewa: 2500000, tempo: 1, deposit: 1000000, catatanDeposit: 'Lunas' },
+    { id: 'p_jkt_gita', nama: 'Gita Permata', hp: '081122334402', kamar: '102', lantai: '1', tglMasuk: '2025-05-15', tglKeluar: addDaysYMD(180), nik: '3174010202980002', gender: 'Perempuan', tempatLahir: 'Surabaya', tglLahir: '1998-03-22', alamatKtp: 'Jl. Manyar Kertoarjo No. 22, Surabaya', email: 'gita.permata@pwc.com', pekerjaan: 'Senior Tax Consultant PwC Indonesia', status: 'aktif', sewa: 2500000, tempo: 1, deposit: 1000000, catatanDeposit: 'Lunas' },
+    { id: 'p_jkt_haris', nama: 'Haris Setiawan', hp: '081122334403', kamar: '201', lantai: '2', tglMasuk: '2025-02-01', tglKeluar: addDaysYMD(14), nik: '3174010303980003', gender: 'Laki-laki', tempatLahir: 'Medan', tglLahir: '1995-12-09', alamatKtp: 'Jl. Gatot Subroto No. 5, Medan', email: 'haris.setiawan@lawfirm.id', pekerjaan: 'Corporate Legal Counsel Kuningan', status: 'aktif', sewa: 2800000, tempo: 5, deposit: 1000000, catatanDeposit: 'Lunas' },
+    { id: 'p_jkt_indah', nama: 'Indah Savira', hp: '081122334404', kamar: '202', lantai: '2', tglMasuk: '2025-06-10', tglKeluar: addDaysYMD(180), nik: '3174010404980004', gender: 'Perempuan', tempatLahir: 'Palembang', tglLahir: '1999-07-30', alamatKtp: 'Jl. Sudirman No. 80, Palembang', email: 'indah.savira@techunicorn.com', pekerjaan: 'HR Business Partner Tech Unicorn', status: 'aktif', sewa: 2800000, tempo: 5, deposit: 1000000, catatanDeposit: 'Lunas' },
+    { id: 'p_jkt_joko', nama: 'Joko Triyono', hp: '081122334405', kamar: '301', lantai: '3', tglMasuk: '2025-01-15', tglKeluar: addDaysYMD(90), nik: '3174010505980005', gender: 'Laki-laki', tempatLahir: 'Solo', tglLahir: '1994-05-18', alamatKtp: 'Jl. Adisucipto No. 100, Solo', email: 'joko.triyono@goto.com', pekerjaan: 'Staff Backend Engineer GoTo', status: 'aktif', sewa: 3000000, tempo: 1, deposit: 1500000, catatanDeposit: 'Lunas' }
   ];
   const pembayaran3 = [
     { id: 'pb_3_1', penghuniId: 'p_jkt_farhan', bulan: bln, jumlah: 2500000, status: 'lunas', tglBayar: `${bln}-01T15:00:00Z` },
@@ -755,11 +755,11 @@ function generateInitialMultiKostData() {
     { id: 'km_4_U04', no: 'U-04', lantai: '2', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Kipas Angin Dinding, Kasur, Meja Belajar' }
   ];
   const penghuni4 = [
-    { id: 'p_sby_kenzo', nama: 'Kenzo Raditya', hp: '081333445501', kamar: 'G-01', lantai: '1', tglMasuk: '2025-08-01', nik: '3578010101990001', gender: 'Laki-laki', tempatLahir: 'Surabaya', tglLahir: '2001-07-11', alamatKtp: 'Jl. Kertajaya Indah No. 12, Surabaya', email: 'kenzo.raditya@unair.ac.id', pekerjaan: 'Mahasiswa Kedokteran Unair', status: 'aktif', sewa: 1650000, tempo: 5, deposit: 500000, catatanDeposit: 'Lunas' },
-    { id: 'p_sby_larasati', nama: 'Larasati Putri', hp: '081333445502', kamar: 'G-02', lantai: '1', tglMasuk: '2025-06-01', nik: '3578010202990002', gender: 'Perempuan', tempatLahir: 'Gresik', tglLahir: '1998-10-15', alamatKtp: 'Jl. RA Kartini No. 30, Gresik', email: 'dr.larasati.p@rssoetomo.go.id', pekerjaan: 'Dokter Muda RSUD Dr. Soetomo', status: 'aktif', sewa: 1650000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
-    { id: 'p_sby_oscar', nama: 'Oscar Ferdinand', hp: '081333445503', kamar: 'G-03', lantai: '1', tglMasuk: '2025-09-10', nik: '3578010303990003', gender: 'Laki-laki', tempatLahir: 'Sidoarjo', tglLahir: '2000-01-20', alamatKtp: 'Jl. Pahlawan No. 4, Sidoarjo', email: 'oscar.kuliner@gmail.com', pekerjaan: 'Owner Cafe & Kuliner Gubeng', status: 'aktif', sewa: 1300000, tempo: 10, deposit: 400000, catatanDeposit: 'Lunas' },
-    { id: 'p_sby_ilham', nama: 'M. Ilham Fauzan', hp: '081333445504', kamar: 'U-01', lantai: '2', tglMasuk: '2025-05-20', nik: '3578010404990004', gender: 'Laki-laki', tempatLahir: 'Kediri', tglLahir: '2001-09-05', alamatKtp: 'Jl. Dhoho No. 70, Kediri', email: 'ilham.fauzan@its.ac.id', pekerjaan: 'Mahasiswa Teknik Mesin ITS', status: 'aktif', sewa: 1800000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
-    { id: 'p_sby_nadia', nama: 'Nadia Zahrani', hp: '081333445505', kamar: 'U-02', lantai: '2', tglMasuk: '2025-07-15', nik: '3578010505990005', gender: 'Perempuan', tempatLahir: 'Mojokerto', tglLahir: '1999-12-01', alamatKtp: 'Jl. Gajah Mada No. 18, Mojokerto', email: 'nadia.zahrani@ey.com', pekerjaan: 'Senior Auditor KAP Ernst & Young Surabaya', status: 'aktif', sewa: 1800000, tempo: 5, deposit: 500000, catatanDeposit: 'Lunas' }
+    { id: 'p_sby_kenzo', nama: 'Kenzo Raditya', hp: '081333445501', kamar: 'G-01', lantai: '1', tglMasuk: '2025-08-01', tglKeluar: addDaysYMD(6), nik: '3578010101990001', gender: 'Laki-laki', tempatLahir: 'Surabaya', tglLahir: '2001-07-11', alamatKtp: 'Jl. Kertajaya Indah No. 12, Surabaya', email: 'kenzo.raditya@unair.ac.id', pekerjaan: 'Mahasiswa Kedokteran Unair', status: 'aktif', sewa: 1650000, tempo: 5, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_sby_larasati', nama: 'Larasati Putri', hp: '081333445502', kamar: 'G-02', lantai: '1', tglMasuk: '2025-06-01', tglKeluar: addDaysYMD(180), nik: '3578010202990002', gender: 'Perempuan', tempatLahir: 'Gresik', tglLahir: '1998-10-15', alamatKtp: 'Jl. RA Kartini No. 30, Gresik', email: 'dr.larasati.p@rssoetomo.go.id', pekerjaan: 'Dokter Muda RSUD Dr. Soetomo', status: 'aktif', sewa: 1650000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_sby_oscar', nama: 'Oscar Ferdinand', hp: '081333445503', kamar: 'G-03', lantai: '1', tglMasuk: '2025-09-10', tglKeluar: addDaysYMD(180), nik: '3578010303990003', gender: 'Laki-laki', tempatLahir: 'Sidoarjo', tglLahir: '2000-01-20', alamatKtp: 'Jl. Pahlawan No. 4, Sidoarjo', email: 'oscar.kuliner@gmail.com', pekerjaan: 'Owner Cafe & Kuliner Gubeng', status: 'aktif', sewa: 1300000, tempo: 10, deposit: 400000, catatanDeposit: 'Lunas' },
+    { id: 'p_sby_ilham', nama: 'M. Ilham Fauzan', hp: '081333445504', kamar: 'U-01', lantai: '2', tglMasuk: '2025-05-20', tglKeluar: addDaysYMD(14), nik: '3578010404990004', gender: 'Laki-laki', tempatLahir: 'Kediri', tglLahir: '2001-09-05', alamatKtp: 'Jl. Dhoho No. 70, Kediri', email: 'ilham.fauzan@its.ac.id', pekerjaan: 'Mahasiswa Teknik Mesin ITS', status: 'aktif', sewa: 1800000, tempo: 1, deposit: 500000, catatanDeposit: 'Lunas' },
+    { id: 'p_sby_nadia', nama: 'Nadia Zahrani', hp: '081333445505', kamar: 'U-02', lantai: '2', tglMasuk: '2025-07-15', tglKeluar: addDaysYMD(180), nik: '3578010505990005', gender: 'Perempuan', tempatLahir: 'Mojokerto', tglLahir: '1999-12-01', alamatKtp: 'Jl. Gajah Mada No. 18, Mojokerto', email: 'nadia.zahrani@ey.com', pekerjaan: 'Senior Auditor KAP Ernst & Young Surabaya', status: 'aktif', sewa: 1800000, tempo: 5, deposit: 500000, catatanDeposit: 'Lunas' }
   ];
   const pembayaran4 = [
     { id: 'pb_4_1', penghuniId: 'p_sby_kenzo', bulan: bln, jumlah: 1650000, status: 'lunas', tglBayar: `${bln}-03T10:15:00Z` },
@@ -799,11 +799,11 @@ function generateInitialMultiKostData() {
     { id: 'km_5_08', no: '08', lantai: '2', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Springbed, Meja Kayu Pinus, Lemari' }
   ];
   const penghuni5 = [
-    { id: 'p_mlg_putri', nama: 'Putri Maharani', hp: '081555667701', kamar: '01', lantai: '1', tglMasuk: '2025-08-15', nik: '3573010101990001', gender: 'Perempuan', tempatLahir: 'Malang', tglLahir: '2002-04-03', alamatKtp: 'Jl. Soekarno Hatta No. 8, Malang', email: 'putri.maharani@student.ub.ac.id', pekerjaan: 'Mahasiswi FIA Universitas Brawijaya', status: 'aktif', sewa: 1350000, tempo: 1, deposit: 400000, catatanDeposit: 'Lunas' },
-    { id: 'p_mlg_qori', nama: 'Qori Alamsyah', hp: '081555667702', kamar: '02', lantai: '1', tglMasuk: '2025-07-01', nik: '3573010202990002', gender: 'Laki-laki', tempatLahir: 'Probolinggo', tglLahir: '2001-08-25', alamatKtp: 'Jl. Panglima Sudirman No. 14, Probolinggo', email: 'qori.alamsyah@polinema.ac.id', pekerjaan: 'Mahasiswa TI Polinema Malang', status: 'aktif', sewa: 1350000, tempo: 5, deposit: 400000, catatanDeposit: 'Lunas' },
-    { id: 'p_mlg_rendy', nama: 'Rendy Pratama', hp: '081555667703', kamar: '03', lantai: '1', tglMasuk: '2025-09-01', nik: '3573010303990003', gender: 'Laki-laki', tempatLahir: 'Pasuruan', tglLahir: '2000-02-17', alamatKtp: 'Jl. Hayam Wuruk No. 5, Pasuruan', email: 'rendy.coffee@gmail.com', pekerjaan: 'Head Barista Coffee Shop Suhat', status: 'aktif', sewa: 1150000, tempo: 10, deposit: 300000, catatanDeposit: 'Lunas' },
-    { id: 'p_mlg_salsabila', nama: 'Salsabila Nur', hp: '081555667704', kamar: '05', lantai: '2', tglMasuk: '2025-06-10', nik: '3573010404990004', gender: 'Perempuan', tempatLahir: 'Blitar', tglLahir: '2002-10-10', alamatKtp: 'Jl. Merdeka No. 90, Blitar', email: 'salsabila.nur@um.ac.id', pekerjaan: 'Mahasiswi Sastra Inggris UM', status: 'aktif', sewa: 1450000, tempo: 1, deposit: 400000, catatanDeposit: 'Lunas' },
-    { id: 'p_mlg_taufik', nama: 'Taufik Hidayat', hp: '081555667705', kamar: '06', lantai: '2', tglMasuk: '2025-05-01', nik: '3573010505990005', gender: 'Laki-laki', tempatLahir: 'Tulungagung', tglLahir: '1998-05-20', alamatKtp: 'Jl. Diponegoro No. 33, Tulungagung', email: 'taufik.freelance@gmail.com', pekerjaan: 'Freelance Fullstack Web Developer', status: 'aktif', sewa: 1450000, tempo: 5, deposit: 400000, catatanDeposit: 'Lunas' }
+    { id: 'p_mlg_putri', nama: 'Putri Maharani', hp: '081555667701', kamar: '01', lantai: '1', tglMasuk: '2025-08-15', tglKeluar: addDaysYMD(3), nik: '3573010101990001', gender: 'Perempuan', tempatLahir: 'Malang', tglLahir: '2002-04-03', alamatKtp: 'Jl. Soekarno Hatta No. 8, Malang', email: 'putri.maharani@student.ub.ac.id', pekerjaan: 'Mahasiswi FIA Universitas Brawijaya', status: 'aktif', sewa: 1350000, tempo: 1, deposit: 400000, catatanDeposit: 'Lunas' },
+    { id: 'p_mlg_qori', nama: 'Qori Alamsyah', hp: '081555667702', kamar: '02', lantai: '1', tglMasuk: '2025-07-01', tglKeluar: addDaysYMD(180), nik: '3573010202990002', gender: 'Laki-laki', tempatLahir: 'Probolinggo', tglLahir: '2001-08-25', alamatKtp: 'Jl. Panglima Sudirman No. 14, Probolinggo', email: 'qori.alamsyah@polinema.ac.id', pekerjaan: 'Mahasiswa TI Polinema Malang', status: 'aktif', sewa: 1350000, tempo: 5, deposit: 400000, catatanDeposit: 'Lunas' },
+    { id: 'p_mlg_rendy', nama: 'Rendy Pratama', hp: '081555667703', kamar: '03', lantai: '1', tglMasuk: '2025-09-01', tglKeluar: addDaysYMD(180), nik: '3573010303990003', gender: 'Laki-laki', tempatLahir: 'Pasuruan', tglLahir: '2000-02-17', alamatKtp: 'Jl. Hayam Wuruk No. 5, Pasuruan', email: 'rendy.coffee@gmail.com', pekerjaan: 'Head Barista Coffee Shop Suhat', status: 'aktif', sewa: 1150000, tempo: 10, deposit: 300000, catatanDeposit: 'Lunas' },
+    { id: 'p_mlg_salsabila', nama: 'Salsabila Nur', hp: '081555667704', kamar: '05', lantai: '2', tglMasuk: '2025-06-10', tglKeluar: addDaysYMD(10), nik: '3573010404990004', gender: 'Perempuan', tempatLahir: 'Blitar', tglLahir: '2002-10-10', alamatKtp: 'Jl. Merdeka No. 90, Blitar', email: 'salsabila.nur@um.ac.id', pekerjaan: 'Mahasiswi Sastra Inggris UM', status: 'aktif', sewa: 1450000, tempo: 1, deposit: 400000, catatanDeposit: 'Lunas' },
+    { id: 'p_mlg_taufik', nama: 'Taufik Hidayat', hp: '081555667705', kamar: '06', lantai: '2', tglMasuk: '2025-05-01', tglKeluar: addDaysYMD(180), nik: '3573010505990005', gender: 'Laki-laki', tempatLahir: 'Tulungagung', tglLahir: '1998-05-20', alamatKtp: 'Jl. Diponegoro No. 33, Tulungagung', email: 'taufik.freelance@gmail.com', pekerjaan: 'Freelance Fullstack Web Developer', status: 'aktif', sewa: 1450000, tempo: 5, deposit: 400000, catatanDeposit: 'Lunas' }
   ];
   const pembayaran5 = [
     { id: 'pb_5_1', penghuniId: 'p_mlg_putri', bulan: bln, jumlah: 1350000, status: 'lunas', tglBayar: `${bln}-01T11:00:00Z` },
@@ -2839,23 +2839,32 @@ function renderDashActionCenter() {
   const emptyRooms = [];
   const contractItems = [];
 
+  const curActiveId = S.activeKostId || 'kost_1';
+  const curActiveNama = S.kost?.nama || 'Cabang Aktif';
+
   // Tentukan daftar cabang yang dievaluasi
   const branchesToScan = (activeActionScope === 'all' && S.properties && S.properties.length > 1)
     ? S.properties
-    : [{ id: S.activeKostId, nama: S.kost.nama }];
+    : [{ id: curActiveId, nama: curActiveNama }];
 
   branchesToScan.forEach(prop => {
+    const isCurBranch = prop.id === curActiveId;
     const bData = S.propertiesData ? S.propertiesData[prop.id] : null;
-    if (!bData) return;
 
-    const bKost = bData.kost || {};
-    const bPenghuni = (bData.penghuni || []).filter(p => p.status === 'aktif');
-    const bPayments = (bData.pembayaran || []).filter(pb => pb.bulan === curMonth || (typeof pb.bulan === 'string' && pb.bulan.startsWith(curMonth)));
-    const bKamar = bData.kamar || [];
+    // Untuk cabang yang sedang aktif, gunakan data in-memory di S sebagai single source of truth
+    const bKost = (isCurBranch && S.kost?.nama) ? S.kost : (bData?.kost || {});
+    const rawPenghuni = (isCurBranch && Array.isArray(S.penghuni)) ? S.penghuni : (bData?.penghuni || []);
+    const bPenghuni = rawPenghuni.filter(p => p.status === 'aktif');
+    const rawPb = (isCurBranch && Array.isArray(S.pembayaran)) ? S.pembayaran : (bData?.pembayaran || []);
+    const bPayments = rawPb.filter(pb => pb.bulan === curMonth || (typeof pb.bulan === 'string' && pb.bulan.startsWith(curMonth)));
+    const bKamar = (isCurBranch && Array.isArray(S.kamar)) ? S.kamar : (bData?.kamar || []);
+
+    const branchDisplayName = bKost.nama || prop.nama || 'Cabang Kost';
+    const branchDisplayKota = bKost.kota || (bKost.alamat ? bKost.alamat.split(',')[0].trim() : '');
 
     // 1. Tagihan Jatuh Tempo & Menunggak
     bPenghuni.forEach(p => {
-      const pb = bPayments.find(x => x.penghuniId === p.id || x.penghuni_id === p.id);
+      const pb = bPayments.find(x => String(x.penghuniId || x.penghuni_id) === String(p.id));
       const isLunas = pb?.status === 'lunas';
       if (!isLunas) {
         const tempo = Number(p.tempo) || 1;
@@ -2876,21 +2885,21 @@ function renderDashActionCenter() {
           type: 'tagihan', 
           p, diff, statusLabel, badgeClass, 
           branchId: prop.id, 
-          branchNama: bKost.nama || prop.nama,
-          branchKota: bKost.kota || ''
+          branchNama: branchDisplayName,
+          branchKota: branchDisplayKota
         });
       }
     });
 
     // 2. Kamar Siap Huni (Kosong)
-    const occRooms = new Set(bPenghuni.map(p => p.kamar).filter(Boolean));
-    bKamar.filter(k => !occRooms.has(k.no)).forEach(k => {
+    const occRooms = new Set(bPenghuni.map(p => String(p.kamar || '').trim()).filter(Boolean));
+    bKamar.filter(k => !occRooms.has(String(k.no || '').trim())).forEach(k => {
       emptyRooms.push({ 
         type: 'kamar_kosong', 
         k, 
         branchId: prop.id, 
-        branchNama: bKost.nama || prop.nama,
-        branchKota: bKost.kota || ''
+        branchNama: branchDisplayName,
+        branchKota: branchDisplayKota
       });
     });
 
@@ -2902,23 +2911,19 @@ function renderDashActionCenter() {
           type: 'kontrak', 
           p, exp, 
           branchId: prop.id, 
-          branchNama: bKost.nama || prop.nama,
-          branchKota: bKost.kota || ''
+          branchNama: branchDisplayName,
+          branchKota: branchDisplayKota
         });
       }
     });
   });
 
   dueItems.sort((a,b) => a.diff - b.diff);
-  contractItems.sort((a, b) => a.exp.diffDays - b.exp.diffDays);
+  contractItems.sort((a, b) => (a.exp?.diffDays || 0) - (b.exp?.diffDays || 0));
 
   const totalActions = dueItems.length + emptyRooms.length + contractItems.length;
 
-  if (totalActions === 0) {
-    container.style.display = 'none';
-    return;
-  }
-
+  // Pastikan wadah tindakan mendesak selalu tampil saat dipanggil
   container.style.display = 'block';
 
   let displayItems = [];
@@ -2927,16 +2932,41 @@ function renderDashActionCenter() {
   else if (activeActionFilter === 'kontrak') displayItems = contractItems;
   else displayItems = [...contractItems.slice(0, 3), ...dueItems.slice(0, 3), ...emptyRooms.slice(0, 2)];
 
+  const activeBranchName = S.kost?.nama || 'Cabang Aktif';
+  const scopeBadgeText = activeActionScope === 'all'
+    ? '🏢 Konsolidasi 5 Cabang'
+    : '🏠 ' + activeBranchName;
+
+  const subtitleText = totalActions === 0
+    ? 'Semua urusan operasional saat ini terkendali dengan baik'
+    : `${totalActions} agenda operasional membutuhkan perhatian segera`;
+
+  const emptyStateHtml = `
+    <div style="grid-column: 1 / -1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 20px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); text-align:center;">
+      <div style="width:48px;height:48px;border-radius:50%;background:rgba(16,185,129,0.12);color:var(--green);display:flex;align-items:center;justify-content:center;margin-bottom:12px">
+        <span class="material-symbols-outlined" style="font-size:28px">verified</span>
+      </div>
+      <div style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px">
+        ${activeActionScope === 'all' ? 'Semua Cabang Terkendali!' : `Operasional ${esc(activeBranchName)} Terkendali!`}
+      </div>
+      <div style="font-size:0.82rem;color:var(--text-3);max-width:460px;line-height:1.5">
+        ${activeActionScope === 'all'
+          ? 'Tidak ada tagihan tertunggak, masa sewa habis, atau kamar kosong yang membutuhkan penanganan segera di seluruh 5 cabang.'
+          : 'Tidak ada tagihan tertunggak, masa sewa habis, atau kamar kosong yang butuh tindakan mendesak di cabang ini. Semua berjalan aman & tertib.'}
+      </div>
+    </div>
+  `;
+
   container.innerHTML = `
     <div class="dash-action-header">
       <div class="dash-action-title-group">
-        <span class="action-pulse-beacon"></span>
+        <span class="action-pulse-beacon" style="${totalActions === 0 ? 'background:var(--green);box-shadow:0 0 0 0 rgba(16,185,129,0.4)' : ''}"></span>
         <div>
           <div style="display:flex;align-items:center;gap:8px">
             <h2 class="dash-action-heading" style="margin:0">Tindakan Mendesak</h2>
-            <span class="badge badge-accent" style="font-size:0.72rem">${activeActionScope === 'all' ? '🏢 Konsolidasi 5 Cabang' : '🏠 ' + S.kost.nama}</span>
+            <span class="badge ${totalActions === 0 ? 'badge-green' : 'badge-accent'}" style="font-size:0.72rem">${scopeBadgeText}</span>
           </div>
-          <div class="dash-action-subtitle">${totalActions} agenda operasional membutuhkan perhatian segera</div>
+          <div class="dash-action-subtitle">${subtitleText}</div>
         </div>
       </div>
       
@@ -2970,91 +3000,96 @@ function renderDashActionCenter() {
     </div>
 
     <div class="dash-action-grid">
-      ${displayItems.map(item => {
-        const branchBadge = `<span class="badge badge-accent" style="font-size:0.65rem;font-weight:700">🏢 ${esc(item.branchNama)}</span>`;
-        if (item.type === 'kontrak') {
-          const { p, exp } = item;
-          const isExpired = exp.status === 'expired' || exp.status === 'today';
-          return `
-            <div class="action-card">
-              <div class="action-card-top">
-                <div class="action-card-main">
-                  <div class="action-room-badge ${isExpired ? 'danger' : 'orange'}">${esc(p.kamar || '–')}</div>
-                  <div style="min-width:0">
-                    <div style="margin-bottom:2px">${branchBadge}</div>
-                    <div class="action-card-title">${esc(p.nama)}</div>
-                    <div class="action-card-sub">Berakhir: <strong>${fmtD(p.tglKeluar)}</strong> · ${rp(p.sewa)}/bln</div>
+      ${totalActions === 0
+        ? emptyStateHtml
+        : (displayItems.map(item => {
+            const branchBadge = `<span class="badge badge-accent" style="font-size:0.65rem;font-weight:700">🏢 ${esc(item.branchNama)}</span>`;
+            if (item.type === 'kontrak') {
+              const { p, exp } = item;
+              const isExpired = exp.status === 'expired' || exp.status === 'today';
+              return `
+                <div class="action-card">
+                  <div class="action-card-top">
+                    <div class="action-card-main">
+                      <div class="action-room-badge ${isExpired ? 'danger' : 'orange'}">${esc(p.kamar || '–')}</div>
+                      <div style="min-width:0">
+                        <div style="margin-bottom:2px">${branchBadge}</div>
+                        <div class="action-card-title">${esc(p.nama)}</div>
+                        <div class="action-card-sub">Berakhir: <strong>${fmtD(p.tglKeluar)}</strong> · ${rp(p.sewa)}/bln</div>
+                      </div>
+                    </div>
+                    <span class="badge ${exp.badgeClass}">${esc(exp.label)}</span>
+                  </div>
+                  <div class="action-card-actions">
+                    <button type="button" class="btn-wa btn-sm" onclick="kirimWaKontrak('${esc(p.id)}', '${esc(item.branchId)}')" title="Kirim WA Konfirmasi Kontrak">
+                      <span class="material-symbols-outlined" style="font-size:14px">chat</span> WA
+                    </button>
+                    <button type="button" class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${esc(p.id)}', '${esc(item.branchId)}')" title="Perpanjang Masa Sewa">
+                      <span class="material-symbols-outlined" style="font-size:14px">update</span> Perpanjang
+                    </button>
+                    <button type="button" class="btn-danger btn-sm" onclick="checkoutPenghuni('${esc(p.id)}', '${esc(item.branchId)}')" title="Selesaikan sewa & kosongkan kamar">
+                      <span class="material-symbols-outlined" style="font-size:14px">logout</span> Checkout
+                    </button>
                   </div>
                 </div>
-                <span class="badge ${exp.badgeClass}">${esc(exp.label)}</span>
-              </div>
-              <div class="action-card-actions">
-                <button type="button" class="btn-wa btn-sm" onclick="kirimWaKontrak('${esc(p.id)}', '${esc(item.branchId)}')" title="Kirim WA Konfirmasi Kontrak">
-                  <span class="material-symbols-outlined" style="font-size:14px">chat</span> WA
-                </button>
-                <button type="button" class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${esc(p.id)}', '${esc(item.branchId)}')" title="Perpanjang Masa Sewa">
-                  <span class="material-symbols-outlined" style="font-size:14px">update</span> Perpanjang
-                </button>
-                <button type="button" class="btn-danger btn-sm" onclick="checkoutPenghuni('${esc(p.id)}', '${esc(item.branchId)}')" title="Selesaikan sewa & kosongkan kamar">
-                  <span class="material-symbols-outlined" style="font-size:14px">logout</span> Checkout
-                </button>
-              </div>
-            </div>
-          `;
-        } else if (item.type === 'tagihan') {
-          const { p, statusLabel, badgeClass } = item;
-          const isLate = badgeClass === 'badge-red';
-          return `
-            <div class="action-card">
-              <div class="action-card-top">
-                <div class="action-card-main">
-                  <div class="action-room-badge ${isLate ? 'danger' : 'warning'}">${esc(p.kamar || '–')}</div>
-                  <div style="min-width:0">
-                    <div style="margin-bottom:2px">${branchBadge}</div>
-                    <div class="action-card-title">${esc(p.nama)}</div>
-                    <div class="action-card-sub">Tagihan: <strong style="color:var(--text)">${rp(p.sewa)}</strong></div>
+              `;
+            } else if (item.type === 'tagihan') {
+              const { p, statusLabel, badgeClass } = item;
+              const isLate = badgeClass === 'badge-red';
+              return `
+                <div class="action-card">
+                  <div class="action-card-top">
+                    <div class="action-card-main">
+                      <div class="action-room-badge ${isLate ? 'danger' : 'warning'}">${esc(p.kamar || '–')}</div>
+                      <div style="min-width:0">
+                        <div style="margin-bottom:2px">${branchBadge}</div>
+                        <div class="action-card-title">${esc(p.nama)}</div>
+                        <div class="action-card-sub">Tagihan: <strong style="color:var(--text)">${rp(p.sewa)}</strong></div>
+                      </div>
+                    </div>
+                    <span class="badge ${badgeClass}">${esc(statusLabel)}</span>
+                  </div>
+                  <div class="action-card-actions">
+                    <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${esc(p.id)}', '${esc(curMonth)}', '${esc(item.branchId)}')" title="Kirim WA Pengingat dengan rekening cabang ini">
+                      <span class="material-symbols-outlined" style="font-size:14px">chat</span> WA
+                    </button>
+                    <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${esc(p.id)}', '${esc(curMonth)}', '${esc(item.branchId)}')" title="Tandai langsung lunas">
+                      <span class="material-symbols-outlined" style="font-size:14px">check_circle</span> 1-Klik Lunas
+                    </button>
                   </div>
                 </div>
-                <span class="badge ${badgeClass}">${esc(statusLabel)}</span>
-              </div>
-              <div class="action-card-actions">
-                <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${esc(p.id)}', '${esc(curMonth)}', '${esc(item.branchId)}')" title="Kirim WA Pengingat dengan rekening cabang ini">
-                  <span class="material-symbols-outlined" style="font-size:14px">chat</span> WA
-                </button>
-                <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${esc(p.id)}', '${esc(curMonth)}', '${esc(item.branchId)}')" title="Tandai langsung lunas">
-                  <span class="material-symbols-outlined" style="font-size:14px">check_circle</span> 1-Klik Lunas
-                </button>
-              </div>
-            </div>
-          `;
-        } else if (item.type === 'kamar_kosong') {
-          const { k } = item;
-          return `
-            <div class="action-card">
-              <div class="action-card-top">
-                <div class="action-card-main">
-                  <div class="action-room-badge primary">${esc(k.no)}</div>
-                  <div style="min-width:0">
-                    <div style="margin-bottom:2px">${branchBadge}</div>
-                    <div class="action-card-title">Kamar ${esc(k.no)} (${esc(k.tipe || 'Standar')})</div>
-                    <div class="action-card-sub">Lt. ${esc(k.lantai || '1')} · <strong style="color:var(--accent-light)">${rp(k.harga || 0)}/bln</strong></div>
+              `;
+            } else if (item.type === 'kamar_kosong') {
+              const { k } = item;
+              return `
+                <div class="action-card">
+                  <div class="action-card-top">
+                    <div class="action-card-main">
+                      <div class="action-room-badge primary">${esc(k.no)}</div>
+                      <div style="min-width:0">
+                        <div style="margin-bottom:2px">${branchBadge}</div>
+                        <div class="action-card-title">Kamar ${esc(k.no)} (${esc(k.tipe || 'Standar')})</div>
+                        <div class="action-card-sub">Lt. ${esc(k.lantai || '1')} · <strong style="color:var(--accent-light)">${rp(k.harga || 0)}/bln</strong></div>
+                      </div>
+                    </div>
+                    <span class="badge badge-gray">Siap Huni</span>
+                  </div>
+                  <div class="action-card-actions">
+                    <button type="button" class="btn-primary btn-sm" onclick="quickTambahPenghuni('${esc(item.branchId)}', '${esc(k.no)}')">
+                      <span class="material-symbols-outlined" style="font-size:14px">person_add</span> + Isi Penghuni
+                    </button>
                   </div>
                 </div>
-                <span class="badge badge-gray">Siap Huni</span>
-              </div>
-              <div class="action-card-actions">
-                <button type="button" class="btn-primary btn-sm" onclick="quickTambahPenghuni('${esc(item.branchId)}', '${esc(k.no)}')">
-                  <span class="material-symbols-outlined" style="font-size:14px">person_add</span> + Isi Penghuni
-                </button>
-              </div>
-            </div>
-          `;
-        }
-        return '';
-      }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--text-3);font-size:0.85rem">Tidak ada item tindakan pada filter ini.</div>'}
+              `;
+            }
+            return '';
+          }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-3);font-size:0.85rem;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border)">Tidak ada agenda tindakan pada kategori ini.</div>')
+      }
     </div>
   `;
 }
+
+window.renderDashActionCenter = renderDashActionCenter;
 
 window.switchActionFilter = function(f) {
   activeActionFilter = f;
@@ -3099,7 +3134,10 @@ window.kirimWaKontrak = function(pid, branchId = S.activeKostId) {
   toast(`Membuka WhatsApp konfirmasi kontrak (${kostName})...`);
 };
 
-window.openModalPerpanjangKontrak = function(pid) {
+window.openModalPerpanjangKontrak = function(pid, branchId = S.activeKostId) {
+  if (branchId && branchId !== S.activeKostId && typeof switchKost === 'function') {
+    switchKost(branchId);
+  }
   const p = S.penghuni.find(x => x.id === pid);
   if (!p) return;
 
@@ -3147,7 +3185,10 @@ window.openModalPerpanjangKontrak = function(pid) {
   openModal('modal-perpanjang-kontrak');
 };
 
-window.checkoutPenghuni = function(pid) {
+window.checkoutPenghuni = function(pid, branchId = S.activeKostId) {
+  if (branchId && branchId !== S.activeKostId && typeof switchKost === 'function') {
+    switchKost(branchId);
+  }
   const p = S.penghuni.find(x => x.id === pid);
   if (!p) return;
   const roomNo = p.kamar || '–';
@@ -4317,8 +4358,13 @@ window.setFloorFilter = function(fl) {
   renderKamar();
 };
 
-window.quickPayTenant = async function(pid, bln = thisMonth()) {
-  const p = S.penghuni.find(x => x.id === pid);
+window.quickPayTenant = async function(pid, bln = thisMonth(), branchId = S.activeKostId) {
+  let targetKost = S.kost;
+  let p = S.penghuni.find(x => x.id === pid);
+  if (branchId && branchId !== S.activeKostId && S.propertiesData && S.propertiesData[branchId]) {
+    targetKost = S.propertiesData[branchId].kost || S.kost;
+    p = (S.propertiesData[branchId].penghuni || []).find(x => x.id === pid) || p;
+  }
   if (!p) return;
   const safeBln = bln || thisMonth();
   const [y, mo] = safeBln.split('-');
@@ -4332,12 +4378,12 @@ window.quickPayTenant = async function(pid, bln = thisMonth()) {
 
   confirm_dlg(
     'Konfirmasi Pembayaran Cepat ⚡',
-    `Tandai pembayaran sewa bulan <strong>${esc(blnLabel)}</strong> untuk <strong>${esc(p.nama)}</strong> (Kamar ${esc(p.kamar || '')}) sebesar <strong>${rp(p.sewa)}</strong> telah <strong>LUNAS</strong>?`,
+    `Tandai pembayaran sewa bulan <strong>${esc(blnLabel)}</strong> untuk <strong>${esc(p.nama)}</strong> (${esc(targetKost.nama || 'Kost')} - Kamar ${esc(p.kamar || '')}) sebesar <strong>${rp(p.sewa)}</strong> telah <strong>LUNAS</strong>?`,
     async () => {
-      await tandaiBayar(pid, safeBln, p.sewa || 0);
+      await tandaiBayar(pid, safeBln, p.sewa || 0, branchId);
       renderDashboard();
-      renderKamar();
-      renderPembayaran();
+      if ($('page-kamar')?.classList.contains('active')) renderKamar();
+      if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
       toast(`Pembayaran ${p.nama} (${blnLabel}) Lunas! 🧾`, 'ok');
     },
     '⚡ Ya, Lunas Sekarang'
