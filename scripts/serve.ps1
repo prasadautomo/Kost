@@ -11,7 +11,7 @@ param (
 
 $HostName = "localhost"
 $Url = "http://${HostName}:${Port}/"
-$DocRoot = $PSScriptRoot
+$DocRoot = Split-Path -Parent $PSScriptRoot
 
 $MimeTypes = @{
     ".html" = "text/html; charset=utf-8"

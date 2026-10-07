@@ -4,8 +4,12 @@
 param(
     [string]$ProjectRef = "tzplpnqtwcfchhmodphz",
     [string]$AccessToken = $env:SUPABASE_ACCESS_TOKEN,
-    [string]$SqlFile = "supabase_schema.sql"
+    [string]$SqlFile = ""
 )
+
+if ([string]::IsNullOrWhiteSpace($SqlFile)) {
+    $SqlFile = Join-Path (Split-Path -Parent $PSScriptRoot) "database\supabase_schema.sql"
+}
 
 Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Cyan

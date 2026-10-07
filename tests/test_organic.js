@@ -10,8 +10,8 @@ const { JSDOM } = require('jsdom');
 async function runOrganicTests() {
   console.log('🚀 Memulai Organic Test untuk SiKost v4.1 Google-First & Strict Security...\n');
 
-  const htmlContent = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-  const appJsContent = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
+  const htmlContent = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const appJsContent = fs.readFileSync(path.join(__dirname, '..', 'app.js'), 'utf8');
 
   // Set up mock window and JSDOM
   const dom = new JSDOM(htmlContent, {

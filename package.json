@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "serve .",
     "start": "serve .",
-    "test": "node test_organic.js"
+    "test": "node tests/test_organic.js"
   },
   "keywords": [
     "kost",

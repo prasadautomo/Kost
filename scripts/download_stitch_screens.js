@@ -26,7 +26,7 @@ const screens = [
   { id: 'c8afbe5fd6c94cc7a0b4538ee5472b4e', num: 8, slug: 'frame_8_spotlight_search', title: 'Frame 8: Spotlight Search Modal Overlay (Ctrl + K)' }
 ];
 
-const outDir = path.join(process.cwd(), 'stitch_reference');
+const outDir = path.join(__dirname, '..', 'docs', 'stitch_reference');
 if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
 function fetchJson(url) {

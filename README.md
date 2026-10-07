@@ -31,20 +31,33 @@ Aplikasi web manajemen kost modern dengan dukungan **Cloud Database & Cloud Auth
 
 ---
 
-## 📁 Struktur File
+## 📁 Struktur Direktori & File
 
 ```
-├── index.html                       # Tampilan antarmuka utama, modal & responsive layout
-├── style.css                        # Design system, glassmorphism dark mode, dan print stylesheet
-├── app.js                           # Logika aplikasi, canvas compressor, state manager & realtime client
-├── config.js                        # Konfigurasi Supabase Project URL & Anon Key
-├── supabase_schema.sql              # Skrip SQL tabel, trigger, dan strict RLS policies untuk Supabase
-├── manifest.json                    # Web App Manifest untuk dukungan PWA
-├── sw.js                            # Service Worker untuk caching aset dan offline capability
+├── database/                        # Skrip database & schema PostgreSQL
+│   ├── supabase_schema.sql          # Skrip SQL tabel, trigger, dan strict RLS policies
+│   └── supabase_enable_web_storage.sql # Skrip aktivasi akses penyimpanan web langsung
+├── docs/                            # Dokumentasi & panduan teknis
+│   ├── PANDUAN_CLOUD_VERCEL_SUPABASE.md # Panduan setup Supabase & Vercel
+│   ├── SETUP.md                     # Petunjuk instalasi lokal
+│   └── stitch_reference/            # Mockup & referensi UI Frame
+├── scripts/                         # Script otomasi & server lokal
+│   ├── serve.ps1                    # HTTP server lokal otomatis (Port 3000)
+│   ├── run_supabase_sql.ps1         # Verifikasi & eksekusi SQL Supabase
+│   └── download_stitch_screens.js   # Pengunduh referensi screen
+├── tests/                           # Pengujian otomatis
+│   ├── test_runner.html             # Browser organic test runner suite
+│   └── test_organic.js              # Script pengujian end-to-end Node.js
+├── index.html                       # Tampilan antarmuka web utama
+├── style.css                        # Design system & dark mode stylesheet
+├── app.js                           # Logika inti aplikasi SiKost
+├── config.js                        # Konfigurasi Supabase Project URL & Key
+├── manifest.json                    # Web App Manifest untuk PWA
+├── sw.js                            # Service Worker offline caching
 ├── vercel.json                      # Konfigurasi deployment Vercel
-├── package.json                     # Konfigurasi package & scripts
-├── PANDUAN_CLOUD_VERCEL_SUPABASE.md # Panduan langkah demi langkah setup Supabase & Vercel
-└── README.md                        # Dokumentasi lengkap proyek
+├── package.json                     # Konfigurasi dependencies & scripts
+├── AGENTS.md                        # Aturan agen AI & standar pengembangan
+└── README.md                        # Dokumentasi utama proyek
 ```
 
 ---
@@ -54,13 +67,17 @@ Aplikasi web manajemen kost modern dengan dukungan **Cloud Database & Cloud Auth
 ### 1. Menjalankan di Komputer Lokal
 Buka file `index.html` langsung di browser Chrome/Edge/Firefox, atau jalankan server statis:
 ```powershell
+.\scripts\serve.ps1
+```
+atau:
+```powershell
 npx serve .
 ```
 
 ### 2. Setup Supabase Cloud & Database
 1. Buat project gratis di [Supabase](https://supabase.com).
 2. Buka **SQL Editor** di Supabase Dashboard -> **New query**.
-3. Salin seluruh isi file [supabase_schema.sql](supabase_schema.sql) lalu klik tombol **Run**.
+3. Salin seluruh isi file [database/supabase_schema.sql](database/supabase_schema.sql) lalu klik tombol **Run**.
 4. Di aplikasi SiKost, klik menu **Pengaturan -> Cloud Supabase** atau tombol **"⚙️ Set Supabase"** di layar login, lalu masukkan **Project URL** dan **Anon Key** Anda.
 5. Klik **"☁️ Upload Seluruh Data ke Supabase Cloud"** jika ingin memigrasikan data yang sudah ada di browser.
 
