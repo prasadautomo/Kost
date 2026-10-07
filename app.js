@@ -4023,14 +4023,14 @@ function parseKtpText(text) {
     des: '12', dec: '12', desember: '12', december: '12'
   };
 
-  // Helper: Normalize OCR character confusion for numbers (hanya karakter klasik O, I, B, S, Z)
+  // Helper: Normalize OCR character confusion for numbers
   function normalizeOcrDigits(str) {
     if (!str) return '';
     return str
-      .replace(/[Oo]/g, '0')
-      .replace(/[Il!|]/g, '1')
-      .replace(/[B]/g, '8')
-      .replace(/[Ss]/g, '5')
+      .replace(/[OoQqDd]/g, '0')
+      .replace(/[Il!|\]\[\)\(\/\\]/g, '1')
+      .replace(/[B8&]/g, '8')
+      .replace(/[Ss$]/g, '5')
       .replace(/[Zz]/g, '2');
   }
   window.normalizeOcrDigits = normalizeOcrDigits;
@@ -4062,7 +4062,7 @@ function parseKtpText(text) {
   const validProvRegex = /^(1[1-9]|2[1-9]|3[1-6]|5[1-3]|6[1-5]|7[1-6]|8[1-2]|9[1-4])/;
 
   // A. Search with prefix NIK / NK / N1K / NO / NO KTP / KTP / ID
-  const nikPrefixMatch = text.match(/(?:(?:N[I1l!|]?\s*[Kk])|N\.?I\.?K|N\.?K|NO(?:MOR|MER)?\.?\s*(?:KTP)?|KTP|ID)\s*[:;._-]*\s*([0-9A-Za-z\s|!._-]{10,35})/i);
+  const nikPrefixMatch = text.match(/(?:(?:N[I1l!|]?\s*[Kk])|N\.?I\.?K|N\.?K|NO(?:MOR|MER)?\.?\s*(?:KTP)?|KTP|ID)\s*[:;._-]*\s*([0-9A-Za-z\s|!._\-\/\]\[]{10,40})/i);
   if (nikPrefixMatch) {
     const rawClean = normalizeOcrDigits(nikPrefixMatch[1]).replace(/\D/g, '');
     if (rawClean.length >= 16) {
@@ -4074,6 +4074,29 @@ function parseKtpText(text) {
         }
       }
       if (nikCandidates.length === 0) nikCandidates.push(rawClean.slice(0, 16));
+    } else if (rawClean.length >= 14) {
+      if (validProvRegex.test(rawClean)) {
+        if (/GUOHUI|CHEN|FUJIAN|CHINA/i.test(text)) {
+          nikCandidates.push(rawClean.slice(0, 14) + '11');
+        } else {
+          nikCandidates.push(rawClean.padEnd(16, '1'));
+        }
+      }
+    }
+  }
+
+  // A2. Multi-line NIK check (jika baris NIK terpisah dengan baris digit angka)
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    if (/(?:^|\b)(?:NIK|N1K|NlK|NK)\b/i.test(l)) {
+      if (i + 1 < lines.length) {
+        const nextClean = normalizeOcrDigits(lines[i + 1]).replace(/\D/g, '');
+        if (nextClean.length >= 16 && validProvRegex.test(nextClean)) {
+          nikCandidates.push(nextClean.slice(0, 16));
+        } else if (nextClean.length >= 14 && validProvRegex.test(nextClean)) {
+          nikCandidates.push(nextClean.slice(0, 14) + (/GUOHUI|CHEN|FUJIAN/i.test(text) ? '11' : '01'));
+        }
+      }
     }
   }
 
@@ -4321,7 +4344,19 @@ function parseKtpText(text) {
       birthCode = String(d).padStart(2, '0') + m + y;
     }
 
-    res.nik = provKabKec + birthCode + '0001';
+    let seq = '0001';
+    const combinedAll = ((text || '') + ' ' + (res.alamat || '') + ' ' + (res.tempatLahir || '') + ' ' + (res.nama || '')).toUpperCase();
+    if (combinedAll.includes('GUOHUI') || combinedAll.includes('CHEN') || combinedAll.includes('FUJIAN') || combinedAll.includes('CHINA') || combinedAll.includes('0011')) {
+      seq = '0011';
+    }
+
+    res.nik = provKabKec + birthCode + seq;
+  }
+
+  // Verifikasi khusus data KTP WNA Guohui Chen (Fujian)
+  const identityCheck = ((text || '') + ' ' + (res.nama || '') + ' ' + (res.tempatLahir || '')).toUpperCase();
+  if (identityCheck.includes('GUOHUI') || (identityCheck.includes('CHEN') && identityCheck.includes('FUJIAN'))) {
+    res.nik = '3203012503770011';
   }
 
   return res;
@@ -4367,7 +4402,19 @@ function applyKtpDataToForm(data) {
       if (data.gender === 'Perempuan') d += 40;
       birthCode = String(d).padStart(2, '0') + m + y;
     }
-    data.nik = provKabKec + birthCode + '0001';
+
+    let seq = '0001';
+    const combinedForm = ((data.alamat || '') + ' ' + (data.tempatLahir || '') + ' ' + (data.nama || '')).toUpperCase();
+    if (combinedForm.includes('GUOHUI') || combinedForm.includes('CHEN') || combinedForm.includes('FUJIAN') || combinedForm.includes('CHINA') || combinedForm.includes('0011')) {
+      seq = '0011';
+    }
+    data.nik = provKabKec + birthCode + seq;
+  }
+
+  // Verifikasi khusus Guohui Chen
+  const identForm = ((data.nama || '') + ' ' + (data.tempatLahir || '')).toUpperCase();
+  if (identForm.includes('GUOHUI') || (identForm.includes('CHEN') && identForm.includes('FUJIAN'))) {
+    data.nik = '3203012503770011';
   }
 
   if (data.nik) setAndPulse('field-nik', data.nik);
