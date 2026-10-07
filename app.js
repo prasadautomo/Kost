@@ -3745,9 +3745,8 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
     $('field-kamar').value        = p.kamar || '';
     populateKamarSelect(p.kamar || '');
     $('field-lantai').value       = p.lantai || '';
-    $('field-tgl-masuk').value    = p.tglMasuk || '';
-    $('field-tgl-keluar').value   = p.tglKeluar || '';
-    $('field-status').value       = p.status || 'aktif';
+    $('field-tgl-masuk').value    = p.tglMasuk || todayYMD();
+    $('field-tgl-keluar').value   = p.tglKeluar || (p.tglMasuk ? addMonthsYMD(1, p.tglMasuk) : addMonthsYMD(1, todayYMD()));
     $('field-catatan').value      = p.catatan || '';
     $('field-kendaraan').value    = p.kendaraan || 'tidak ada';
     $('field-merk-1').value       = p.merk1 || '';
@@ -3769,10 +3768,14 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
   } else {
     $('modal-penghuni-title').textContent = 'Tambah Penghuni Baru';
     $('field-id').value = '';
-    $('field-status').value = 'aktif';
     $('field-gender').value = 'Laki-laki';
     $('field-kendaraan').value = 'tidak ada';
     toggleKendaraan('tidak ada');
+
+    // Tanggal masuk otomatis hari ini, tanggal keluar otomatis 1 bulan setelah tanggal masuk
+    const defMasuk = todayYMD();
+    $('field-tgl-masuk').value = defMasuk;
+    $('field-tgl-keluar').value = addMonthsYMD(1, defMasuk);
     
     const roomToSelect = preselectedKamar || '';
     populateKamarSelect(roomToSelect);
@@ -3793,6 +3796,7 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
   openModal('modal-penghuni');
 }
 
+window.openModalPenghuni = openModalPenghuni;
 window.openModalPenghuniWithRoom = function(roomNo) {
   openModalPenghuni(null, roomNo);
 };
@@ -3855,11 +3859,12 @@ function switchFTab(name) {
 }
 document.querySelectorAll('.ftab').forEach(b => b.addEventListener('click', () => switchFTab(b.dataset.tab)));
 
-window.toggleKendaraan = function(val) {
+function toggleKendaraan(val) {
   const show1 = val && val !== 'tidak ada', show2 = val === 'motor & mobil';
   ['ken-row1a','ken-row1b'].forEach(id => { const el=$(id); if(el) el.style.display = show1?'block':'none'; });
   ['ken-row2a','ken-row2b'].forEach(id => { const el=$(id); if(el) el.style.display = show2?'block':'none'; });
-};
+}
+window.toggleKendaraan = toggleKendaraan;
 
 // ── KTP OCR & AUTO-FILL ENGINE ──────────────────────────────
 function parseKtpText(text) {
@@ -4160,6 +4165,19 @@ $('btn-demo-ktp')?.addEventListener('click', () => {
   toast(`Contoh data KTP berhasil diisikan (${filled} kolom)! ✨`, 'success');
 });
 
+// Auto sinkronisasi Tanggal Keluar = 1 bulan setelah Tanggal Masuk (tetap dapat diubah manual)
+const inputTglMasuk = $('field-tgl-masuk');
+if (inputTglMasuk) {
+  const syncTglKeluar = function() {
+    if (inputTglMasuk.value) {
+      const elKeluar = $('field-tgl-keluar');
+      if (elKeluar) elKeluar.value = addMonthsYMD(1, inputTglMasuk.value);
+    }
+  };
+  inputTglMasuk.addEventListener('change', syncTglKeluar);
+  inputTglMasuk.addEventListener('input', syncTglKeluar);
+}
+
 $('form-penghuni').addEventListener('submit', async function(e) {
   e.preventDefault();
   const nama     = $('field-nama').value.trim();
@@ -4187,7 +4205,7 @@ $('form-penghuni').addEventListener('submit', async function(e) {
     pekerjaan: $('field-pekerjaan').value.trim(),
     lantai: $('field-lantai').value.trim(),
     tglKeluar: $('field-tgl-keluar').value,
-    status: $('field-status').value,
+    status: (editId && S.penghuni.find(x => x.id === editId)?.status) || 'aktif',
     catatan: $('field-catatan').value.trim(),
     kendaraan: $('field-kendaraan').value,
     merk1: $('field-merk-1').value.trim(),
