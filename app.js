@@ -437,7 +437,7 @@ function getContractExpiryStatus(p) {
 }
 window.getContractExpiryStatus = getContractExpiryStatus;
 
-// Helper: Menghitung Jatuh Tempo dinamis berdasarkan Tanggal Masuk & Tanggal Keluar
+// Helper: Menghitung Jatuh Tempo dinamis berdasarkan Tanggal Keluar & Tanggal Masuk
 function getPenghuniJatuhTempo(p, targetBulan = null) {
   if (!p) {
     const today = todayYMD();
@@ -446,23 +446,36 @@ function getPenghuniJatuhTempo(p, targetBulan = null) {
 
   const tglMasuk = p.tglMasuk || todayYMD();
   const tglKeluar = p.tglKeluar || null;
-  const [masukY, masukM, masukD] = tglMasuk.split('-').map(Number);
-  const dueDay = masukD || 1;
-
   const currentYM = targetBulan || thisMonth();
   const [targetY, targetM] = currentYM.split('-').map(Number);
-
   const maxDays = new Date(targetY, targetM, 0).getDate();
+
+  // Hari Jatuh Tempo: Prioritaskan hari dari tanggal keluar jika ada, jika tidak gunakan tanggal masuk
+  let dueDay = 1;
+  if (tglKeluar) {
+    const [kelY, kelM, kelD] = tglKeluar.split('-').map(Number);
+    dueDay = kelD || 1;
+  } else if (p.tglMasuk) {
+    const [masukY, masukM, masukD] = tglMasuk.split('-').map(Number);
+    dueDay = masukD || 1;
+  }
+
   const safeDay = Math.min(dueDay, maxDays);
-  const dueDateStr = `${targetY}-${String(targetM).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
+  // Jika targetBulan adalah bulan berakhirnya sewa, gunakan tanggal keluar tepat sebagai jatuh tempo
+  let dueDateStr = `${targetY}-${String(targetM).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
+  if (tglKeluar && tglKeluar.startsWith(currentYM)) {
+    dueDateStr = tglKeluar;
+  }
 
   const now = new Date();
   const todayZero = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const dueZero = new Date(targetY, targetM - 1, safeDay).getTime();
+  const [dueY, dueMo, dueD] = dueDateStr.split('-').map(Number);
+  const dueZero = new Date(dueY, dueMo - 1, dueD).getTime();
   const diffDays = Math.round((dueZero - todayZero) / 86400000);
 
-  const todayStr = todayYMD();
-  const isContractExpired = Boolean(tglKeluar && todayStr > tglKeluar);
+  const isContractExpired = targetBulan 
+    ? Boolean(tglKeluar && currentYM > tglKeluar.slice(0, 7))
+    : Boolean(tglKeluar && todayYMD() > tglKeluar);
 
   return {
     day: dueDay,
@@ -1436,6 +1449,77 @@ function cleanPhone(raw) {
 }
 window.cleanPhone = cleanPhone;
 window.cleanNumber = cleanNumber;
+
+// Live currency formatter & auto-masker Rp X.XXX.XXX
+function formatRupiahLive(n) {
+  if (n === null || n === undefined) return '';
+  const str = String(n).trim();
+  if (!str) return '';
+  const digitsOnly = str.replace(/[^\d]/g, '');
+  if (!digitsOnly) return '';
+  const num = parseInt(digitsOnly, 10);
+  if (isNaN(num)) return '';
+  return 'Rp ' + num.toLocaleString('id-ID');
+}
+window.formatRupiahLive = formatRupiahLive;
+
+function attachCurrencyFormatter(inputEl) {
+  if (!inputEl) return;
+  const onInput = function() {
+    const raw = this.value;
+    const cursorPos = this.selectionStart || raw.length;
+    const digitsBefore = (raw.slice(0, cursorPos).match(/\d/g) || []).length;
+
+    const digitsOnly = raw.replace(/\D/g, '');
+    if (!digitsOnly) {
+      this.value = '';
+      return;
+    }
+    const num = parseInt(digitsOnly, 10);
+    const formatted = 'Rp ' + num.toLocaleString('id-ID');
+    this.value = formatted;
+
+    // Pertahankan posisi kursor pengguna agar tidak loncat ke akhir string
+    let newCursorPos = formatted.length;
+    let counted = 0;
+    for (let i = 0; i < formatted.length; i++) {
+      if (/\d/.test(formatted[i])) {
+        counted++;
+        if (counted >= digitsBefore) {
+          newCursorPos = i + 1;
+          break;
+        }
+      }
+    }
+    try {
+      this.setSelectionRange(newCursorPos, newCursorPos);
+    } catch (_) {}
+  };
+
+  inputEl.addEventListener('input', onInput);
+}
+window.attachCurrencyFormatter = attachCurrencyFormatter;
+
+// Inisialisasi otomatis live formatting uang (Rp dan titik ribuan)
+function initCurrencyInputs() {
+  const currencyIds = ['field-sewa', 'field-deposit', 'field-harga-kamar', 'field-pengeluaran-jumlah', 'renew-sewa'];
+  currencyIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      attachCurrencyFormatter(el);
+      if (el.value) el.value = formatRupiahLive(el.value);
+    }
+  });
+}
+window.initCurrencyInputs = initCurrencyInputs;
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCurrencyInputs);
+  } else {
+    initCurrencyInputs();
+  }
+}
 
 const rp = n => 'Rp ' + cleanNumber(n).toLocaleString('id-ID');
 const fmtD = s  => {
@@ -2923,6 +3007,10 @@ function renderDashActionCenter() {
 
     // 1. Tagihan Jatuh Tempo & Menunggak
     bPenghuni.forEach(p => {
+      // Abaikan jika penghuni sudah melewati tanggal keluar sebelum bulan ini atau belum masuk
+      if (p.tglKeluar && curMonth > p.tglKeluar.slice(0, 7)) return;
+      if (p.tglMasuk && curMonth < p.tglMasuk.slice(0, 7)) return;
+
       const pb = bPayments.find(x => String(x.penghuniId || x.penghuni_id) === String(p.id));
       const isLunas = pb?.status === 'lunas';
       if (!isLunas) {
@@ -3812,9 +3900,9 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
     $('field-plat-1').value       = p.plat1 || '';
     $('field-merk-2').value       = p.merk2 || '';
     $('field-plat-2').value       = p.plat2 || '';
-    $('field-sewa').value         = p.sewa || '';
+    $('field-sewa').value         = p.sewa ? formatRupiahLive(p.sewa) : '';
     syncJatuhTempoDisplay();
-    $('field-deposit').value      = p.deposit || '';
+    $('field-deposit').value      = (p.deposit !== undefined && p.deposit !== null && p.deposit !== '') ? formatRupiahLive(p.deposit) : '';
     updateDepositPresetActive(p.deposit || '');
     $('field-catatan-bayar').value= p.catatanBayar || '';
     $('field-darurat-nama').value = p.daruratNama || '';
@@ -3852,20 +3940,25 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
   openModal('modal-penghuni');
 }
 
-// Helper: Sinkronisasi tampilan field Jatuh Tempo mengikuti Tanggal Masuk dan Tanggal Keluar
+// Helper: Sinkronisasi tampilan field Jatuh Tempo mengikuti Tanggal Keluar dan Tanggal Masuk
 function syncJatuhTempoDisplay() {
   const masuk = $('field-tgl-masuk')?.value;
   const keluar = $('field-tgl-keluar')?.value;
   const tempoEl = $('field-tempo');
   if (!tempoEl) return;
-  if (!masuk) {
-    tempoEl.value = 'Mengikuti Tanggal Masuk & Keluar';
+  if (!masuk && !keluar) {
+    tempoEl.value = 'Mengikuti Tanggal Keluar & Masuk';
     return;
   }
-  const [y, m, d] = masuk.split('-').map(Number);
-  const day = d || 1;
-  const keluarStr = keluar ? fmtD(keluar) : 'selesai';
-  tempoEl.value = `Setiap tgl ${day} (Siklus s/d ${keluarStr})`;
+  if (keluar) {
+    const [y, m, d] = keluar.split('-').map(Number);
+    const day = d || 1;
+    tempoEl.value = `Tanggal ${day} (Sesuai tgl keluar: ${fmtD(keluar)})`;
+  } else if (masuk) {
+    const [y, m, d] = masuk.split('-').map(Number);
+    const day = d || 1;
+    tempoEl.value = `Setiap tgl ${day} (Siklus sewa)`;
+  }
 }
 window.syncJatuhTempoDisplay = syncJatuhTempoDisplay;
 
@@ -3875,13 +3968,13 @@ function applyKamarDataToForm(kamarNo) {
   const matched = S.kamar.find(k => String(k.no).toLowerCase() === String(kamarNo).toLowerCase().trim());
   if (matched) {
     if (matched.lantai && $('field-lantai')) $('field-lantai').value = matched.lantai;
-    if (matched.harga && $('field-sewa')) $('field-sewa').value = matched.harga;
+    if (matched.harga && $('field-sewa')) $('field-sewa').value = formatRupiahLive(matched.harga);
     
     syncJatuhTempoDisplay();
     
     const tip = $('field-kamar-tip');
     if (tip) {
-      tip.textContent = `✓ Otomatis terisi: Kamar ${matched.no} (Lt ${matched.lantai || 1}) · Sewa ${rp(matched.harga || 0)}/bln · Jatuh tempo mengikuti tgl masuk & keluar`;
+      tip.textContent = `✓ Otomatis terisi: Kamar ${matched.no} (Lt ${matched.lantai || 1}) · Sewa ${rp(matched.harga || 0)}/bln · Jatuh tempo mengikuti tgl keluar & masuk`;
       tip.style.display = 'block';
     }
   }
@@ -3890,7 +3983,7 @@ window.applyKamarDataToForm = applyKamarDataToForm;
 
 // Helper: Update status active tombol preset deposit
 function updateDepositPresetActive(val) {
-  const numVal = (val !== '' && val !== null && val !== undefined) ? Number(val) : null;
+  const numVal = (val !== '' && val !== null && val !== undefined) ? cleanNumber(val) : null;
   document.querySelectorAll('.deposit-preset-btn').forEach(btn => {
     const btnVal = Number(btn.dataset.val);
     if (numVal !== null && numVal === btnVal) {
@@ -3909,7 +4002,7 @@ document.querySelectorAll('.deposit-preset-btn').forEach(btn => {
     const val = (this && this.dataset && this.dataset.val !== undefined) ? this.dataset.val : (btn.dataset ? btn.dataset.val : btn.getAttribute('data-val'));
     const depInput = $('field-deposit');
     if (depInput) {
-      depInput.value = val;
+      depInput.value = (val !== '' && val !== null && val !== undefined) ? formatRupiahLive(val) : '';
       updateDepositPresetActive(val);
       depInput.dispatchEvent(new Event('input', { bubbles: true }));
       depInput.dispatchEvent(new Event('change', { bubbles: true }));
@@ -4654,10 +4747,9 @@ $('form-penghuni').addEventListener('submit', async function(e) {
     merk1: $('field-merk-1').value.trim(),
     plat1: $('field-plat-1').value.trim(),
     merk2: $('field-merk-2').value.trim(),
-    plat2: $('field-plat-2').value.trim(),
-    sewa: $('field-sewa').value,
-    tempo: tglMasuk ? parseInt(tglMasuk.split('-')[2], 10) : 1,
-    deposit: $('field-deposit').value,
+    sewa: cleanNumber($('field-sewa').value),
+    tempo: $('field-tgl-keluar')?.value ? parseInt($('field-tgl-keluar').value.split('-')[2], 10) : (tglMasuk ? parseInt(tglMasuk.split('-')[2], 10) : 1),
+    deposit: cleanNumber($('field-deposit').value),
     catatanDeposit: (editId && S.penghuni.find(x => x.id === editId)?.catatanDeposit) || '',
     catatanBayar: $('field-catatan-bayar').value.trim(),
     daruratNama: $('field-darurat-nama').value.trim(),
@@ -4751,7 +4843,7 @@ window.openDetail = function(id) {
       <div class="d-section">
         <h4>💳 Keuangan &amp; Sewa</h4>
         <div class="d-row"><div class="d-key">Sewa Bulanan</div><div class="d-val">${rp(p.sewa)}</div></div>
-        <div class="d-row"><div class="d-key">Jatuh Tempo Sewa</div><div class="d-val">Setiap tanggal ${jt.day} (Siklus: ${fmtD(p.tglMasuk)} s/d ${p.tglKeluar ? fmtD(p.tglKeluar) : 'selesai'})</div></div>
+        <div class="d-row"><div class="d-key">Jatuh Tempo Sewa</div><div class="d-val">Tanggal ${jt.day} (Sesuai tgl keluar: ${p.tglKeluar ? fmtD(p.tglKeluar) : 'siklus sewa'})</div></div>
         <div class="d-row"><div class="d-key">Masa Kontrak Berakhir</div><div class="d-val"><strong>${p.tglKeluar ? fmtD(p.tglKeluar) + ' (' + exp.label + ')' : 'Belum ditentukan'}</strong></div></div>
         <div class="d-row"><div class="d-key">Uang Jaminan / Deposit</div><div class="d-val" style="color:var(--orange)">${p.deposit ? rp(p.deposit) : 'Rp 0'}</div></div>
         <div class="d-row"><div class="d-key">Status Bulan Ini</div><div class="d-val">${pb?.status==='lunas'?'✅ Lunas':'❌ Belum Bayar'}</div></div>
@@ -4831,7 +4923,7 @@ $('form-perpanjang-kontrak')?.addEventListener('submit', async (e) => {
     toast('Harap tentukan tanggal berakhir kontrak baru!', true);
     return;
   }
-  const newSewa = Number($('renew-sewa')?.value) || p.sewa;
+  const newSewa = cleanNumber($('renew-sewa')?.value) || p.sewa;
   const catatan = $('renew-catatan')?.value?.trim() || '';
 
   p.tglKeluar = newTgl;
@@ -4903,7 +4995,7 @@ window.printSpk = function(p) {
 
   <div class="pasal-title">PASAL 2 – HARGA SEWA &amp; JANGKA WAKTU</div>
   <p>1. Biaya sewa kamar disepakati sebesar <strong>${rp(p.sewa)}</strong> per bulan.<br>
-     2. Pembayaran sewa wajib dilakukan selambat-lambatnya pada tanggal <strong>${p.tglMasuk ? parseInt(p.tglMasuk.split('-')[2], 10) : (p.tempo || '1')}</strong> setiap bulannya, mengikuti tanggal masuk (${fmtD(p.tglMasuk)}) sampai dengan tanggal keluar (${p.tglKeluar ? fmtD(p.tglKeluar) : 'berakhirnya sewa'}).<br>
+     2. Pembayaran sewa wajib dilakukan selambat-lambatnya pada tanggal <strong>${p.tglKeluar ? parseInt(p.tglKeluar.split('-')[2], 10) : (p.tglMasuk ? parseInt(p.tglMasuk.split('-')[2], 10) : (p.tempo || '1'))}</strong> setiap bulannya, sesuai tanggal keluar (${p.tglKeluar ? fmtD(p.tglKeluar) : 'berakhirnya sewa'}).<br>
      3. Jangka waktu sewa berlaku sejak tanggal <strong>${fmtD(p.tglMasuk)}</strong> sampai dengan tanggal <strong>${p.tglKeluar ? fmtD(p.tglKeluar) : 'tidak ditentukan'}</strong>.<br>
      4. PIHAK KEDUA telah menyerahkan Uang Jaminan (Deposit) sebesar <strong>${p.deposit ? rp(p.deposit) : 'Rp 0'}</strong> yang akan dikembalikan secara utuh pada saat masa sewa berakhir setelah dipastikan tidak ada tunggakan dan kerusakan fasilitas.</p>
 
@@ -5163,7 +5255,7 @@ $('form-kamar').addEventListener('submit', async function(e) {
     id, no,
     lantai: $('field-lantai-kamar').value.trim() || '1',
     tipe: $('field-tipe-kamar').value,
-    harga: $('field-harga-kamar').value,
+    harga: cleanNumber($('field-harga-kamar').value),
     fasilitas: $('field-fasilitas').value.trim()
   };
   const i = S.kamar.findIndex(k => k.id === id);
@@ -5183,7 +5275,7 @@ window.editKamar = function(id) {
   $('field-no-kamar').value = k.no || '';
   $('field-lantai-kamar').value = k.lantai || '';
   $('field-tipe-kamar').value = k.tipe || 'Standar';
-  $('field-harga-kamar').value = k.harga || '';
+  $('field-harga-kamar').value = k.harga ? formatRupiahLive(k.harga) : '';
   $('field-fasilitas').value = k.fasilitas || '';
   openModal('modal-kamar');
 };
@@ -5238,11 +5330,18 @@ function renderPembayaran() {
   let aktif = [];
   let payments = [];
 
+  const isPeriodValid = p => {
+    if (p.status !== 'aktif') return false;
+    if (p.tglKeluar && bln > p.tglKeluar.slice(0, 7)) return false;
+    if (p.tglMasuk && bln < p.tglMasuk.slice(0, 7)) return false;
+    return true;
+  };
+
   if (isKonsolidasi) {
     (S.properties || []).forEach(prop => {
       const bData = S.propertiesData ? S.propertiesData[prop.id] : null;
       if (!bData) return;
-      (bData.penghuni || []).filter(p => p.status === 'aktif').forEach(p => {
+      (bData.penghuni || []).filter(isPeriodValid).forEach(p => {
         aktif.push({ ...p, branchId: prop.id, branchNama: bData.kost?.nama || prop.nama });
       });
       (bData.pembayaran || []).filter(pb => pb.bulan === bln || (typeof pb.bulan === 'string' && pb.bulan.startsWith(bln))).forEach(pb => {
@@ -5250,7 +5349,7 @@ function renderPembayaran() {
       });
     });
   } else {
-    aktif = S.penghuni.filter(p => p.status === 'aktif').map(p => ({ ...p, branchId: S.activeKostId, branchNama: S.kost.nama }));
+    aktif = S.penghuni.filter(isPeriodValid).map(p => ({ ...p, branchId: S.activeKostId, branchNama: S.kost.nama }));
     payments = S.pembayaran.filter(pb => pb.bulan === bln || (typeof pb.bulan === 'string' && pb.bulan.startsWith(bln))).map(pb => ({ ...pb, branchId: S.activeKostId }));
   }
 
@@ -5326,7 +5425,9 @@ function renderPembayaran() {
     // Status Jatuh Tempo (Dihitung dinamis dari tglMasuk & tglKeluar)
     const jt = getPenghuniJatuhTempo(p, bln);
     let tempoBadge = '<span class="badge badge-gray">–</span>';
-    const cycleSub = p.tglMasuk ? `<div style="font-size:0.7rem;color:var(--text-4);margin-top:2px" title="Siklus sewa: ${fmtD(p.tglMasuk)} s/d ${p.tglKeluar ? fmtD(p.tglKeluar) : 'selesai'}">Siklus: ${fmtD(jt.dateStr)}</div>` : '';
+    const cycleSub = p.tglKeluar 
+      ? `<div style="font-size:0.7rem;color:var(--text-4);margin-top:2px" title="Siklus sewa: ${fmtD(p.tglMasuk)} s/d ${fmtD(p.tglKeluar)}">Keluar: ${fmtD(p.tglKeluar)}</div>` 
+      : (p.tglMasuk ? `<div style="font-size:0.7rem;color:var(--text-4);margin-top:2px" title="Siklus sewa: ${fmtD(p.tglMasuk)}">Masuk: ${fmtD(p.tglMasuk)}</div>` : '');
 
     if (isLunas) {
       tempoBadge = `<span class="badge badge-green">${fmtD(jt.dateStr)} (Lunas)</span>${cycleSub}`;
@@ -5434,8 +5535,8 @@ window.kirimWaTagihan = function(pid, bln, branchId = S.activeKostId) {
       .replace(/{rekening}/g, targetKost.bankRekening || '')
       .replace(/{pemilik}/g, targetKost.bankAtasNama || targetKost.pemilik || '')
       .replace(/{tempo}/g, fmtD(jt.dateStr));
-  } else {
-    text = `Halo Kak *${p.nama}*,\n\nMengingatkan tagihan sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(p.sewa)}* (Jatuh tempo: ${fmtD(jt.dateStr)}, Siklus sewa: ${fmtD(p.tglMasuk)} s/d ${p.tglKeluar ? fmtD(p.tglKeluar) : 'selesai'}).${rekInfo}\n\nMohon konfirmasi jika sudah melakukan transfer ya. Terima kasih! 🙏`;
+    const infoKeluar = p.tglKeluar ? `sesuai tanggal keluar ${fmtD(p.tglKeluar)}` : `siklus sewa ${fmtD(p.tglMasuk)}`;
+    text = `Halo Kak *${p.nama}*,\n\nMengingatkan tagihan sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(p.sewa)}* (Jatuh tempo: ${fmtD(jt.dateStr)}, ${infoKeluar}).${rekInfo}\n\nMohon konfirmasi jika sudah melakukan transfer ya. Terima kasih! 🙏`;
   }
 
   const url = `https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`;
@@ -6135,7 +6236,7 @@ $('modal-pengeluaran-close')?.addEventListener('click', () => closeModal('modal-
 $('btn-batal-pengeluaran')?.addEventListener('click', () => closeModal('modal-pengeluaran'));
 $('modal-pengeluaran')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-pengeluaran'); });
 
-// Format & Hint interaktif untuk field nominal pengeluaran
+// Hint interaktif untuk field nominal pengeluaran
 const inputJumlahExp = $('field-pengeluaran-jumlah');
 const hintJumlahExp  = $('field-pengeluaran-jumlah-hint');
 if (inputJumlahExp) {
@@ -6149,18 +6250,6 @@ if (inputJumlahExp) {
       }
     } else {
       if (hintJumlahExp) hintJumlahExp.style.display = 'none';
-    }
-  });
-
-  inputJumlahExp.addEventListener('blur', function() {
-    const rawDigits = this.value.replace(/[^0-9]/g, '');
-    const num = Number(rawDigits) || 0;
-    if (num > 0) {
-      this.value = num.toLocaleString('id-ID');
-      if (hintJumlahExp) {
-        hintJumlahExp.textContent = `Terbaca: ${rp(num)}`;
-        hintJumlahExp.style.display = 'block';
-      }
     }
   });
 }
@@ -6247,7 +6336,7 @@ window.editPengeluaran = function(id) {
   const katEl = $('field-pengeluaran-kategori');
   if (katEl) katEl.value = exp.kategori;
   const jmlEl = $('field-pengeluaran-jumlah');
-  if (jmlEl) jmlEl.value = (Number(exp.jumlah) || 0).toLocaleString('id-ID');
+  if (jmlEl) jmlEl.value = exp.jumlah ? formatRupiahLive(exp.jumlah) : '';
   const ketEl = $('field-pengeluaran-ket');
   if (ketEl) ketEl.value = exp.keterangan || '';
 
