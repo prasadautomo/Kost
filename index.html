@@ -858,7 +858,7 @@
         <button type="button" class="btn-primary" id="btn-renew-detail" style="font-size:0.8rem">🔄 Perpanjang Kontrak</button>
         <button class="btn-ghost" id="btn-print-detail">🖨️ Cetak Kartu</button>
         <button class="btn-outline" id="btn-print-spk">📄 Surat Kontrak</button>
-        <a href="#" target="_blank" class="btn-wa" id="btn-wa-detail" style="display:none">💬 Chat WA</a>
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn-wa" id="btn-wa-detail" style="display:none">💬 Chat WA</a>
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn-outline" id="btn-edit-detail">Edit</button>
@@ -978,7 +978,7 @@
     </div>
     <div class="modal-body">
       <p class="text-muted" style="font-size:0.8rem;line-height:1.5;margin-bottom:14px">
-        Masukkan URL dan Public Anon Key dari project Supabase Anda. Anda dapat membuat project gratis di <a href="https://supabase.com" target="_blank" style="color:var(--accent);text-decoration:none">supabase.com</a>.
+        Masukkan URL dan Public Anon Key dari project Supabase Anda. Anda dapat membuat project gratis di <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:none">supabase.com</a>.
       </p>
       <form id="form-modal-cloud">
         <div class="fg" style="margin-bottom:12px">
@@ -996,7 +996,7 @@
           <label>Google OAuth Client ID (Untuk Pop-up Resmi accounts.google.com)</label>
           <input type="text" id="modal-google-client-id" class="fc" placeholder="contoh: 123456-abc.apps.googleusercontent.com" />
           <span style="font-size:0.72rem;color:var(--text-3);margin-top:4px;display:block">
-            Didapatkan gratis dari <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--accent-light)">Google Cloud Console</a>.
+            Didapatkan gratis dari <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" style="color:var(--accent-light)">Google Cloud Console</a>.
           </span>
         </div>
         <div class="modal-foot" style="padding:0">
@@ -1096,13 +1096,13 @@
       </div>
 
       <ol style="padding-left:20px;margin-bottom:16px;color:var(--text-2);font-size:0.82rem">
-        <li style="margin-bottom:6px">Buka <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--accent-light)">Google Cloud Console</a> &gt; <em>Credentials</em> &gt; Buat <strong>OAuth Client ID</strong> (Web Application).</li>
+        <li style="margin-bottom:6px">Buka <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" style="color:var(--accent-light)">Google Cloud Console</a> &gt; <em>Credentials</em> &gt; Buat <strong>OAuth Client ID</strong> (Web Application).</li>
         <li style="margin-bottom:6px">Tambahkan URL di atas ke kolom <strong>Authorized redirect URIs</strong>.</li>
-        <li style="margin-bottom:6px">Buka <a id="link-supabase-providers" href="https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/auth/providers" target="_blank" style="color:var(--accent-light);font-weight:600">Supabase Auth Providers ↗</a>, aktifkan <strong>Google</strong>, dan tempel <em>Client ID</em> serta <em>Client Secret</em>.</li>
+        <li style="margin-bottom:6px">Buka <a id="link-supabase-providers" href="https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/auth/providers" target="_blank" rel="noopener noreferrer" style="color:var(--accent-light);font-weight:600">Supabase Auth Providers ↗</a>, aktifkan <strong>Google</strong>, dan tempel <em>Client ID</em> serta <em>Client Secret</em>.</li>
       </ol>
 
       <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:space-between;align-items:center">
-        <a href="https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/auth/providers" target="_blank" class="btn-primary" style="text-decoration:none;padding:8px 16px;font-size:0.82rem">
+        <a href="https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/auth/providers" target="_blank" rel="noopener noreferrer" class="btn-primary" style="text-decoration:none;padding:8px 16px;font-size:0.82rem">
           🚀 Buka Supabase Providers ↗
         </a>
         <button type="button" class="btn-ghost" id="btn-google-setup-done" style="font-size:0.82rem">

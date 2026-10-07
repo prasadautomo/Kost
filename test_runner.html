@@ -359,6 +359,45 @@
       logAssertion(b9, typeof win.checkoutPenghuni === 'function', 'Function checkoutPenghuni 1-klik tersedia');
 
       // -------------------------------------------------------------
+      // TEST 10: Security Flaws Hardening & Arithmetic Fixes
+      // -------------------------------------------------------------
+      const b10 = renderTestSection('Test 10: Audit Keamanan & Perbaikan Bug');
+
+      // 1. XSS Entity Sanitizer (esc / escHtml)
+      logAssertion(b10, typeof win.escHtml === 'function', 'Helper escHtml/esc terdaftar secara global');
+      const xssSample = '<script>alert("XSS")</script>&<img src=x onerror=alert(1)>';
+      const xssEscaped = win.escHtml(xssSample);
+      logAssertion(b10, !xssEscaped.includes('<script>') && xssEscaped.includes('&lt;script&gt;'), 'XSS payload berhasil dinetralisir menjadi entitas HTML');
+
+      // 2. Safe URL Scheme Validator (safeUrl)
+      logAssertion(b10, typeof win.safeUrl === 'function', 'Helper safeUrl terdaftar secara global');
+      logAssertion(b10, win.safeUrl('javascript:alert(1)') === '', 'Protokol berbahaya javascript: diblokir dan dikembalikan kosong');
+      logAssertion(b10, win.safeUrl('https://supabase.co/storage/v1/object/public/ktp.jpg') === 'https://supabase.co/storage/v1/object/public/ktp.jpg', 'URL https:// valid diizinkan');
+      logAssertion(b10, win.safeUrl('data:image/jpeg;base64,/9j/4AAQSkZJRg==').startsWith('data:image/jpeg'), 'Data image URI yang valid diizinkan');
+
+      // 3. CSV Formula Injection Sanitizer (sanitizeCsvCell)
+      logAssertion(b10, typeof win.sanitizeCsvCell === 'function', 'Helper sanitizeCsvCell terdaftar secara global');
+      const formulaPayload = '=cmd|\'/C calc\'!A0';
+      const safeCsv = win.sanitizeCsvCell(formulaPayload);
+      logAssertion(b10, safeCsv.startsWith("\"'="), 'Payload formula injection diawali dengan single quote escape');
+
+      // 4. Robust Number Parsing (cleanNumber)
+      logAssertion(b10, typeof win.cleanNumber === 'function', 'Helper cleanNumber terdaftar secara global');
+      logAssertion(b10, win.cleanNumber('1.500.000') === 1500000, 'Parsing string nominal berkoma/bertitik 1.500.000 menghasilkan 1500000 murni (bukan NaN atau 0)');
+      logAssertion(b10, win.cleanNumber('Rp 2.750.000,00') === 2750000, 'Parsing format mata uang "Rp 2.750.000,00" menghasilkan 2750000');
+
+      // 5. Month Arithmetic Day Overflow Bug Fix (addMonthsYMD)
+      const feb29Leap = win.addMonthsYMD(1, '2024-01-31');
+      logAssertion(b10, feb29Leap === '2024-02-29', 'Penjumlahan 31 Jan 2024 + 1 bulan terkunci ke 29 Feb 2024 (kabisat) dan tidak overflow ke Maret');
+      const feb28NonLeap = win.addMonthsYMD(1, '2023-01-31');
+      logAssertion(b10, feb28NonLeap === '2023-02-28', 'Penjumlahan 31 Jan 2023 + 1 bulan terkunci ke 28 Feb 2023 (non-kabisat) dan tidak overflow ke Maret');
+
+      // 6. Reverse Tabnabbing Protection (rel="noopener noreferrer")
+      const externalBlankLinks = Array.from(doc.querySelectorAll('a[target="_blank"]'));
+      const allSecured = externalBlankLinks.every(a => a.rel && a.rel.includes('noopener') && a.rel.includes('noreferrer'));
+      logAssertion(b10, allSecured && externalBlankLinks.length > 0, `Seluruh link external target="_blank" (${externalBlankLinks.length} link) memiliki rel="noopener noreferrer"`);
+
+      // -------------------------------------------------------------
       // REKAPITULASI HASIL TEST
       // -------------------------------------------------------------
       const summaryTitle = document.getElementById('summary-title');
