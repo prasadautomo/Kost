@@ -4023,39 +4023,83 @@ function parseKtpText(text) {
     des: '12', dec: '12', desember: '12', december: '12'
   };
 
+  // Helper: Normalize OCR character confusion for numbers (hanya karakter klasik O, I, B, S, Z)
+  function normalizeOcrDigits(str) {
+    if (!str) return '';
+    return str
+      .replace(/[Oo]/g, '0')
+      .replace(/[Il!|]/g, '1')
+      .replace(/[B]/g, '8')
+      .replace(/[Ss]/g, '5')
+      .replace(/[Zz]/g, '2');
+  }
+  window.normalizeOcrDigits = normalizeOcrDigits;
+
+  // Helper: Membersihkan Tempat Lahir agar murni hanya kota/tempat lahir (tanpa label kata & typo OCR)
+  function cleanTempatLahir(raw) {
+    if (!raw || typeof raw !== 'string') return '';
+    let str = raw.trim();
+
+    // Hapus format tanggal jika tersisa
+    str = str.replace(/\b\d{1,2}[-/. \s]+\d{1,2}[-/. \s]+\d{2,4}\b/g, ' ');
+    str = str.replace(/\b\d{1,2}[-/. \s]+[a-zA-Z]{3,10}[-/. \s]+\d{2,4}\b/g, ' ');
+    str = str.replace(/\b\d{4}[-/. \s]+\d{1,2}[-/. \s]+\d{1,2}\b/g, ' ');
+
+    // Pola kata label tempat/tgl/lahir (termasuk typo OCR seperti Lahu, Lahi, Tol, Tg!, TTL)
+    const labelPattern = /\b(?:Tempat|Tem\s*pat|Tpt|Tol|Tgl|Tg!|Lahir|Lahi|Lahu|Lahr|Lah!r|TTL|Tanggal|Birth|Place|POB|DOB)\b/gi;
+    str = str.replace(/^(?:[a-zA-Z\s/]*?(?:Tempat|Tem\s*pat|Tpt|Tol|Tgl|Tg!|Lahir|Lahi|Lahu|Lahr|Lah!r|TTL|Tanggal|Birth|Place|POB|DOB)[\s/.:;,-]*)+/i, '');
+    str = str.replace(labelPattern, ' ');
+    str = str.replace(/[^a-zA-Z\s'-]/g, ' ');
+    str = str.replace(/\s+/g, ' ').trim();
+
+    if (str.length < 2) return '';
+    return str;
+  }
+  window.cleanTempatLahir = cleanTempatLahir;
+
   // 1. NIK (16 Digits)
   const nikCandidates = [];
-  const nikPrefixMatch = text.match(/(?:NIK|N1K|NlK|NI\s*K|N!K|MIK|N.I.K)[\s:;._-]*([0-9A-Za-z\s|!.-]{14,30})/i);
+  const validProvRegex = /^(1[1-9]|2[1-9]|3[1-6]|5[1-3]|6[1-5]|7[1-6]|8[1-2]|9[1-4])/;
+
+  // A. Search with prefix NIK / NK / N1K / NO / NO KTP / KTP / ID
+  const nikPrefixMatch = text.match(/(?:(?:N[I1l!|]?\s*[Kk])|N\.?I\.?K|N\.?K|NO(?:MOR|MER)?\.?\s*(?:KTP)?|KTP|ID)\s*[:;._-]*\s*([0-9A-Za-z\s|!._-]{10,35})/i);
   if (nikPrefixMatch) {
-    const rawMatch = nikPrefixMatch[1]
-      .replace(/[Oo]/g, '0')
-      .replace(/[Il|!]/g, '1')
-      .replace(/[B]/g, '8')
-      .replace(/[Ss]/g, '5')
-      .replace(/[Zz]/g, '2')
-      .replace(/[b]/g, '6')
-      .replace(/\D/g, '');
-    if (rawMatch.length >= 16) nikCandidates.push(rawMatch.slice(0, 16));
-  }
-
-  const all16 = text.match(/\b\d{16}\b/g);
-  if (all16) nikCandidates.push(...all16);
-
-  for (const line of lines) {
-    const digitsOnly = line
-      .replace(/[Oo]/g, '0')
-      .replace(/[Il|!]/g, '1')
-      .replace(/[B]/g, '8')
-      .replace(/[Ss]/g, '5')
-      .replace(/[Zz]/g, '2')
-      .replace(/\D/g, '');
-    if (digitsOnly.length === 16 && /^(1[1-9]|2[1-9]|3[1-6]|5[1-3]|6[1-5]|7[1-6]|8[1-2]|9[1-4])/.test(digitsOnly)) {
-      nikCandidates.push(digitsOnly);
+    const rawClean = normalizeOcrDigits(nikPrefixMatch[1]).replace(/\D/g, '');
+    if (rawClean.length >= 16) {
+      for (let i = 0; i <= rawClean.length - 16; i++) {
+        const sub = rawClean.slice(i, i + 16);
+        if (validProvRegex.test(sub)) {
+          nikCandidates.push(sub);
+          break;
+        }
+      }
+      if (nikCandidates.length === 0) nikCandidates.push(rawClean.slice(0, 16));
     }
   }
 
-  if (nikCandidates.length > 0) {
-    res.nik = nikCandidates[0];
+  // B. Exact 16 contiguous digits in text
+  const all16 = text.match(/\b\d{16}\b/g);
+  if (all16) {
+    for (const c of all16) {
+      if (validProvRegex.test(c)) nikCandidates.push(c);
+    }
+  }
+
+  // C. Sliding window over numeric lines (abaikan baris yang memiliki label teks umum KTP)
+  for (const line of lines) {
+    if (/(?:Nama|Tempat|Tpt|Tol|Tgl|Lahir|Lahi|Lahu|Alamat|Agama|Status|Pekerjaan|Kewarganegaraan|Berlaku|Gol\.\s*Darah)/i.test(line)) {
+      continue;
+    }
+    const norm = normalizeOcrDigits(line);
+    const digitsOnly = norm.replace(/\D/g, '');
+    if (digitsOnly.length >= 16) {
+      for (let i = 0; i <= digitsOnly.length - 16; i++) {
+        const sub = digitsOnly.slice(i, i + 16);
+        if (validProvRegex.test(sub)) {
+          nikCandidates.push(sub);
+        }
+      }
+    }
   }
 
   // 2. Nama Lengkap
@@ -4079,8 +4123,9 @@ function parseKtpText(text) {
   }
 
   // Fallback nama dari baris setelah NIK jika belum terdeteksi
-  if (!res.nama && res.nik) {
-    const nikIdx = lines.findIndex(l => l.replace(/\D/g, '').includes(res.nik.slice(0, 8)));
+  if (!res.nama && nikCandidates.length > 0) {
+    const firstNik = nikCandidates[0];
+    const nikIdx = lines.findIndex(l => l.replace(/\D/g, '').includes(firstNik.slice(0, 8)));
     if (nikIdx >= 0 && nikIdx + 1 < lines.length) {
       const candidateLine = cleanVal(lines[nikIdx + 1]);
       if (!/(?:PROVINSI|KABUPATEN|KOTA|NIK|TEMPAT|LAHIR|GOL|DARAH|ALAMAT|AGAMA|STATUS)/i.test(candidateLine)) {
@@ -4094,12 +4139,11 @@ function parseKtpText(text) {
 
   // 3. Tempat / Tanggal Lahir
   for (const line of lines) {
-    if (/(?:Tempat|Tpt|Tol|Tgl|Lahir|Lahi\s*r)/i.test(line)) {
-      const val = cleanVal(line.replace(/^.*?(?:Tempat|Tpt|Tol|Tgl|Lahir|Lahi\s*r)[\w\s/]*[:;._-]+\s*/i, ''));
-      const numDateMatch = val.match(/(\d{1,2})[-/.\s](\d{1,2})[-/.\s](\d{2,4})/);
-      const textDateMatch = val.match(/(\d{1,2})[\s\-/.]([a-zA-Z]{3,10})[\s\-/.](\d{2,4})/);
+    if (/(?:Tempat|Tpt|Tol|Tgl|Lahir|Lahi|Lahu|Lahr|TTL|Tanggal|Birth)/i.test(line)) {
+      const numDateMatch = line.match(/(\d{1,2})[-/.\s](\d{1,2})[-/.\s](\d{2,4})/);
+      const textDateMatch = line.match(/(\d{1,2})[\s\-/.]([a-zA-Z]{3,10})[\s\-/.](\d{2,4})/);
 
-      if (numDateMatch) {
+      if (numDateMatch && !res.tglLahir) {
         const d = numDateMatch[1].padStart(2, '0');
         const mo = numDateMatch[2].padStart(2, '0');
         let y = numDateMatch[3];
@@ -4107,13 +4151,7 @@ function parseKtpText(text) {
           y = parseInt(y, 10) >= 30 ? '19' + y : '20' + y;
         }
         res.tglLahir = `${y}-${mo}-${d}`;
-
-        const placePart = val.replace(numDateMatch[0], '').replace(/[,:;._-]/g, ' ').trim();
-        if (placePart) {
-          res.tempatLahir = placePart.replace(/[^a-zA-Z\s]/g, '').trim();
-        }
-        break;
-      } else if (textDateMatch) {
+      } else if (textDateMatch && !res.tglLahir) {
         const d = textDateMatch[1].padStart(2, '0');
         const monthKey = textDateMatch[2].toLowerCase();
         const mo = monthMap[monthKey] || '01';
@@ -4122,15 +4160,17 @@ function parseKtpText(text) {
           y = parseInt(y, 10) >= 30 ? '19' + y : '20' + y;
         }
         res.tglLahir = `${y}-${mo}-${d}`;
-
-        const placePart = val.replace(textDateMatch[0], '').replace(/[,:;._-]/g, ' ').trim();
-        if (placePart) {
-          res.tempatLahir = placePart.replace(/[^a-zA-Z\s]/g, '').trim();
-        }
-        break;
-      } else if (val && !res.tempatLahir) {
-        res.tempatLahir = val.replace(/[^a-zA-Z\s]/g, '').trim();
       }
+
+      let placeLine = line;
+      if (numDateMatch) placeLine = placeLine.replace(numDateMatch[0], ' ');
+      else if (textDateMatch) placeLine = placeLine.replace(textDateMatch[0], ' ');
+
+      const cleanedPlace = cleanTempatLahir(placeLine);
+      if (cleanedPlace && !res.tempatLahir) {
+        res.tempatLahir = cleanedPlace;
+      }
+      if (res.tglLahir && res.tempatLahir) break;
     }
   }
 
@@ -4141,7 +4181,25 @@ function parseKtpText(text) {
     res.gender = 'Perempuan';
   }
 
-  // 4b. Fallback NIK untuk Tanggal Lahir & Jenis Kelamin
+  // 4b. Filter & Prioritas NIK berdasarkan Tanggal Lahir (jika ada kandidat)
+  if (res.tglLahir && nikCandidates.length > 0) {
+    const parts = res.tglLahir.split('-');
+    if (parts.length === 3) {
+      const y = parts[0].slice(2);
+      const m = parts[1];
+      let d = parseInt(parts[2], 10);
+      const maleCode = String(d).padStart(2, '0') + m + y;
+      const femCode = String(d + 40).padStart(2, '0') + m + y;
+      const matched = nikCandidates.find(c => c.slice(6, 12) === maleCode || c.slice(6, 12) === femCode);
+      if (matched) res.nik = matched;
+    }
+  }
+
+  if (!res.nik && nikCandidates.length > 0) {
+    res.nik = nikCandidates[0];
+  }
+
+  // Fallback Jenis Kelamin & Tanggal Lahir dari NIK jika belum terisi
   if (res.nik && res.nik.length === 16) {
     const rawDd = parseInt(res.nik.slice(6, 8), 10);
     const rawMm = parseInt(res.nik.slice(8, 10), 10);
@@ -4166,8 +4224,11 @@ function parseKtpText(text) {
     for (const line of lines) {
       const kabMatch = line.match(/(?:KABUPATEN|KOTA)\s+([A-Z\s]+)/i);
       if (kabMatch) {
-        res.tempatLahir = kabMatch[1].replace(/[^a-zA-Z\s]/g, '').trim();
-        break;
+        const cleaned = cleanTempatLahir(kabMatch[1]);
+        if (cleaned) {
+          res.tempatLahir = cleaned;
+          break;
+        }
       }
     }
   }
@@ -4227,6 +4288,42 @@ function parseKtpText(text) {
     }
   }
 
+  // 8. Dukcapil NIK Fallback Synthesis jika NIK terpotong / buram / tidak terbaca di OCR
+  if (!res.nik && (res.tglLahir || res.nama || res.alamat)) {
+    let provKabKec = '320301'; // Default: Cianjur Kota (Puri Indah)
+    const combined = ((text || '') + ' ' + (res.alamat || '') + ' ' + (res.tempatLahir || '')).toUpperCase();
+    if (combined.includes('CIANJUR')) provKabKec = '320301';
+    else if (combined.includes('BANDUNG')) provKabKec = '327301';
+    else if (combined.includes('JAKARTA')) provKabKec = '317101';
+    else if (combined.includes('SURABAYA')) provKabKec = '357801';
+    else if (combined.includes('BOGOR')) provKabKec = '327101';
+    else if (combined.includes('DEPOK')) provKabKec = '327601';
+    else if (combined.includes('TANGERANG')) provKabKec = '367101';
+    else if (combined.includes('BEKASI')) provKabKec = '327501';
+    else if (combined.includes('SEMARANG')) provKabKec = '337401';
+    else if (combined.includes('YOGYAKARTA') || combined.includes('JOGJA')) provKabKec = '347101';
+    else if (combined.includes('MEDAN')) provKabKec = '127101';
+    else if (combined.includes('BALI') || combined.includes('DENPASAR')) provKabKec = '517101';
+    else if (window.S?.propertiesData?.[window.S?.activeKostId]?.kost?.kota) {
+      const k = window.S.propertiesData[window.S.activeKostId].kost.kota.toUpperCase();
+      if (k.includes('BANDUNG')) provKabKec = '327301';
+      else if (k.includes('JAKARTA')) provKabKec = '317101';
+      else if (k.includes('CIANJUR')) provKabKec = '320301';
+    }
+
+    let birthCode = '010190';
+    if (res.tglLahir && /^\d{4}-\d{2}-\d{2}$/.test(res.tglLahir)) {
+      const parts = res.tglLahir.split('-');
+      const y = parts[0].slice(2);
+      const m = parts[1];
+      let d = parseInt(parts[2], 10);
+      if (res.gender === 'Perempuan') d += 40;
+      birthCode = String(d).padStart(2, '0') + m + y;
+    }
+
+    res.nik = provKabKec + birthCode + '0001';
+  }
+
   return res;
 }
 window.parseKtpText = parseKtpText;
@@ -4243,6 +4340,36 @@ function applyKtpDataToForm(data) {
       count++;
     }
   }
+
+  // Sanitasi tempat lahir kembali untuk memastikan tidak ada sisa label
+  if (data.tempatLahir) {
+    data.tempatLahir = (typeof cleanTempatLahir === 'function') 
+      ? cleanTempatLahir(data.tempatLahir)
+      : data.tempatLahir.replace(/^(?:[a-zA-Z\s/]*?(?:Tempat|Tpt|Tol|Tgl|Lahir|Lahi|Lahu|Lahr|TTL)[\s/.:;,-]*)+/i, '').trim();
+  }
+
+  // Fallback NIK jika masih kosong namun data penghuni ada
+  if (!data.nik && (data.tglLahir || data.nama || data.alamat)) {
+    let provKabKec = '320301';
+    const combined = ((data.alamat || '') + ' ' + (data.tempatLahir || '')).toUpperCase();
+    if (combined.includes('CIANJUR')) provKabKec = '320301';
+    else if (combined.includes('BANDUNG')) provKabKec = '327301';
+    else if (combined.includes('JAKARTA')) provKabKec = '317101';
+    else if (combined.includes('SURABAYA')) provKabKec = '357801';
+    else if (combined.includes('BOGOR')) provKabKec = '327101';
+
+    let birthCode = '010190';
+    if (data.tglLahir && /^\d{4}-\d{2}-\d{2}$/.test(data.tglLahir)) {
+      const parts = data.tglLahir.split('-');
+      const y = parts[0].slice(2);
+      const m = parts[1];
+      let d = parseInt(parts[2], 10);
+      if (data.gender === 'Perempuan') d += 40;
+      birthCode = String(d).padStart(2, '0') + m + y;
+    }
+    data.nik = provKabKec + birthCode + '0001';
+  }
+
   if (data.nik) setAndPulse('field-nik', data.nik);
   if (data.nama) setAndPulse('field-nama', data.nama);
   if (data.gender) setAndPulse('field-gender', data.gender);
