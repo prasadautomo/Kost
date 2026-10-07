@@ -766,7 +766,7 @@
         <div class="ftab-content" id="ftab-keuangan">
           <div class="fg-grid">
             <div class="fg"><label>Sewa / Bulan (Rp) <em>*</em></label><input type="number" id="field-sewa" class="fc" min="0" placeholder="1000000" /></div>
-            <div class="fg"><label>Jatuh Tempo (tgl)</label><input type="number" id="field-tempo" class="fc" min="1" max="28" placeholder="1" /></div>
+            <div class="fg"><label>Jatuh Tempo Siklus</label><input type="text" id="field-tempo" class="fc" readonly style="background:var(--bg-card);color:var(--text-1);font-weight:600;cursor:default" title="Otomatis mengikuti Tanggal Masuk dan Tanggal Keluar" value="Otomatis dari Tgl Masuk &amp; Keluar" /></div>
             <div class="fg col2">
               <label>Uang Jaminan / Deposit (Rp)</label>
               <input type="number" id="field-deposit" class="fc" min="0" placeholder="0" />
@@ -838,7 +838,6 @@
           <div class="fg"><label>Lantai</label><input type="text" id="field-lantai-kamar" class="fc" placeholder="1" /></div>
           <div class="fg"><label>Tipe</label><select id="field-tipe-kamar" class="fc"><option>Standar</option><option>Deluxe</option><option>VIP</option><option>AC</option><option>Non-AC</option></select></div>
           <div class="fg"><label>Harga Default (Rp)</label><input type="number" id="field-harga-kamar" class="fc" min="0" placeholder="1000000" /></div>
-          <div class="fg col2"><label>Jatuh Tempo Default (tgl setiap bulan)</label><input type="number" id="field-tempo-kamar" class="fc" min="1" max="28" placeholder="Contoh: 1, 5, atau 10 (otomatis tersambung ke penghuni baru)" /></div>
           <div class="fg col2"><label>Fasilitas</label><textarea id="field-fasilitas" class="fc" rows="2" placeholder="Kasur, lemari, WiFi…"></textarea></div>
         </div>
         <div class="modal-foot">

@@ -437,6 +437,46 @@ function getContractExpiryStatus(p) {
 }
 window.getContractExpiryStatus = getContractExpiryStatus;
 
+// Helper: Menghitung Jatuh Tempo dinamis berdasarkan Tanggal Masuk & Tanggal Keluar
+function getPenghuniJatuhTempo(p, targetBulan = null) {
+  if (!p) {
+    const today = todayYMD();
+    return { day: 1, dateStr: today, label: '–', diffDays: 0, isContractExpired: false, periodeLabel: '–' };
+  }
+
+  const tglMasuk = p.tglMasuk || todayYMD();
+  const tglKeluar = p.tglKeluar || null;
+  const [masukY, masukM, masukD] = tglMasuk.split('-').map(Number);
+  const dueDay = masukD || 1;
+
+  const currentYM = targetBulan || thisMonth();
+  const [targetY, targetM] = currentYM.split('-').map(Number);
+
+  const maxDays = new Date(targetY, targetM, 0).getDate();
+  const safeDay = Math.min(dueDay, maxDays);
+  const dueDateStr = `${targetY}-${String(targetM).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
+
+  const now = new Date();
+  const todayZero = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const dueZero = new Date(targetY, targetM - 1, safeDay).getTime();
+  const diffDays = Math.round((dueZero - todayZero) / 86400000);
+
+  const todayStr = todayYMD();
+  const isContractExpired = Boolean(tglKeluar && todayStr > tglKeluar);
+
+  return {
+    day: dueDay,
+    dateStr: dueDateStr,
+    tglMasuk,
+    tglKeluar,
+    diffDays,
+    isContractExpired,
+    label: fmtD(dueDateStr),
+    periodeLabel: `${fmtD(tglMasuk)} – ${tglKeluar ? fmtD(tglKeluar) : 'selesai'}`
+  };
+}
+window.getPenghuniJatuhTempo = getPenghuniJatuhTempo;
+
 // ── MULTI-KOST SEED DATA GENERATOR (5 CABANG TERPISAH) ─────────
 function generateInitialMultiKostData() {
   const bln = thisMonth();
@@ -2886,23 +2926,27 @@ function renderDashActionCenter() {
       const pb = bPayments.find(x => String(x.penghuniId || x.penghuni_id) === String(p.id));
       const isLunas = pb?.status === 'lunas';
       if (!isLunas) {
-        const tempo = Number(p.tempo) || 1;
-        const diff = tempo - nowDay;
+        const jt = getPenghuniJatuhTempo(p, curMonth);
+        const diff = jt.diffDays;
         let statusLabel = '';
         let badgeClass = 'badge-orange';
         if (diff < 0) {
-          statusLabel = `Terlambat ${Math.abs(diff)} hari (Tempo Tgl ${tempo})`;
+          statusLabel = `Terlambat ${Math.abs(diff)} hari (${fmtD(jt.dateStr)})`;
           badgeClass = 'badge-red';
+        } else if (diff === 0) {
+          statusLabel = `Jatuh Tempo Hari Ini (${fmtD(jt.dateStr)})`;
+          badgeClass = 'badge-orange';
         } else if (diff <= 3) {
-          statusLabel = diff === 0 ? 'Jatuh Tempo Hari Ini!' : `H-${diff} Tempo (Tgl ${tempo})`;
+          statusLabel = `H-${diff} Tempo (${fmtD(jt.dateStr)})`;
           badgeClass = 'badge-orange';
         } else {
-          statusLabel = `Tempo Tgl ${tempo}`;
+          statusLabel = `Tempo ${fmtD(jt.dateStr)}`;
           badgeClass = 'badge-blue';
         }
         dueItems.push({ 
           type: 'tagihan', 
           p, diff, statusLabel, badgeClass, 
+          dueDateStr: jt.dateStr,
           branchId: prop.id, 
           branchNama: branchDisplayName,
           branchKota: branchDisplayKota
@@ -3063,7 +3107,7 @@ function renderDashActionCenter() {
                       <div style="min-width:0">
                         <div style="margin-bottom:2px">${branchBadge}</div>
                         <div class="action-card-title">${esc(p.nama)}</div>
-                        <div class="action-card-sub">Tagihan: <strong style="color:var(--text)">${rp(p.sewa)}</strong></div>
+                        <div class="action-card-sub">Tagihan: <strong style="color:var(--text)">${rp(p.sewa)}</strong> · Periode: <strong>${fmtD(p.tglMasuk)}</strong> s/d <strong>${p.tglKeluar ? fmtD(p.tglKeluar) : 'selesai'}</strong></div>
                       </div>
                     </div>
                     <span class="badge ${badgeClass}">${esc(statusLabel)}</span>
@@ -3769,7 +3813,7 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
     $('field-merk-2').value       = p.merk2 || '';
     $('field-plat-2').value       = p.plat2 || '';
     $('field-sewa').value         = p.sewa || '';
-    $('field-tempo').value        = p.tempo || '';
+    syncJatuhTempoDisplay();
     $('field-deposit').value      = p.deposit || '';
     updateDepositPresetActive(p.deposit || '');
     $('field-catatan-bayar').value= p.catatanBayar || '';
@@ -3791,11 +3835,11 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
     const defMasuk = todayYMD();
     $('field-tgl-masuk').value = defMasuk;
     $('field-tgl-keluar').value = addMonthsYMD(1, defMasuk);
+    syncJatuhTempoDisplay();
     
     $('field-deposit').value = '';
     updateDepositPresetActive('');
     $('field-sewa').value = '';
-    $('field-tempo').value = '';
     $('field-catatan-bayar').value = '';
 
     const roomToSelect = preselectedKamar || '';
@@ -3808,7 +3852,24 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
   openModal('modal-penghuni');
 }
 
-// Helper: Sambungkan Harga dan Jatuh Tempo sesuai kamar yang dipilih
+// Helper: Sinkronisasi tampilan field Jatuh Tempo mengikuti Tanggal Masuk dan Tanggal Keluar
+function syncJatuhTempoDisplay() {
+  const masuk = $('field-tgl-masuk')?.value;
+  const keluar = $('field-tgl-keluar')?.value;
+  const tempoEl = $('field-tempo');
+  if (!tempoEl) return;
+  if (!masuk) {
+    tempoEl.value = 'Mengikuti Tanggal Masuk & Keluar';
+    return;
+  }
+  const [y, m, d] = masuk.split('-').map(Number);
+  const day = d || 1;
+  const keluarStr = keluar ? fmtD(keluar) : 'selesai';
+  tempoEl.value = `Setiap tgl ${day} (Siklus s/d ${keluarStr})`;
+}
+window.syncJatuhTempoDisplay = syncJatuhTempoDisplay;
+
+// Helper: Sambungkan Harga sesuai kamar yang dipilih (Jatuh Tempo dinamis mengikuti tanggal masuk & keluar)
 function applyKamarDataToForm(kamarNo) {
   if (!kamarNo) return;
   const matched = S.kamar.find(k => String(k.no).toLowerCase() === String(kamarNo).toLowerCase().trim());
@@ -3816,17 +3877,11 @@ function applyKamarDataToForm(kamarNo) {
     if (matched.lantai && $('field-lantai')) $('field-lantai').value = matched.lantai;
     if (matched.harga && $('field-sewa')) $('field-sewa').value = matched.harga;
     
-    // Hubungkan Jatuh Tempo sesuai setting kamar (atau default kost / tgl masuk)
-    const tglMasukVal = $('field-tgl-masuk')?.value;
-    const dayFromMasuk = tglMasukVal ? parseInt(tglMasukVal.split('-')[2], 10) : null;
-    const computedTempo = matched.tempo || (S.kost && S.kost.tempoDefault) || dayFromMasuk || 1;
-    const tempoEl = $('field-tempo');
-    if (tempoEl) tempoEl.value = Math.min(Math.max(computedTempo, 1), 28);
+    syncJatuhTempoDisplay();
     
     const tip = $('field-kamar-tip');
     if (tip) {
-      const tempoDisplay = tempoEl?.value || computedTempo;
-      tip.textContent = `✓ Otomatis terisi: Kamar ${matched.no} (Lt ${matched.lantai || 1}) · Sewa ${rp(matched.harga || 0)}/bln · Jatuh Tempo tgl ${tempoDisplay}`;
+      tip.textContent = `✓ Otomatis terisi: Kamar ${matched.no} (Lt ${matched.lantai || 1}) · Sewa ${rp(matched.harga || 0)}/bln · Jatuh tempo mengikuti tgl masuk & keluar`;
       tip.style.display = 'block';
     }
   }
@@ -4365,17 +4420,22 @@ if (pbKtpBox) {
   });
 }
 
-// Auto sinkronisasi Tanggal Keluar = 1 bulan setelah Tanggal Masuk (tetap dapat diubah manual)
+// Auto sinkronisasi Tanggal Keluar & Jatuh Tempo Siklus dari Tanggal Masuk
 const inputTglMasuk = $('field-tgl-masuk');
+const inputTglKeluar = $('field-tgl-keluar');
 if (inputTglMasuk) {
-  const syncTglKeluar = function() {
+  const syncDatesAndTempo = function() {
     if (inputTglMasuk.value) {
-      const elKeluar = $('field-tgl-keluar');
-      if (elKeluar) elKeluar.value = addMonthsYMD(1, inputTglMasuk.value);
+      if (inputTglKeluar) inputTglKeluar.value = addMonthsYMD(1, inputTglMasuk.value);
+      syncJatuhTempoDisplay();
     }
   };
-  inputTglMasuk.addEventListener('change', syncTglKeluar);
-  inputTglMasuk.addEventListener('input', syncTglKeluar);
+  inputTglMasuk.addEventListener('change', syncDatesAndTempo);
+  inputTglMasuk.addEventListener('input', syncDatesAndTempo);
+}
+if (inputTglKeluar) {
+  inputTglKeluar.addEventListener('change', syncJatuhTempoDisplay);
+  inputTglKeluar.addEventListener('input', syncJatuhTempoDisplay);
 }
 
 // Memastikan klik di mana saja pada input tanggal memicu datepicker bawaan
@@ -4422,7 +4482,7 @@ $('form-penghuni').addEventListener('submit', async function(e) {
     merk2: $('field-merk-2').value.trim(),
     plat2: $('field-plat-2').value.trim(),
     sewa: $('field-sewa').value,
-    tempo: $('field-tempo').value,
+    tempo: tglMasuk ? parseInt(tglMasuk.split('-')[2], 10) : 1,
     deposit: $('field-deposit').value,
     catatanDeposit: (editId && S.penghuni.find(x => x.id === editId)?.catatanDeposit) || '',
     catatanBayar: $('field-catatan-bayar').value.trim(),
@@ -4483,6 +4543,7 @@ window.openDetail = function(id) {
 
   $('detail-title').textContent = p.nama;
   const exp = getContractExpiryStatus(p);
+  const jt = getPenghuniJatuhTempo(p);
   $('detail-body').innerHTML = `
     <div class="detail-hero">
       ${av}
@@ -4516,7 +4577,7 @@ window.openDetail = function(id) {
       <div class="d-section">
         <h4>💳 Keuangan &amp; Sewa</h4>
         <div class="d-row"><div class="d-key">Sewa Bulanan</div><div class="d-val">${rp(p.sewa)}</div></div>
-        <div class="d-row"><div class="d-key">Jatuh Tempo Bulanan</div><div class="d-val">${p.tempo ? 'Tanggal ' + esc(p.tempo) + ' setiap bulan' : '–'}</div></div>
+        <div class="d-row"><div class="d-key">Jatuh Tempo Sewa</div><div class="d-val">Setiap tanggal ${jt.day} (Siklus: ${fmtD(p.tglMasuk)} s/d ${p.tglKeluar ? fmtD(p.tglKeluar) : 'selesai'})</div></div>
         <div class="d-row"><div class="d-key">Masa Kontrak Berakhir</div><div class="d-val"><strong>${p.tglKeluar ? fmtD(p.tglKeluar) + ' (' + exp.label + ')' : 'Belum ditentukan'}</strong></div></div>
         <div class="d-row"><div class="d-key">Uang Jaminan / Deposit</div><div class="d-val" style="color:var(--orange)">${p.deposit ? rp(p.deposit) : 'Rp 0'}</div></div>
         <div class="d-row"><div class="d-key">Status Bulan Ini</div><div class="d-val">${pb?.status==='lunas'?'✅ Lunas':'❌ Belum Bayar'}</div></div>
@@ -4668,7 +4729,7 @@ window.printSpk = function(p) {
 
   <div class="pasal-title">PASAL 2 – HARGA SEWA &amp; JANGKA WAKTU</div>
   <p>1. Biaya sewa kamar disepakati sebesar <strong>${rp(p.sewa)}</strong> per bulan.<br>
-     2. Pembayaran wajib dilakukan selambat-lambatnya tanggal <strong>${p.tempo || '1'}</strong> setiap bulannya.<br>
+     2. Pembayaran sewa wajib dilakukan selambat-lambatnya pada tanggal <strong>${p.tglMasuk ? parseInt(p.tglMasuk.split('-')[2], 10) : (p.tempo || '1')}</strong> setiap bulannya, mengikuti tanggal masuk (${fmtD(p.tglMasuk)}) sampai dengan tanggal keluar (${p.tglKeluar ? fmtD(p.tglKeluar) : 'berakhirnya sewa'}).<br>
      3. Jangka waktu sewa berlaku sejak tanggal <strong>${fmtD(p.tglMasuk)}</strong> sampai dengan tanggal <strong>${p.tglKeluar ? fmtD(p.tglKeluar) : 'tidak ditentukan'}</strong>.<br>
      4. PIHAK KEDUA telah menyerahkan Uang Jaminan (Deposit) sebesar <strong>${p.deposit ? rp(p.deposit) : 'Rp 0'}</strong> yang akan dikembalikan secara utuh pada saat masa sewa berakhir setelah dipastikan tidak ada tunggakan dan kerusakan fasilitas.</p>
 
@@ -4929,7 +4990,6 @@ $('form-kamar').addEventListener('submit', async function(e) {
     lantai: $('field-lantai-kamar').value.trim() || '1',
     tipe: $('field-tipe-kamar').value,
     harga: $('field-harga-kamar').value,
-    tempo: $('field-tempo-kamar')?.value ? Number($('field-tempo-kamar').value) : null,
     fasilitas: $('field-fasilitas').value.trim()
   };
   const i = S.kamar.findIndex(k => k.id === id);
@@ -4950,7 +5010,6 @@ window.editKamar = function(id) {
   $('field-lantai-kamar').value = k.lantai || '';
   $('field-tipe-kamar').value = k.tipe || 'Standar';
   $('field-harga-kamar').value = k.harga || '';
-  if ($('field-tempo-kamar')) $('field-tempo-kamar').value = k.tempo || '';
   $('field-fasilitas').value = k.fasilitas || '';
   openModal('modal-kamar');
 };
@@ -5090,19 +5149,21 @@ function renderPembayaran() {
     const isLunas = pb?.status === 'lunas';
     const isPending = pb?.status === 'menunggu';
 
-    // Status Jatuh Tempo
+    // Status Jatuh Tempo (Dihitung dinamis dari tglMasuk & tglKeluar)
+    const jt = getPenghuniJatuhTempo(p, bln);
     let tempoBadge = '<span class="badge badge-gray">–</span>';
-    if (p.tempo) {
-      const diff = Number(p.tempo) - nowDay;
-      if (isLunas) {
-        tempoBadge = `<span class="badge badge-green">Tgl ${esc(p.tempo)} (Lunas)</span>`;
-      } else if (diff < 0) {
-        tempoBadge = `<span class="badge badge-red">Terlambat (${Math.abs(diff)} hari)</span>`;
-      } else if (diff <= 3) {
-        tempoBadge = `<span class="badge badge-orange">H-${diff} Tempo (Tgl ${esc(p.tempo)})</span>`;
-      } else {
-        tempoBadge = `<span class="badge badge-blue">Tgl ${esc(p.tempo)}</span>`;
-      }
+    const cycleSub = p.tglMasuk ? `<div style="font-size:0.7rem;color:var(--text-4);margin-top:2px" title="Siklus sewa: ${fmtD(p.tglMasuk)} s/d ${p.tglKeluar ? fmtD(p.tglKeluar) : 'selesai'}">Siklus: ${fmtD(jt.dateStr)}</div>` : '';
+
+    if (isLunas) {
+      tempoBadge = `<span class="badge badge-green">${fmtD(jt.dateStr)} (Lunas)</span>${cycleSub}`;
+    } else if (jt.diffDays < 0) {
+      tempoBadge = `<span class="badge badge-red">Terlambat (${Math.abs(jt.diffDays)} hari)</span>${cycleSub}`;
+    } else if (jt.diffDays === 0) {
+      tempoBadge = `<span class="badge badge-orange">Hari Ini (${fmtD(jt.dateStr)})</span>${cycleSub}`;
+    } else if (jt.diffDays <= 3) {
+      tempoBadge = `<span class="badge badge-orange">H-${jt.diffDays} Tempo (${fmtD(jt.dateStr)})</span>${cycleSub}`;
+    } else {
+      tempoBadge = `<span class="badge badge-blue">${fmtD(jt.dateStr)}</span>${cycleSub}`;
     }
 
     let statusCell = isLunas ? '<span class="badge badge-green">Lunas</span>' : (isPending ? '<span class="badge badge-orange">Menunggu Verifikasi</span>' : '<span class="badge badge-red">Belum Bayar</span>');
@@ -5186,6 +5247,7 @@ window.kirimWaTagihan = function(pid, bln, branchId = S.activeKostId) {
     rekInfo = `\n\nPembayaran dapat ditransfer ke:\n🏦 ${targetKost.bankNama}: *${targetKost.bankRekening}*\n👤 a.n ${targetKost.bankAtasNama || targetKost.pemilik}`;
   }
 
+  const jt = getPenghuniJatuhTempo(p, safeBln);
   let text = '';
   if (targetKost.waTemplate && targetKost.waTemplate.trim()) {
     text = targetKost.waTemplate
@@ -5197,9 +5259,9 @@ window.kirimWaTagihan = function(pid, bln, branchId = S.activeKostId) {
       .replace(/{bank}/g, targetKost.bankNama || 'Bank')
       .replace(/{rekening}/g, targetKost.bankRekening || '')
       .replace(/{pemilik}/g, targetKost.bankAtasNama || targetKost.pemilik || '')
-      .replace(/{tempo}/g, p.tempo || targetKost.tempoDefault || 5);
+      .replace(/{tempo}/g, fmtD(jt.dateStr));
   } else {
-    text = `Halo Kak *${p.nama}*,\n\nMengingatkan tagihan sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(p.sewa)}* (Jatuh tempo tgl ${p.tempo || 5}).${rekInfo}\n\nMohon konfirmasi jika sudah melakukan transfer ya. Terima kasih! 🙏`;
+    text = `Halo Kak *${p.nama}*,\n\nMengingatkan tagihan sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(p.sewa)}* (Jatuh tempo: ${fmtD(jt.dateStr)}, Siklus sewa: ${fmtD(p.tglMasuk)} s/d ${p.tglKeluar ? fmtD(p.tglKeluar) : 'selesai'}).${rekInfo}\n\nMohon konfirmasi jika sudah melakukan transfer ya. Terima kasih! 🙏`;
   }
 
   const url = `https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`;
