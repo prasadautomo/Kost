@@ -354,7 +354,13 @@ window.throttle = throttle;
 
 // ── HELPER KALKULASI TANGGAL & KONTRAK SEWA ────────────────────
 function addDaysYMD(days, baseDateStr = null) {
-  const d = baseDateStr ? new Date(baseDateStr) : new Date();
+  let d;
+  if (baseDateStr && /^\d{4}-\d{2}-\d{2}$/.test(baseDateStr)) {
+    const [y, m, day] = baseDateStr.split('-').map(Number);
+    d = new Date(y, m - 1, day);
+  } else {
+    d = baseDateStr ? new Date(baseDateStr) : new Date();
+  }
   d.setDate(d.getDate() + Number(days));
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
@@ -1394,6 +1400,11 @@ window.cleanNumber = cleanNumber;
 const rp = n => 'Rp ' + cleanNumber(n).toLocaleString('id-ID');
 const fmtD = s  => {
   if (!s) return '–';
+  if (typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const [y, m, d] = s.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
+    return isNaN(dateObj.getTime()) ? '–' : dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
   const d = new Date(s);
   return isNaN(d.getTime()) ? '–' : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 };
@@ -1459,6 +1470,7 @@ function todayYMD() {
 window.thisMonth = thisMonth;
 window.todayYMD = todayYMD;
 window.rp = rp;
+window.fmtD = fmtD;
 
 // Terbilang Rupiah Helper (untuk Kwitansi Resmi)
 function terbilang(n) {
@@ -2672,10 +2684,14 @@ function setupPropertySwitcherEvents() {
 
 function loginWithAkun(akun) {
   currentUser = akun;
-  if (typeof window !== 'undefined') window.currentUser = akun;
+  if (typeof window !== 'undefined') {
+    window.currentUser = akun;
+    window.loginWithAkun = loginWithAkun;
+  }
   LS.saveSession(akun);
   enterApp();
 }
+if (typeof window !== 'undefined') window.loginWithAkun = loginWithAkun;
 
 // ── LOGOUT ────────────────────────────────────────────────────
 $('btn-logout').addEventListener('click', async () => {
@@ -3411,7 +3427,7 @@ function renderDashboard() {
   }
 
   // Quick Kamar Chips
-  const allKamar = [...new Set([...S.kamar.map(k=>k.no), ...S.penghuni.map(p=>p.kamar).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const allKamar = [...new Set([...S.kamar.map(k=>k.no), ...S.penghuni.map(p=>p.kamar).filter(Boolean)])].sort((a,b)=>String(a || '').localeCompare(String(b || ''), undefined, { numeric: true }));
   const occ = {}; aktif.forEach(p => p.kamar && (occ[p.kamar] = true));
   $('quick-kamar').innerHTML = allKamar.map(no => `<span class="qk-chip ${occ[no] ? 'terisi' : 'kosong'}">${esc(no)}</span>`).join('') || '<span style="font-size:0.78rem;color:var(--text-3);padding:12px;display:block">Belum ada kamar.</span>';
 
@@ -3533,7 +3549,7 @@ function renderCharts() {
 
 // ── PENGHUNI RENDER ───────────────────────────────────────────
 function getPenghuniFiltered() {
-  const q  = $('cari-penghuni')?.value.toLowerCase() || '';
+  const q  = ($('cari-penghuni')?.value || '').toLowerCase();
   const fs = $('filter-status')?.value || '';
   const fk = $('filter-kendaraan')?.value || '';
   const filterCabang = $('filter-cabang-penghuni')?.value || 'active';
@@ -3663,17 +3679,17 @@ function populateKamarSelect(currentKamar = '') {
     if (p.kamar) occ[p.kamar] = p.nama;
   });
 
-  const rooms = [...S.kamar].sort((a,b) => (a.no||'').localeCompare(b.no||'', undefined, { numeric: true }));
+  const rooms = [...S.kamar].sort((a,b) => String(a.no || '').localeCompare(String(b.no || ''), undefined, { numeric: true }));
   let opts = '<option value="">-- Pilih Kamar Kosong --</option>';
   
   let currentFound = false;
   rooms.forEach(k => {
-    const isOccupied = !!occ[k.no] && k.no !== currentKamar;
-    const isCurrent = k.no === currentKamar;
+    const isOccupied = !!occ[k.no] && String(k.no) !== String(currentKamar || '');
+    const isCurrent = currentKamar ? String(k.no) === String(currentKamar) : false;
     if (isCurrent) currentFound = true;
     
     if (!isOccupied || isCurrent) {
-      opts += `<option value="${k.no}"${isCurrent ? ' selected' : ''}>Kamar ${k.no} (${k.tipe || 'Standar'} - Lt ${k.lantai || '1'} - ${rp(k.harga || 0)}/bln)</option>`;
+      opts += `<option value="${esc(String(k.no))}"${isCurrent ? ' selected' : ''}>Kamar ${esc(String(k.no))} (${esc(k.tipe || 'Standar')} - Lt ${esc(String(k.lantai || '1'))} - ${rp(k.harga || 0)}/bln)</option>`;
     }
   });
 
@@ -3698,13 +3714,12 @@ function populateKamarSelect(currentKamar = '') {
 
   if (tip) tip.style.display = 'none';
 }
+window.populateKamarSelect = populateKamarSelect;
 
 function openModalPenghuni(id = null, preselectedKamar = null) {
   editId = id;
   switchFTab('identitas');
   $('form-penghuni').reset();
-  if ($('prev-foto')) $('prev-foto').style.display = 'none';
-  if ($('ph-foto'))   $('ph-foto').style.display   = 'flex';
   $('prev-ktp').style.display  = 'none'; $('ph-ktp').style.display  = 'flex';
   if ($('ktp-ocr-status')) $('ktp-ocr-status').style.display = 'none';
 
@@ -4503,7 +4518,7 @@ window.openDetail = function(id) {
         <div class="d-row"><div class="d-key">Sewa Bulanan</div><div class="d-val">${rp(p.sewa)}</div></div>
         <div class="d-row"><div class="d-key">Jatuh Tempo Bulanan</div><div class="d-val">${p.tempo ? 'Tanggal ' + esc(p.tempo) + ' setiap bulan' : '–'}</div></div>
         <div class="d-row"><div class="d-key">Masa Kontrak Berakhir</div><div class="d-val"><strong>${p.tglKeluar ? fmtD(p.tglKeluar) + ' (' + exp.label + ')' : 'Belum ditentukan'}</strong></div></div>
-        <div class="d-row"><div class="d-key">Uang Jaminan / Deposit</div><div class="d-val" style="color:var(--orange)">${p.deposit?rp(p.deposit):'Rp 0'} ${p.catatanDeposit ? '(' + esc(p.catatanDeposit) + ')' : ''}</div></div>
+        <div class="d-row"><div class="d-key">Uang Jaminan / Deposit</div><div class="d-val" style="color:var(--orange)">${p.deposit ? rp(p.deposit) : 'Rp 0'}</div></div>
         <div class="d-row"><div class="d-key">Status Bulan Ini</div><div class="d-val">${pb?.status==='lunas'?'✅ Lunas':'❌ Belum Bayar'}</div></div>
       </div>
       <div class="d-section">
@@ -4749,12 +4764,12 @@ function renderKamar() {
     if (p.kamar) { if (!occ[p.kamar]) occ[p.kamar] = []; occ[p.kamar].push(p); }
   });
 
-  const list = [...S.kamar].sort((a,b) => (a.no||'').localeCompare(b.no||'', undefined, { numeric: true }));
+  const list = [...S.kamar].sort((a,b) => String(a.no || '').localeCompare(String(b.no || ''), undefined, { numeric: true }));
 
   // Render Floor Tabs
   const floorTabsEl = $('km-floor-tabs');
   if (floorTabsEl) {
-    const floors = [...new Set(list.map(k => String(k.lantai || '1')))].sort((a,b) => a.localeCompare(b, undefined, { numeric: true }));
+    const floors = [...new Set(list.map(k => String(k.lantai || '1')))].sort((a,b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
     floorTabsEl.innerHTML = `
       <button type="button" class="km-floor-tab ${activeFloorFilter === '' ? 'active' : ''}" onclick="setFloorFilter('')">Semua Lantai</button>
       ${floors.map(fl => `
@@ -4885,6 +4900,7 @@ window.quickPayTenant = async function(pid, bln = thisMonth(), branchId = S.acti
     '⚡ Ya, Lunas Sekarang'
   );
 };
+window.renderKamar = renderKamar;
 
 $('filter-kamar-status').addEventListener('change', renderKamar);
 $('btn-tambah-kamar').addEventListener('click', () => {
@@ -4902,7 +4918,7 @@ $('form-kamar').addEventListener('submit', async function(e) {
   const no = $('field-no-kamar').value.trim(); if (!no) { toast('Nomor kamar wajib!','err'); return; }
   const id = $('field-kamar-id').value || uid();
 
-  const isDuplicate = S.kamar.some(k => k.no.toLowerCase() === no.toLowerCase() && k.id !== id);
+  const isDuplicate = S.kamar.some(k => String(k.no || '').toLowerCase() === String(no).toLowerCase() && k.id !== id);
   if (isDuplicate) {
     toast(`Nomor kamar "${no}" sudah digunakan! Gunakan nomor lain.`, 'err');
     return;
@@ -4964,6 +4980,7 @@ window.hapusKamar = function(id) {
 // ── PEMBAYARAN & TAGIHAN (DENGAN MODE KONSOLIDASI 5 CABANG) ───
 function renderPembayaran() {
   const selBln = $('filter-bulan-bayar');
+  if (!selBln) return;
   const selCabang = $('filter-cabang-bayar');
   const isKonsolidasi = selCabang?.value === 'all';
 
@@ -5126,6 +5143,7 @@ function renderPembayaran() {
     </tr>`;
   }).join('') || `<tr><td colspan="${isKonsolidasi ? 8 : 7}" style="text-align:center;padding:24px;color:var(--text-3)">Tidak ada data pembayaran yang sesuai.</td></tr>`;
 }
+window.renderPembayaran = renderPembayaran;
 
 $('filter-bulan-bayar')?.addEventListener('change', renderPembayaran);
 $('filter-status-bayar')?.addEventListener('change', renderPembayaran);
@@ -6889,7 +6907,7 @@ function setupNewFeatureEvents() {
 
   window.addEventListener('keydown', e => {
     // Ctrl + K Universal Spotlight Search
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    if ((e.ctrlKey || e.metaKey) && (e.key || '').toLowerCase() === 'k') {
       e.preventDefault();
       openSpotlight();
       return;
