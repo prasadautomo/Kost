@@ -5550,35 +5550,6 @@ $('form-profil-pw').addEventListener('submit', async function(e) {
 });
 
 // ── PENGATURAN (MANAGER) ──────────────────────────────────────
-function getDefaultWaTemplate() {
-  return `Halo Kak {nama}, mengingatkan tagihan sewa kamar {kamar} di {kost} untuk bulan {bulan} sebesar *{nominal}* telah jatuh tempo.\n\nPembayaran dapat ditransfer ke:\n🏦 {bank}: *{rekening}*\n👤 a.n {pemilik}\n\nMohon konfirmasi atau kirimkan bukti transfer jika sudah membayar ya. Terima kasih banyak! 🙏`;
-}
-
-function renderWaPreview() {
-  const tplEl = $('set-wa-template');
-  const prevEl = $('preview-wa-msg');
-  if (!tplEl || !prevEl) return;
-  const raw = tplEl.value || getDefaultWaTemplate();
-  const sampleBank = $('set-bank-nama')?.value?.trim() || S.kost.bankNama || 'Bank BCA';
-  const sampleRek = $('set-bank-rekening')?.value?.trim() || S.kost.bankRekening || '8465-1234-90';
-  const samplePemilik = $('set-bank-atas-nama')?.value?.trim() || $('set-pemilik')?.value?.trim() || S.kost.pemilik || 'Pengelola Kost';
-  const sampleKost = $('set-nama-kost')?.value?.trim() || S.kost.nama || 'Kost Harmoni';
-  const sampleTempo = $('set-tempo-default')?.value?.trim?.() || $('set-tempo-default')?.value || S.kost.tempoDefault || 5;
-
-  const rendered = raw
-    .replace(/{nama}/g, 'Dimas Prasetyo')
-    .replace(/{kamar}/g, '101')
-    .replace(/{bulan}/g, 'Oktober 2026')
-    .replace(/{nominal}/g, 'Rp 1.500.000')
-    .replace(/{kost}/g, sampleKost)
-    .replace(/{bank}/g, sampleBank)
-    .replace(/{rekening}/g, sampleRek)
-    .replace(/{pemilik}/g, samplePemilik)
-    .replace(/{tempo}/g, sampleTempo);
-
-  prevEl.textContent = rendered;
-}
-
 function renderPengaturan() {
   if ($('set-nama-kost'))     $('set-nama-kost').value     = S.kost.nama || '';
   if ($('set-pemilik'))       $('set-pemilik').value       = S.kost.pemilik || '';
@@ -5587,30 +5558,6 @@ function renderPengaturan() {
   if ($('set-hp-pemilik'))    $('set-hp-pemilik').value    = S.kost.hp || '';
   if ($('set-total-kamar'))   $('set-total-kamar').value   = S.kost.totalKamar || '';
   if ($('set-tempo-default')) $('set-tempo-default').value = S.kost.tempoDefault || 5;
-
-  // Form Bank & QRIS
-  if ($('set-bank-nama'))     $('set-bank-nama').value     = S.kost.bankNama || '';
-  if ($('set-bank-rekening')) $('set-bank-rekening').value = S.kost.bankRekening || '';
-  if ($('set-bank-atas-nama'))$('set-bank-atas-nama').value= S.kost.bankAtasNama || '';
-  if ($('set-qris-url'))      $('set-qris-url').value      = S.kost.qrisUrl || '';
-
-  const previewQris = $('preview-qris');
-  if (previewQris) {
-    const safeQris = safeUrl(S.kost.qrisUrl);
-    if (safeQris) {
-      previewQris.innerHTML = `<img src="${safeQris}" alt="Preview QRIS" style="max-height:160px;border-radius:8px;border:1px solid var(--border)" />`;
-      previewQris.style.display = 'block';
-    } else {
-      previewQris.style.display = 'none';
-      previewQris.innerHTML = '';
-    }
-  }
-
-  // Template WhatsApp
-  if ($('set-wa-template')) {
-    $('set-wa-template').value = S.kost.waTemplate || getDefaultWaTemplate();
-    renderWaPreview();
-  }
 
   const cfg = getSupabaseConfig();
   if (cfg) {
@@ -5652,16 +5599,6 @@ async function saveAllPengaturan(sourceForm = '') {
       S.kost.tempoDefault = Math.max(1, Math.min(31, Number($('set-tempo-default').value) || 5));
     }
 
-    // 2. Bank & QRIS
-    if ($('set-bank-nama'))     S.kost.bankNama     = $('set-bank-nama').value.trim();
-    if ($('set-bank-rekening')) S.kost.bankRekening = $('set-bank-rekening').value.trim();
-    if ($('set-bank-atas-nama'))S.kost.bankAtasNama = $('set-bank-atas-nama').value.trim();
-    if ($('set-qris-url'))      S.kost.qrisUrl      = $('set-qris-url').value.trim();
-
-    // 3. WA Template
-    if ($('set-wa-template') && $('set-wa-template').value.trim()) {
-      S.kost.waTemplate = $('set-wa-template').value.trim();
-    }
   }
 
   S.kost.updatedAt = Date.now();
@@ -5726,10 +5663,7 @@ async function saveAllPengaturan(sourceForm = '') {
   }
 
   if (sourceForm && sourceForm !== 'auto' && sourceForm !== 'logout') {
-    const msg = sourceForm === 'bank' ? 'Informasi rekening & QRIS tersimpan permanen! 💳' :
-                sourceForm === 'wa'   ? 'Template WhatsApp penagihan berhasil disimpan! 📱' :
-                                        'Semua pengaturan kost berhasil disimpan permanen! 💾';
-    toast(msg, 'success');
+    toast('Semua pengaturan kost berhasil disimpan permanen! 💾', 'success');
   }
 }
 
@@ -5737,16 +5671,6 @@ async function saveAllPengaturan(sourceForm = '') {
 $('form-kost')?.addEventListener('submit', async function(e) {
   e.preventDefault();
   await saveAllPengaturan('profil');
-});
-
-$('form-bank')?.addEventListener('submit', async function(e) {
-  e.preventDefault();
-  await saveAllPengaturan('bank');
-});
-
-$('form-wa-template')?.addEventListener('submit', async function(e) {
-  e.preventDefault();
-  await saveAllPengaturan('wa');
 });
 
 $('btn-save-all-settings')?.addEventListener('click', async () => {
@@ -5767,12 +5691,7 @@ const settingAutoFields = [
   'set-alamat',
   'set-hp-pemilik',
   'set-total-kamar',
-  'set-tempo-default',
-  'set-bank-nama',
-  'set-bank-rekening',
-  'set-bank-atas-nama',
-  'set-qris-url',
-  'set-wa-template'
+  'set-tempo-default'
 ];
 
 settingAutoFields.forEach(id => {
@@ -5794,64 +5713,6 @@ window.addEventListener('beforeunload', () => {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     try { saveAllPengaturan('auto'); } catch {}
-  }
-});
-
-// Upload QRIS Langsung dari File
-const qrisFileInput = $('set-qris-file');
-if (qrisFileInput) {
-  qrisFileInput.addEventListener('change', async function() {
-    const file = this.files[0];
-    if (!file) return;
-    try {
-      toast('Memproses foto QRIS...');
-      const compressedDataUrl = await compressImage(file, 800, 800, 0.85);
-      if ($('set-qris-url')) $('set-qris-url').value = compressedDataUrl;
-      const preview = $('preview-qris');
-      if (preview) {
-        preview.innerHTML = `<img src="${compressedDataUrl}" alt="Preview QRIS" style="max-height:160px;border-radius:8px;border:1px solid var(--border)" />`;
-        preview.style.display = 'block';
-      }
-      toast('Foto QRIS berhasil dimuat! Klik "Simpan Informasi Pembayaran" untuk menyimpan permanen.');
-    } catch (err) {
-      toast('Gagal memproses gambar QRIS: ' + err.message, 'err');
-    }
-  });
-}
-
-// Variabel Tag WA Klik untuk Menyisipkan
-document.querySelectorAll('.tag-var').forEach(tag => {
-  tag.addEventListener('click', () => {
-    const tplArea = $('set-wa-template');
-    if (!tplArea) return;
-    const insertText = tag.dataset.tag || tag.textContent;
-    const startPos = tplArea.selectionStart || tplArea.value.length;
-    const endPos = tplArea.selectionEnd || tplArea.value.length;
-    tplArea.value = tplArea.value.substring(0, startPos) + insertText + tplArea.value.substring(endPos);
-    tplArea.focus();
-    tplArea.selectionStart = tplArea.selectionEnd = startPos + insertText.length;
-    renderWaPreview();
-  });
-});
-
-let waPreviewTimer;
-function onWaSettingInput(e) {
-  if (e && e.isTrusted === false) {
-    renderWaPreview();
-    return;
-  }
-  clearTimeout(waPreviewTimer);
-  waPreviewTimer = setTimeout(renderWaPreview, 120);
-}
-['set-wa-template','set-bank-nama','set-bank-rekening','set-bank-atas-nama','set-nama-kost','set-pemilik','set-tempo-default'].forEach(id => {
-  $(id)?.addEventListener('input', onWaSettingInput);
-});
-
-$('btn-reset-wa-template')?.addEventListener('click', () => {
-  if ($('set-wa-template')) {
-    $('set-wa-template').value = getDefaultWaTemplate();
-    renderWaPreview();
-    toast('Template direset ke standar. Klik Simpan untuk memperbarui.');
   }
 });
 
@@ -5933,14 +5794,7 @@ document.querySelectorAll('.settings-tab').forEach(btn => {
     btn.classList.add('active');
     const targetContent = $('stab-' + btn.dataset.stab);
     if (targetContent) targetContent.classList.add('active');
-    if (btn.dataset.stab === 'wa') renderWaPreview();
   });
-});
-
-
-$('form-ganti-pw').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  await gantiPassword($('pw-lama').value, $('pw-baru').value, $('pw-confirm').value, this);
 });
 
 async function gantiPassword(lama, baru, confirm, formEl) {
