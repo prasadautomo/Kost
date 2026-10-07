@@ -2197,6 +2197,83 @@ textarea.fc {
   grid-column: span 2;
 }
 
+/* Date Input Styling & Clear Calendar Indicator */
+.date-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.date-input-wrap .fc {
+  padding-right: 42px;
+  cursor: pointer;
+  color-scheme: dark;
+}
+[data-theme="light"] .date-input-wrap .fc {
+  color-scheme: light;
+}
+.date-picker-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-light);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all var(--t);
+  user-select: none;
+  pointer-events: auto;
+  z-index: 2;
+}
+.date-picker-icon:hover {
+  color: #fff;
+  background: rgba(16, 185, 129, 0.18);
+  transform: translateY(-50%) scale(1.15);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+}
+.date-picker-icon .material-symbols-outlined {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Let the native indicator sit right on top of the icon with opacity 0 so clicking directly fires native datepicker */
+.date-input-wrap input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 6px;
+  top: 0;
+  width: 36px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 3;
+}
+
+/* Standalone input[type="date"] styling */
+input[type="date"] {
+  color-scheme: dark;
+  cursor: pointer;
+}
+[data-theme="light"] input[type="date"] {
+  color-scheme: light;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.85) sepia(100%) hue-rotate(100deg) saturate(500%) brightness(1.2);
+  opacity: 0.95;
+  transition: all var(--t);
+  padding: 2px;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
 .pw-wrap {
   position: relative;
 }

@@ -4237,6 +4237,15 @@ if (inputTglMasuk) {
   inputTglMasuk.addEventListener('input', syncTglKeluar);
 }
 
+// Memastikan klik di mana saja pada input tanggal memicu datepicker bawaan
+document.querySelectorAll('input[type="date"]').forEach(inp => {
+  inp.addEventListener('click', function() {
+    if (typeof this.showPicker === 'function') {
+      try { this.showPicker(); } catch (err) {}
+    }
+  });
+});
+
 $('form-penghuni').addEventListener('submit', async function(e) {
   e.preventDefault();
   const nama     = $('field-nama').value.trim();

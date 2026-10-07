@@ -722,7 +722,15 @@
             <div class="fg"><label>NIK KTP</label><input type="text" id="field-nik" class="fc" maxlength="16" placeholder="16 digit" /></div>
             <div class="fg"><label>Jenis Kelamin</label><select id="field-gender" class="fc"><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select></div>
             <div class="fg"><label>Tempat Lahir</label><input type="text" id="field-tempat-lahir" class="fc" placeholder="Jakarta" /></div>
-            <div class="fg"><label>Tanggal Lahir</label><input type="date" id="field-tgl-lahir" class="fc" /></div>
+            <div class="fg">
+              <label>📅 Tanggal Lahir</label>
+              <div class="date-input-wrap">
+                <input type="date" id="field-tgl-lahir" class="fc date-fc" />
+                <span class="date-picker-icon" onclick="$('field-tgl-lahir').showPicker ? $('field-tgl-lahir').showPicker() : $('field-tgl-lahir').focus()" title="Pilih Tanggal Lahir">
+                  <span class="material-symbols-outlined">calendar_month</span>
+                </span>
+              </div>
+            </div>
             <div class="fg col2"><label>Alamat KTP</label><textarea id="field-alamat-ktp" class="fc" rows="2" placeholder="Sesuai KTP"></textarea></div>
             <div class="fg"><label>No. HP / WA <em>*</em></label><input type="tel" id="field-hp" class="fc" placeholder="08xx-xxxx-xxxx" required /></div>
             <div class="fg"><label>Email</label><input type="email" id="field-email" class="fc" placeholder="email@domain.com" /></div>
@@ -748,8 +756,24 @@
               <div id="field-kamar-tip" style="font-size:0.75rem;color:var(--green);margin-top:4px;display:none"></div>
             </div>
             <div class="fg"><label>Lantai</label><input type="text" id="field-lantai" class="fc" placeholder="1" /></div>
-            <div class="fg"><label>Tanggal Masuk <em>*</em></label><input type="date" id="field-tgl-masuk" class="fc" required /></div>
-            <div class="fg"><label>Est. Tanggal Keluar</label><input type="date" id="field-tgl-keluar" class="fc" /></div>
+            <div class="fg">
+              <label>📅 Tanggal Masuk <em>*</em></label>
+              <div class="date-input-wrap">
+                <input type="date" id="field-tgl-masuk" class="fc date-fc" required />
+                <span class="date-picker-icon" onclick="$('field-tgl-masuk').showPicker ? $('field-tgl-masuk').showPicker() : $('field-tgl-masuk').focus()" title="Pilih Tanggal Masuk">
+                  <span class="material-symbols-outlined">calendar_month</span>
+                </span>
+              </div>
+            </div>
+            <div class="fg">
+              <label>📅 Est. Tanggal Keluar</label>
+              <div class="date-input-wrap">
+                <input type="date" id="field-tgl-keluar" class="fc date-fc" />
+                <span class="date-picker-icon" onclick="$('field-tgl-keluar').showPicker ? $('field-tgl-keluar').showPicker() : $('field-tgl-keluar').focus()" title="Pilih Tanggal Keluar">
+                  <span class="material-symbols-outlined">calendar_month</span>
+                </span>
+              </div>
+            </div>
             <div class="fg col2"><label>Catatan Hunian</label><textarea id="field-catatan" class="fc" rows="2" placeholder="Catatan tentang penghuni…"></textarea></div>
           </div>
         </div>
@@ -862,7 +886,15 @@
       <form id="form-pengeluaran">
         <input type="hidden" id="field-pengeluaran-id" />
         <div class="fg-grid">
-          <div class="fg"><label for="field-pengeluaran-tgl">Tanggal Pengeluaran <em>*</em></label><input type="date" id="field-pengeluaran-tgl" class="fc" required /></div>
+          <div class="fg">
+            <label for="field-pengeluaran-tgl">📅 Tanggal Pengeluaran <em>*</em></label>
+            <div class="date-input-wrap">
+              <input type="date" id="field-pengeluaran-tgl" class="fc date-fc" required />
+              <span class="date-picker-icon" onclick="$('field-pengeluaran-tgl').showPicker ? $('field-pengeluaran-tgl').showPicker() : $('field-pengeluaran-tgl').focus()" title="Pilih Tanggal Pengeluaran">
+                <span class="material-symbols-outlined">calendar_month</span>
+              </span>
+            </div>
+          </div>
           <div class="fg"><label for="field-pengeluaran-kategori">Kategori <em>*</em></label>
             <select id="field-pengeluaran-kategori" class="fc" required>
               <option value="Listrik/PLN">⚡ Listrik / PLN</option>
@@ -1217,8 +1249,13 @@
 
       <div class="fg-grid" style="margin-bottom:14px">
         <div class="fg">
-          <label>Tanggal Berakhir Baru <em>*</em></label>
-          <input type="date" id="renew-tgl-keluar" class="fc" required />
+          <label>📅 Tanggal Berakhir Baru <em>*</em></label>
+          <div class="date-input-wrap">
+            <input type="date" id="renew-tgl-keluar" class="fc date-fc" required />
+            <span class="date-picker-icon" onclick="$('renew-tgl-keluar').showPicker ? $('renew-tgl-keluar').showPicker() : $('renew-tgl-keluar').focus()" title="Pilih Tanggal Berakhir">
+              <span class="material-symbols-outlined">calendar_month</span>
+            </span>
+          </div>
         </div>
         <div class="fg">
           <label>Harga Sewa Baru (Rp/bln)</label>
