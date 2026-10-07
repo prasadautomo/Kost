@@ -288,8 +288,8 @@
       // 1. Switch ke Cabang Kost 2: Graha Asri Dago (Bandung)
       win.switchKost('kost_2');
       await new Promise(r => setTimeout(r, 200));
-      logAssertion(b8, win.S.kost.nama === 'Kost Graha Asri Dago', 'Berhasil beralih ke Cabang 2: Kost Graha Asri Dago');
-      logAssertion(b8, doc.getElementById('sb-kost-name').textContent.includes('Dago'), 'Nama kost di sidebar terupdate ke Cabang Dago');
+      logAssertion(b8, doc.getElementById('topbar-prop-name').textContent.includes('Dago'), 'Nama cabang di topbar switcher terupdate ke Cabang Dago');
+      logAssertion(b8, doc.getElementById('sb-kost-name').textContent === 'Kost Manager', 'Brand sidebar tetap konsisten "Kost Manager"');
 
       // 2. Switch ke Cabang Kost 3: Puri Indah Tebet (Jakarta)
       win.switchKost('kost_3');

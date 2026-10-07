@@ -963,8 +963,8 @@ function updatePropertySwitcherUI() {
 
   if (activeNameEl) activeNameEl.textContent = S.kost.nama || 'SiKost';
   if (activeLocEl)  activeLocEl.textContent  = locText;
-  if (sbNameEl)     sbNameEl.textContent     = S.kost.nama || 'SiKost';
-  if (sbLocEl)      sbLocEl.textContent      = locText;
+  if (sbNameEl)     sbNameEl.textContent     = 'Kost Manager';
+  if (sbLocEl)      sbLocEl.textContent      = '📍 Portal Multi-Cabang';
 
   const switcherWrap = $('topbar-property-selector');
   if (switcherWrap) {
@@ -1848,7 +1848,8 @@ const DB = {
         if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
         if ($('page-pengeluaran')?.classList.contains('active')) renderPengeluaran();
         if ($('page-pengaturan')?.classList.contains('active')) renderPengaturan();
-        if ($('sb-kost-name')) $('sb-kost-name').textContent = S.kost.nama || 'Nama Kost Manager';
+        if ($('sb-kost-name')) $('sb-kost-name').textContent = 'Kost Manager';
+        if ($('sb-kost-loc'))  $('sb-kost-loc').textContent  = '📍 Portal Multi-Cabang';
       }
     } catch (e) {
       console.warn('Gagal sinkron data Supabase:', e);
@@ -2699,7 +2700,8 @@ function enterApp() {
   buildSidebar();
   renderUserChip();
   if ($('login-kost-title')) $('login-kost-title').textContent = S.kost?.nama || 'SiKost';
-  if ($('sb-kost-name'))     $('sb-kost-name').textContent     = S.kost?.nama || 'SiKost';
+  if ($('sb-kost-name'))     $('sb-kost-name').textContent     = 'Kost Manager';
+  if ($('sb-kost-loc'))      $('sb-kost-loc').textContent      = '📍 Portal Multi-Cabang';
   if ($('topbar-prop-name')) $('topbar-prop-name').textContent = S.kost?.nama || 'SiKost';
   document.title = (S.kost?.nama || 'SiKost') + ' – Manajemen Kost Modern';
   updatePropertySwitcherUI();
@@ -2741,7 +2743,8 @@ function buildSidebar() {
     $('sb-role-badge').textContent = (currentUser?.role === 'penghuni') ? 'Penghuni' : 'Manager';
     $('sb-role-badge').className   = 'brand-role';
   }
-  if ($('sb-kost-name')) $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
+  if ($('sb-kost-name')) $('sb-kost-name').textContent = 'Kost Manager';
+  if ($('sb-kost-loc'))  $('sb-kost-loc').textContent  = '📍 Portal Multi-Cabang';
   updateSidebarBadges();
 }
 
@@ -5700,8 +5703,8 @@ async function saveAllPengaturan(sourceForm = '') {
   LS.save();
 
   // 8. Update UI real-time di seluruh komponen aplikasi
-  if ($('sb-kost-name'))     $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
-  if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
+  if ($('sb-kost-name'))     $('sb-kost-name').textContent = 'Kost Manager';
+  if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = '📍 Portal Multi-Cabang';
   if ($('topbar-prop-name')) $('topbar-prop-name').textContent = S.kost.nama || 'SiKost';
   if ($('topbar-prop-loc'))  $('topbar-prop-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
   if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama || 'SiKost';
@@ -5889,8 +5892,8 @@ if (formEditCabang) {
       S.kost = { ...targetKost };
       S.kost.updatedAt = Date.now();
       localStorage.setItem('sk3_kost_updated_at', S.kost.updatedAt.toString());
-      if ($('sb-kost-name'))     $('sb-kost-name').textContent = S.kost.nama || 'SiKost';
-      if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
+      if ($('sb-kost-name'))     $('sb-kost-name').textContent = 'Kost Manager';
+      if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = '📍 Portal Multi-Cabang';
       if ($('topbar-prop-name')) $('topbar-prop-name').textContent = S.kost.nama || 'SiKost';
       if ($('topbar-prop-loc'))  $('topbar-prop-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
       if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama || 'SiKost';
