@@ -3703,8 +3703,10 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
   editId = id;
   switchFTab('identitas');
   $('form-penghuni').reset();
-  $('prev-foto').style.display = 'none'; $('ph-foto').style.display = 'flex';
+  if ($('prev-foto')) $('prev-foto').style.display = 'none';
+  if ($('ph-foto'))   $('ph-foto').style.display   = 'flex';
   $('prev-ktp').style.display  = 'none'; $('ph-ktp').style.display  = 'flex';
+  if ($('ktp-ocr-status')) $('ktp-ocr-status').style.display = 'none';
 
   // Sinkronkan pilihan cabang di modal
   const selCabangModal = $('field-cabang-penghuni-modal');
@@ -3763,7 +3765,6 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
     $('field-darurat-alamat').value = p.daruratAlamat || '';
     toggleKendaraan(p.kendaraan);
 
-    if (p.foto)    { $('prev-foto').src = p.foto; $('prev-foto').style.display = 'block'; $('ph-foto').style.display = 'none'; }
     if (p.fotoKtp) { $('prev-ktp').src = p.fotoKtp; $('prev-ktp').style.display = 'block'; $('ph-ktp').style.display = 'none'; }
   } else {
     $('modal-penghuni-title').textContent = 'Tambah Penghuni Baru';
@@ -3860,24 +3861,304 @@ window.toggleKendaraan = function(val) {
   ['ken-row2a','ken-row2b'].forEach(id => { const el=$(id); if(el) el.style.display = show2?'block':'none'; });
 };
 
-// Auto Compress Photo on Selection
-function setupCompressedPhoto(inputId, prevId, phId) {
-  $(inputId).addEventListener('change', async function() {
-    const f = this.files[0]; if (!f) return;
+// ── KTP OCR & AUTO-FILL ENGINE ──────────────────────────────
+function parseKtpText(text) {
+  if (!text || typeof text !== 'string') return {};
+  const res = {};
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+  function cleanVal(v) {
+    return v ? v.replace(/^[:;.\s-]+/, '').trim() : '';
+  }
+
+  // 1. NIK - 16 digit
+  const nikCandidates = [];
+  const nikPrefixMatch = text.match(/(?:NIK|N1K|NlK|NI K|N!K)[\s:;.-]*([0-9A-Za-z\s]{16,25})/i);
+  if (nikPrefixMatch) {
+    const cleaned = nikPrefixMatch[1]
+      .replace(/[Oo]/g, '0')
+      .replace(/[Il]/g, '1')
+      .replace(/[B]/g, '8')
+      .replace(/[Ss]/g, '5')
+      .replace(/[Zz]/g, '2')
+      .replace(/\D/g, '');
+    if (cleaned.length >= 16) nikCandidates.push(cleaned.slice(0, 16));
+  }
+  const all16 = text.match(/\b\d{16}\b/g);
+  if (all16) nikCandidates.push(...all16);
+  if (nikCandidates.length > 0) {
+    res.nik = nikCandidates[0];
+  }
+
+  // 2. Nama Lengkap
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const m = line.match(/^Nama[\s:;.-]+(.*)$/i);
+    if (m) {
+      let val = cleanVal(m[1]);
+      if (!val && i + 1 < lines.length && !lines[i + 1].includes(':')) {
+        val = lines[i + 1].trim();
+      }
+      if (val) {
+        res.nama = val.replace(/[^a-zA-Z\s.,']/g, '').trim();
+        break;
+      }
+    }
+  }
+
+  // 3. Tempat / Tanggal Lahir
+  for (const line of lines) {
+    const m = line.match(/(?:Tempat|Tgl|Lahir)[\w\s/]*[:;.-]\s*(.+)$/i);
+    if (m) {
+      const val = cleanVal(m[1]);
+      const dateMatch = val.match(/(\d{1,2})[-/.\s](\d{1,2})[-/.\s](\d{4})/);
+      if (dateMatch) {
+        const d = dateMatch[1].padStart(2, '0');
+        const mo = dateMatch[2].padStart(2, '0');
+        const y = dateMatch[3];
+        res.tglLahir = `${y}-${mo}-${d}`;
+        const placePart = val.replace(dateMatch[0], '').replace(/[,:;.-]/g, '').trim();
+        if (placePart) {
+          res.tempatLahir = placePart.replace(/[^a-zA-Z\s]/g, '').trim();
+        }
+      } else {
+        res.tempatLahir = val.replace(/[^a-zA-Z\s]/g, '').trim();
+      }
+      break;
+    }
+  }
+
+  // 4. Jenis Kelamin
+  if (/LAKI[\s-]*LAKI|PRIA/i.test(text)) {
+    res.gender = 'Laki-laki';
+  } else if (/PEREMPUAN|WANITA/i.test(text)) {
+    res.gender = 'Perempuan';
+  }
+
+  // 5. Alamat KTP
+  let jalan = '';
+  let rtRw = '';
+  let kelDesa = '';
+  let kec = '';
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^Alamat[\s:;.-]+/i.test(line)) {
+      jalan = cleanVal(line.replace(/^Alamat[\s:;.-]*/i, ''));
+    } else if (/(?:RT\/RW|RT|RW)[\s:;.-]+/i.test(line) && !rtRw) {
+      const v = cleanVal(line.replace(/(?:RT\/RW|RT|RW)[\s:;.-]*/i, ''));
+      if (v) rtRw = 'RT/RW ' + v;
+    } else if (/(?:Kel\/Desa|Kelurahan|Desa)[\s:;.-]+/i.test(line) && !kelDesa) {
+      const v = cleanVal(line.replace(/(?:Kel\/Desa|Kelurahan|Desa)[\s:;.-]*/i, ''));
+      if (v) kelDesa = 'Kel. ' + v;
+    } else if (/(?:Kecamatan|Kec)[\s:;.-]+/i.test(line) && !kec) {
+      const v = cleanVal(line.replace(/(?:Kecamatan|Kec)[\s:;.-]*/i, ''));
+      if (v) kec = 'Kec. ' + v;
+    }
+  }
+  const alamatArr = [jalan, rtRw, kelDesa, kec].filter(Boolean);
+  if (alamatArr.length > 0) {
+    res.alamat = alamatArr.join(', ');
+  }
+
+  // 6. Pekerjaan
+  for (const line of lines) {
+    const m = line.match(/^Pekerjaan[\s:;.-]+(.*)$/i);
+    if (m) {
+      const val = cleanVal(m[1]);
+      if (val) {
+        res.pekerjaan = val.replace(/[^a-zA-Z\s/]/g, '').trim();
+        break;
+      }
+    }
+  }
+
+  return res;
+}
+window.parseKtpText = parseKtpText;
+
+function applyKtpDataToForm(data) {
+  if (!data) return 0;
+  let count = 0;
+  function setAndPulse(id, val) {
+    const el = $(id);
+    if (el && val) {
+      el.value = val;
+      el.classList.add('ocr-field-highlight');
+      setTimeout(() => el.classList.remove('ocr-field-highlight'), 3000);
+      count++;
+    }
+  }
+  if (data.nik) setAndPulse('field-nik', data.nik);
+  if (data.nama) setAndPulse('field-nama', data.nama);
+  if (data.gender) setAndPulse('field-gender', data.gender);
+  if (data.tempatLahir) setAndPulse('field-tempat-lahir', data.tempatLahir);
+  if (data.tglLahir) setAndPulse('field-tgl-lahir', data.tglLahir);
+  if (data.alamat) setAndPulse('field-alamat-ktp', data.alamat);
+  if (data.pekerjaan) setAndPulse('field-pekerjaan', data.pekerjaan);
+  return count;
+}
+window.applyKtpDataToForm = applyKtpDataToForm;
+
+async function preprocessImageForOcr(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const scale = Math.min(1.5, 1200 / (img.width || 800));
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = imgData.data;
+
+        for (let i = 0; i < d.length; i += 4) {
+          const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+          const contrast = 1.25;
+          let v = (gray - 128) * contrast + 128;
+          v = v < 0 ? 0 : v > 255 ? 255 : v;
+          d[i] = v;
+          d[i + 1] = v;
+          d[i + 2] = v;
+        }
+        ctx.putImageData(imgData, 0, 0);
+        resolve(canvas.toDataURL('image/jpeg', 0.9));
+      } catch (e) {
+        resolve(dataUrl);
+      }
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+async function processKtpOcr(imageSource) {
+  const statusEl = $('ktp-ocr-status');
+  const statusTxt = $('ktp-ocr-status-text');
+  const cardEl = $('card-upload-ktp');
+
+  function setStatus(msg, isDone = false, isErr = false) {
+    if (!statusEl) return;
+    statusEl.style.display = 'flex';
+    if (statusTxt) statusTxt.textContent = msg;
+    if (cardEl) {
+      if (isDone) {
+        cardEl.classList.remove('scanning');
+        statusEl.style.borderColor = 'rgba(52, 211, 153, 0.4)';
+        statusEl.style.color = '#34d399';
+        statusEl.style.background = 'rgba(52, 211, 153, 0.1)';
+      } else if (isErr) {
+        cardEl.classList.remove('scanning');
+        statusEl.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        statusEl.style.color = '#f87171';
+        statusEl.style.background = 'rgba(239, 68, 68, 0.1)';
+      } else {
+        cardEl.classList.add('scanning');
+      }
+    }
+  }
+
+  try {
+    setStatus('⚡ AI OCR: Menyiapkan pemindai KTP...');
+
+    if (typeof Tesseract === 'undefined') {
+      setStatus('Memuat library OCR dari CDN...', false);
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    if (typeof Tesseract === 'undefined') {
+      throw new Error('Library Tesseract belum siap.');
+    }
+
+    setStatus('🔍 Memindai teks KTP...');
+    const preprocessed = await preprocessImageForOcr(imageSource);
+
+    const result = await Tesseract.recognize(
+      preprocessed,
+      'ind+eng',
+      {
+        logger: m => {
+          if (m.status === 'recognizing text' && m.progress) {
+            const pct = Math.round(m.progress * 100);
+            setStatus(`🔍 Memindai teks KTP... ${pct}%`);
+          }
+        }
+      }
+    );
+
+    const rawText = result?.data?.text || '';
+    if (!rawText.trim()) {
+      throw new Error('Teks KTP tidak terdeteksi jelas');
+    }
+
+    const data = parseKtpText(rawText);
+    const filled = applyKtpDataToForm(data);
+
+    if (filled > 0) {
+      setStatus(`✓ Data KTP (${filled} kolom) berhasil diekstrak dan diisi otomatis!`, true);
+      toast(`Data KTP berhasil diekstrak otomatis (${filled} kolom)! ✨`, 'success');
+    } else {
+      setStatus('⚠️ Teks terbaca namun format KTP tidak cocok. Silakan isi form manual.', false, true);
+    }
+
+    setTimeout(() => {
+      if (statusEl) statusEl.style.display = 'none';
+    }, 4500);
+
+  } catch (err) {
+    console.warn('OCR notice:', err);
+    setStatus('⚠️ OCR belum dapat membaca otomatis: silakan isi form secara manual', false, true);
+    toast('Foto KTP tersimpan. Silakan periksa atau lengkapi data form.', 'info');
+  }
+}
+window.processKtpOcr = processKtpOcr;
+
+// Listener upload file KTP dengan kompresi dan auto OCR
+const fieldKtpInput = $('field-ktp');
+if (fieldKtpInput) {
+  fieldKtpInput.addEventListener('change', async function() {
+    const f = this.files[0];
+    if (!f) return;
     try {
-      toast('Mengompres foto... ⏳');
-      const dataUrl = await compressImage(f, 900, 900, 0.75);
-      $(prevId).src = dataUrl;
-      $(prevId).style.display = 'block';
-      $(phId).style.display = 'none';
-      toast('Foto berhasil dioptimalkan! ✅');
+      toast('Memproses foto KTP... ⏳');
+      const dataUrl = await compressImage(f, 1200, 1200, 0.82);
+      const prev = $('prev-ktp');
+      const ph = $('ph-ktp');
+      if (prev) {
+        prev.src = dataUrl;
+        prev.style.display = 'block';
+      }
+      if (ph) ph.style.display = 'none';
+      await processKtpOcr(dataUrl);
     } catch (err) {
-      toast('Gagal memproses gambar: ' + err.message, 'err');
+      toast('Gagal memproses gambar KTP: ' + err.message, 'err');
     }
   });
 }
-setupCompressedPhoto('field-foto','prev-foto','ph-foto');
-setupCompressedPhoto('field-ktp','prev-ktp','ph-ktp');
+
+// Tombol coba contoh KTP
+$('btn-demo-ktp')?.addEventListener('click', () => {
+  const sample = {
+    nik: '3174051205950001',
+    nama: 'Dimas Prasetyo Utomo',
+    gender: 'Laki-laki',
+    tempatLahir: 'Jakarta',
+    tglLahir: '1995-05-12',
+    alamat: 'Jl. Tebet Barat Raya No. 45, RT 005/RW 002, Kel. Tebet Barat, Kec. Tebet, Jakarta Selatan',
+    pekerjaan: 'Karyawan Swasta'
+  };
+  const filled = applyKtpDataToForm(sample);
+  toast(`Contoh data KTP berhasil diisikan (${filled} kolom)! ✨`, 'success');
+});
 
 $('form-penghuni').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -3891,7 +4172,7 @@ $('form-penghuni').addEventListener('submit', async function(e) {
   if (!kamar)    { toast('Nomor kamar wajib diisi!','err'); switchFTab('hunian'); return; }
   if (!tglMasuk) { toast('Tanggal masuk wajib diisi!','err'); switchFTab('hunian'); return; }
 
-  const foto    = $('prev-foto').style.display !== 'none' ? $('prev-foto').src : null;
+  const foto    = (editId && S.penghuni.find(x => x.id === editId)?.foto) || null;
   const fotoKtp = $('prev-ktp').style.display !== 'none' ? $('prev-ktp').src : null;
 
   const d = {

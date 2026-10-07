@@ -2,7 +2,7 @@
    SIKOST – Service Worker v4.1 (PWA & Offline First)
    ============================================================ */
 
-const CACHE_NAME = 'sikost-cache-v4.1';
+const CACHE_NAME = 'sikost-cache-v4.2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -11,7 +11,8 @@ const ASSETS_TO_CACHE = [
   './config.js',
   './manifest.json',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'
 ];
 
 self.addEventListener('install', event => {
