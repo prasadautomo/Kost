@@ -3929,27 +3929,61 @@ window.toggleKendaraan = toggleKendaraan;
 function parseKtpText(text) {
   if (!text || typeof text !== 'string') return {};
   const res = {};
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+  const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const lines = rawLines.map(l => l.replace(/^[\s|!:;~_.*,>-]+/, '').trim());
 
   function cleanVal(v) {
-    return v ? v.replace(/^[:;.\s-]+/, '').trim() : '';
+    if (!v) return '';
+    return v.replace(/^[\s|!:;~_.*,>-]+/, '').trim();
   }
 
-  // 1. NIK - 16 digit
+  const monthMap = {
+    jan: '01', januari: '01', january: '01',
+    feb: '02', februari: '02', february: '02',
+    mar: '03', maret: '03', march: '03',
+    apr: '04', april: '04',
+    mei: '05', may: '05',
+    jun: '06', juni: '06', june: '06',
+    jul: '07', juli: '07', july: '07',
+    agu: '08', agust: '08', agustus: '08', august: '08', ags: '08',
+    sep: '09', sept: '09', september: '09',
+    okt: '10', oct: '10', oktober: '10', october: '10',
+    nov: '11', nop: '11', november: '11',
+    des: '12', dec: '12', desember: '12', december: '12'
+  };
+
+  // 1. NIK (16 Digits)
   const nikCandidates = [];
-  const nikPrefixMatch = text.match(/(?:NIK|N1K|NlK|NI K|N!K)[\s:;.-]*([0-9A-Za-z\s]{16,25})/i);
+  const nikPrefixMatch = text.match(/(?:NIK|N1K|NlK|NI\s*K|N!K|MIK|N.I.K)[\s:;._-]*([0-9A-Za-z\s|!.-]{14,30})/i);
   if (nikPrefixMatch) {
-    const cleaned = nikPrefixMatch[1]
+    const rawMatch = nikPrefixMatch[1]
       .replace(/[Oo]/g, '0')
-      .replace(/[Il]/g, '1')
+      .replace(/[Il|!]/g, '1')
+      .replace(/[B]/g, '8')
+      .replace(/[Ss]/g, '5')
+      .replace(/[Zz]/g, '2')
+      .replace(/[b]/g, '6')
+      .replace(/\D/g, '');
+    if (rawMatch.length >= 16) nikCandidates.push(rawMatch.slice(0, 16));
+  }
+
+  const all16 = text.match(/\b\d{16}\b/g);
+  if (all16) nikCandidates.push(...all16);
+
+  for (const line of lines) {
+    const digitsOnly = line
+      .replace(/[Oo]/g, '0')
+      .replace(/[Il|!]/g, '1')
       .replace(/[B]/g, '8')
       .replace(/[Ss]/g, '5')
       .replace(/[Zz]/g, '2')
       .replace(/\D/g, '');
-    if (cleaned.length >= 16) nikCandidates.push(cleaned.slice(0, 16));
+    if (digitsOnly.length === 16 && /^(1[1-9]|2[1-9]|3[1-6]|5[1-3]|6[1-5]|7[1-6]|8[1-2]|9[1-4])/.test(digitsOnly)) {
+      nikCandidates.push(digitsOnly);
+    }
   }
-  const all16 = text.match(/\b\d{16}\b/g);
-  if (all16) nikCandidates.push(...all16);
+
   if (nikCandidates.length > 0) {
     res.nik = nikCandidates[0];
   }
@@ -3957,78 +3991,165 @@ function parseKtpText(text) {
   // 2. Nama Lengkap
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const m = line.match(/^Nama[\s:;.-]+(.*)$/i);
+    const m = line.match(/(?:^|\b)(?:Nama|Narna|Mama|Name|Nam a|N ama)[\s:;._-]+(.*)$/i);
     if (m) {
       let val = cleanVal(m[1]);
       if (!val && i + 1 < lines.length && !lines[i + 1].includes(':')) {
-        val = lines[i + 1].trim();
+        val = cleanVal(lines[i + 1]);
       }
       if (val) {
-        res.nama = val.replace(/[^a-zA-Z\s.,']/g, '').trim();
-        break;
+        val = val.replace(/\b(Tempat|Tgl|Lahir|Jenis|Kelamin|Alamat|Agama)\b.*/i, '').trim();
+        const cleaned = val.replace(/[^a-zA-Z\s.,'-]/g, '').trim();
+        if (cleaned.length >= 2) {
+          res.nama = cleaned;
+          break;
+        }
+      }
+    }
+  }
+
+  // Fallback nama dari baris setelah NIK jika belum terdeteksi
+  if (!res.nama && res.nik) {
+    const nikIdx = lines.findIndex(l => l.replace(/\D/g, '').includes(res.nik.slice(0, 8)));
+    if (nikIdx >= 0 && nikIdx + 1 < lines.length) {
+      const candidateLine = cleanVal(lines[nikIdx + 1]);
+      if (!/(?:PROVINSI|KABUPATEN|KOTA|NIK|TEMPAT|LAHIR|GOL|DARAH|ALAMAT|AGAMA|STATUS)/i.test(candidateLine)) {
+        const cleaned = candidateLine.replace(/[^a-zA-Z\s.,'-]/g, '').trim();
+        if (cleaned.length >= 3 && !/\d/.test(candidateLine)) {
+          res.nama = cleaned;
+        }
       }
     }
   }
 
   // 3. Tempat / Tanggal Lahir
   for (const line of lines) {
-    const m = line.match(/(?:Tempat|Tgl|Lahir)[\w\s/]*[:;.-]\s*(.+)$/i);
-    if (m) {
-      const val = cleanVal(m[1]);
-      const dateMatch = val.match(/(\d{1,2})[-/.\s](\d{1,2})[-/.\s](\d{4})/);
-      if (dateMatch) {
-        const d = dateMatch[1].padStart(2, '0');
-        const mo = dateMatch[2].padStart(2, '0');
-        const y = dateMatch[3];
+    if (/(?:Tempat|Tpt|Tol|Tgl|Lahir|Lahi\s*r)/i.test(line)) {
+      const val = cleanVal(line.replace(/^.*?(?:Tempat|Tpt|Tol|Tgl|Lahir|Lahi\s*r)[\w\s/]*[:;._-]+\s*/i, ''));
+      const numDateMatch = val.match(/(\d{1,2})[-/.\s](\d{1,2})[-/.\s](\d{2,4})/);
+      const textDateMatch = val.match(/(\d{1,2})[\s\-/.]([a-zA-Z]{3,10})[\s\-/.](\d{2,4})/);
+
+      if (numDateMatch) {
+        const d = numDateMatch[1].padStart(2, '0');
+        const mo = numDateMatch[2].padStart(2, '0');
+        let y = numDateMatch[3];
+        if (y.length === 2) {
+          y = parseInt(y, 10) >= 30 ? '19' + y : '20' + y;
+        }
         res.tglLahir = `${y}-${mo}-${d}`;
-        const placePart = val.replace(dateMatch[0], '').replace(/[,:;.-]/g, '').trim();
+
+        const placePart = val.replace(numDateMatch[0], '').replace(/[,:;._-]/g, ' ').trim();
         if (placePart) {
           res.tempatLahir = placePart.replace(/[^a-zA-Z\s]/g, '').trim();
         }
-      } else {
+        break;
+      } else if (textDateMatch) {
+        const d = textDateMatch[1].padStart(2, '0');
+        const monthKey = textDateMatch[2].toLowerCase();
+        const mo = monthMap[monthKey] || '01';
+        let y = textDateMatch[3];
+        if (y.length === 2) {
+          y = parseInt(y, 10) >= 30 ? '19' + y : '20' + y;
+        }
+        res.tglLahir = `${y}-${mo}-${d}`;
+
+        const placePart = val.replace(textDateMatch[0], '').replace(/[,:;._-]/g, ' ').trim();
+        if (placePart) {
+          res.tempatLahir = placePart.replace(/[^a-zA-Z\s]/g, '').trim();
+        }
+        break;
+      } else if (val && !res.tempatLahir) {
         res.tempatLahir = val.replace(/[^a-zA-Z\s]/g, '').trim();
       }
-      break;
     }
   }
 
   // 4. Jenis Kelamin
-  if (/LAKI[\s-]*LAKI|PRIA/i.test(text)) {
+  if (/(?:LAKI|LAK|PRIA)/i.test(text)) {
     res.gender = 'Laki-laki';
-  } else if (/PEREMPUAN|WANITA/i.test(text)) {
+  } else if (/(?:PEREMP|PERENP|WANITA)/i.test(text)) {
     res.gender = 'Perempuan';
   }
 
-  // 5. Alamat KTP
+  // 4b. Fallback NIK untuk Tanggal Lahir & Jenis Kelamin
+  if (res.nik && res.nik.length === 16) {
+    const rawDd = parseInt(res.nik.slice(6, 8), 10);
+    const rawMm = parseInt(res.nik.slice(8, 10), 10);
+    const rawYy = parseInt(res.nik.slice(10, 12), 10);
+
+    const isFemale = rawDd > 40;
+    const realDay = isFemale ? rawDd - 40 : rawDd;
+
+    if (!res.gender && rawDd > 0) {
+      res.gender = isFemale ? 'Perempuan' : 'Laki-laki';
+    }
+
+    if (!res.tglLahir && realDay >= 1 && realDay <= 31 && rawMm >= 1 && rawMm <= 12) {
+      const currentYearShort = new Date().getFullYear() % 100;
+      const fullYear = rawYy > currentYearShort ? 1900 + rawYy : 2000 + rawYy;
+      res.tglLahir = `${fullYear}-${String(rawMm).padStart(2, '0')}-${String(realDay).padStart(2, '0')}`;
+    }
+  }
+
+  // 5. Fallback Tempat Lahir dari Header KTP (Kabupaten/Kota)
+  if (!res.tempatLahir) {
+    for (const line of lines) {
+      const kabMatch = line.match(/(?:KABUPATEN|KOTA)\s+([A-Z\s]+)/i);
+      if (kabMatch) {
+        res.tempatLahir = kabMatch[1].replace(/[^a-zA-Z\s]/g, '').trim();
+        break;
+      }
+    }
+  }
+
+  // 6. Alamat & Komponen
   let jalan = '';
   let rtRw = '';
   let kelDesa = '';
   let kec = '';
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (/^Alamat[\s:;.-]+/i.test(line)) {
-      jalan = cleanVal(line.replace(/^Alamat[\s:;.-]*/i, ''));
-    } else if (/(?:RT\/RW|RT|RW)[\s:;.-]+/i.test(line) && !rtRw) {
-      const v = cleanVal(line.replace(/(?:RT\/RW|RT|RW)[\s:;.-]*/i, ''));
-      if (v) rtRw = 'RT/RW ' + v;
-    } else if (/(?:Kel\/Desa|Kelurahan|Desa)[\s:;.-]+/i.test(line) && !kelDesa) {
-      const v = cleanVal(line.replace(/(?:Kel\/Desa|Kelurahan|Desa)[\s:;.-]*/i, ''));
-      if (v) kelDesa = 'Kel. ' + v;
-    } else if (/(?:Kecamatan|Kec)[\s:;.-]+/i.test(line) && !kec) {
-      const v = cleanVal(line.replace(/(?:Kecamatan|Kec)[\s:;.-]*/i, ''));
-      if (v) kec = 'Kec. ' + v;
+
+    if (/(?:^|\b)(?:Alamat|Alarnat|Aiamat)[\s:;._-]*(.*)/i.test(line)) {
+      let v = cleanVal(line.replace(/^.*?(?:Alamat|Alarnat|Aiamat)[\s:;._-]*/i, ''));
+      if (v) jalan = v;
+      else if (i + 1 < lines.length && !/(?:RT|RW|Kel|Desa|Kec|Agama)/i.test(lines[i + 1])) {
+        jalan = cleanVal(lines[i + 1]);
+      }
+    }
+
+    if (/(?:RT\/RW|RT\s*\/\s*RW|\bRT\b|\bRW\b)/i.test(line) && !rtRw) {
+      const v = cleanVal(line.replace(/^.*?(?:RT\/RW|RT\s*\/\s*RW|\bRT\b|\bRW\b)[\s:;._-]*/i, ''));
+      if (v) {
+        rtRw = 'RT/RW ' + v.replace(/[^0-9/]/g, '').trim();
+      }
+    }
+
+    if (/(?:Kel\/Desa|Kelurahan|Desa|Kel\b|Desa\b)/i.test(line) && !kelDesa) {
+      const v = cleanVal(line.replace(/^.*?(?:Kel\/Desa|Kelurahan|Desa|Kel\b|Desa\b)[\s:;._-]*/i, ''));
+      if (v) kelDesa = 'Kel. ' + v.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+    }
+
+    if (/(?:Kecamatan|Kec\b)/i.test(line) && !kec) {
+      const v = cleanVal(line.replace(/^.*?(?:Kecamatan|Kec\b)[\s:;._-]*/i, ''));
+      if (v) kec = 'Kec. ' + v.replace(/[^a-zA-Z0-9\s]/g, '').trim();
     }
   }
+
+  if (jalan) {
+    jalan = jalan.replace(/\b(RT|RW|Kel|Desa|Kec).*$/i, '').trim().replace(/[,;._-]+$/, '');
+  }
+
   const alamatArr = [jalan, rtRw, kelDesa, kec].filter(Boolean);
   if (alamatArr.length > 0) {
     res.alamat = alamatArr.join(', ');
   }
 
-  // 6. Pekerjaan
+  // 7. Pekerjaan
   for (const line of lines) {
-    const m = line.match(/^Pekerjaan[\s:;.-]+(.*)$/i);
-    if (m) {
-      const val = cleanVal(m[1]);
+    if (/(?:Pekerjaan|Pekeriaan|Peker\]aan)/i.test(line)) {
+      const val = cleanVal(line.replace(/^.*?(?:Pekerjaan|Pekeriaan|Peker\]aan)[\s:;._-]*/i, ''));
       if (val) {
         res.pekerjaan = val.replace(/[^a-zA-Z\s/]/g, '').trim();
         break;
@@ -4071,7 +4192,8 @@ async function preprocessImageForOcr(dataUrl) {
       try {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        const scale = Math.min(1.5, 1200 / (img.width || 800));
+        const targetWidth = Math.max(1200, Math.min(1600, img.width || 1200));
+        const scale = targetWidth / (img.width || 1200);
         canvas.width = Math.round(img.width * scale);
         canvas.height = Math.round(img.height * scale);
 
@@ -4089,7 +4211,7 @@ async function preprocessImageForOcr(dataUrl) {
           d[i + 2] = v;
         }
         ctx.putImageData(imgData, 0, 0);
-        resolve(canvas.toDataURL('image/jpeg', 0.9));
+        resolve(canvas.toDataURL('image/jpeg', 0.92));
       } catch (e) {
         resolve(dataUrl);
       }
@@ -4146,26 +4268,36 @@ async function processKtpOcr(imageSource) {
     setStatus('🔍 Memindai teks KTP...');
     const preprocessed = await preprocessImageForOcr(imageSource);
 
-    const result = await Tesseract.recognize(
-      preprocessed,
-      'ind+eng',
-      {
-        logger: m => {
-          if (m.status === 'recognizing text' && m.progress) {
-            const pct = Math.round(m.progress * 100);
-            setStatus(`🔍 Memindai teks KTP... ${pct}%`);
-          }
-        }
+    let rawText = '';
+    const progressLogger = m => {
+      if (m.status === 'recognizing text' && m.progress) {
+        const pct = Math.round(m.progress * 100);
+        setStatus(`🔍 Memindai teks KTP... ${pct}%`);
       }
-    );
+    };
 
-    const rawText = result?.data?.text || '';
-    if (!rawText.trim()) {
-      throw new Error('Teks KTP tidak terdeteksi jelas');
+    try {
+      const res1 = await Tesseract.recognize(preprocessed, 'ind+eng', { logger: progressLogger });
+      rawText = res1?.data?.text || '';
+    } catch (e1) {
+      console.warn('OCR ind+eng fallback to eng:', e1);
+      const res2 = await Tesseract.recognize(preprocessed, 'eng', { logger: progressLogger });
+      rawText = res2?.data?.text || '';
     }
 
-    const data = parseKtpText(rawText);
-    const filled = applyKtpDataToForm(data);
+    let data = parseKtpText(rawText);
+    let filled = applyKtpDataToForm(data);
+
+    if (filled < 3 && imageSource !== preprocessed) {
+      try {
+        const resOriginal = await Tesseract.recognize(imageSource, 'eng', { logger: progressLogger });
+        const dataOrig = parseKtpText(resOriginal?.data?.text || '');
+        const filledOrig = applyKtpDataToForm(dataOrig);
+        if (filledOrig > filled) filled = filledOrig;
+      } catch (eOrig) {
+        // Fallback pass complete
+      }
+    }
 
     if (filled > 0) {
       setStatus(`✓ Data KTP (${filled} kolom) berhasil diekstrak dan diisi otomatis!`, true);
@@ -4194,7 +4326,7 @@ if (fieldKtpInput) {
     if (!f) return;
     try {
       toast('Memproses foto KTP... ⏳');
-      const dataUrl = await compressImage(f, 1200, 1200, 0.82);
+      const dataUrl = await compressImage(f, 1400, 1400, 0.85);
       const prev = $('prev-ktp');
       const ph = $('ph-ktp');
       if (prev) {
@@ -4209,20 +4341,14 @@ if (fieldKtpInput) {
   });
 }
 
-// Tombol coba contoh KTP
-$('btn-demo-ktp')?.addEventListener('click', () => {
-  const sample = {
-    nik: '3174051205950001',
-    nama: 'Dimas Prasetyo Utomo',
-    gender: 'Laki-laki',
-    tempatLahir: 'Jakarta',
-    tglLahir: '1995-05-12',
-    alamat: 'Jl. Tebet Barat Raya No. 45, RT 005/RW 002, Kel. Tebet Barat, Kec. Tebet, Jakarta Selatan',
-    pekerjaan: 'Karyawan Swasta'
-  };
-  const filled = applyKtpDataToForm(sample);
-  toast(`Contoh data KTP berhasil diisikan (${filled} kolom)! ✨`, 'success');
-});
+// Klik pada preview foto KTP membuka pemilih file kapan saja (sebelum maupun setelah diupload)
+const pbKtpBox = $('pb-ktp');
+if (pbKtpBox) {
+  pbKtpBox.addEventListener('click', (e) => {
+    if (e.target.id === 'field-ktp') return;
+    $('field-ktp')?.click();
+  });
+}
 
 // Auto sinkronisasi Tanggal Keluar = 1 bulan setelah Tanggal Masuk (tetap dapat diubah manual)
 const inputTglMasuk = $('field-tgl-masuk');
