@@ -8,31 +8,31 @@
   --font: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Architectural Neutral Palette (Solid Basalt / Obsidian Slate) */
-  --bg:          #0c1015;
-  --bg-2:        #121820;
-  --bg-3:        #18212c;
-  --bg-elevated: #1e2936;
-  --bg-hover:    #253242;
+  /* Pure Pitch-Black / OLED Black Architectural Palette */
+  --bg:          #000000;
+  --bg-2:        #08080a;
+  --bg-3:        #101013;
+  --bg-elevated: #151518;
+  --bg-hover:    #1c1c20;
 
-  --surface:                   #121820;
-  --surface-2:                 #18212c;
-  --surface-dim:               #0c1015;
-  --surface-bright:            #202c3a;
-  --surface-container-lowest:  #0c1015;
-  --surface-container-low:     #121820;
-  --surface-container:         #18212c;
-  --surface-container-high:    #202c3a;
-  --surface-container-highest: #283648;
+  --surface:                   #08080a;
+  --surface-2:                 #101013;
+  --surface-dim:               #000000;
+  --surface-bright:            #17171a;
+  --surface-container-lowest:  #000000;
+  --surface-container-low:     #060607;
+  --surface-container:         #0c0c0e;
+  --surface-container-high:    #131316;
+  --surface-container-highest: #1a1a1f;
 
-  --border:      #222d3b;
-  --border-2:    #303e52;
-  --border-glow: #303e52;
+  --border:      #1a1a1e;
+  --border-2:    #26262b;
+  --border-glow: #26262b;
 
-  --text:        #f1f5f9;
-  --text-2:      #cbd5e1;
-  --text-3:      #94a3b8;
-  --text-4:      #64748b;
+  --text:        #fcfcfc;
+  --text-2:      #d4d4d8;
+  --text-3:      #a1a1aa;
+  --text-4:      #71717a;
 
   /* Brand Accent: Architectural Deep Teal / Forest Emerald (Stable & Authentic) */
   --accent:        #0f766e;
@@ -78,15 +78,15 @@
   --radius-lg: 10px;
   --radius-xl: 12px;
 
-  /* Elevation (Grounded, tactile, non-floating) */
-  --glass-bg:     #121820;
-  --glass-border: 1px solid #222d3b;
+  /* Elevation (Crisp architectural depth on pure black) */
+  --glass-bg:     #08080a;
+  --glass-border: 1px solid #1a1a1e;
   --glass-blur:   none;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow:    0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 10px 22px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.85);
+  --shadow:    0 2px 4px rgba(0, 0, 0, 0.9), 0 0 0 1px #1a1a1e;
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.95), 0 0 0 1px #222226;
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.98), 0 0 0 1px #26262b;
   --shadow-glow: none;
 
   --t: 0.18s ease;
@@ -1574,7 +1574,7 @@ em {
   transition: border-color var(--t);
 }
 .panel:hover {
-  border-color: rgba(51, 65, 85, 0.8);
+  border-color: var(--border-2);
 }
 
 .panel-header {
@@ -1627,7 +1627,7 @@ em {
   border-bottom: none;
 }
 .tbl tbody tr:hover td {
-  background: rgba(30, 41, 59, 0.4);
+  background: var(--bg-hover);
 }
 
 /* ─── CHARTS ───────────────────────────────────────────────── */
@@ -2998,8 +2998,8 @@ textarea.fc {
   gap: 14px;
 }
 .action-card {
-  background: rgba(30, 41, 59, 0.35);
-  border: 1px solid rgba(51, 65, 85, 0.6);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 16px;
   display: flex;
@@ -3098,7 +3098,7 @@ textarea.fc {
   flex-direction: column;
   justify-content: space-between;
   border: 1px solid var(--border);
-  background: #111520;
+  background: var(--surface);
   border-radius: var(--radius-lg);
   padding: 18px;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -3152,8 +3152,8 @@ textarea.fc {
   color: #ffffff;
 }
 .km-card-tenant-box {
-  background: rgba(30, 41, 59, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--surface-container-high);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
   margin: 12px 0;
