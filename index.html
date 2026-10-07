@@ -768,8 +768,18 @@
           <div class="fg-grid">
             <div class="fg"><label>Sewa / Bulan (Rp) <em>*</em></label><input type="number" id="field-sewa" class="fc" min="0" placeholder="1000000" /></div>
             <div class="fg"><label>Jatuh Tempo (tgl)</label><input type="number" id="field-tempo" class="fc" min="1" max="28" placeholder="1" /></div>
-            <div class="fg"><label>Uang Jaminan / Deposit (Rp)</label><input type="number" id="field-deposit" class="fc" min="0" placeholder="500000" /></div>
-            <div class="fg"><label>Status Uang Deposit</label><input type="text" id="field-catatan-deposit" class="fc" placeholder="Disimpan / Sudah Dikembalikan" /></div>
+            <div class="fg col2">
+              <label>Uang Jaminan / Deposit (Rp)</label>
+              <input type="number" id="field-deposit" class="fc" min="0" placeholder="0" />
+              <div class="deposit-presets-wrap" id="deposit-presets">
+                <button type="button" class="deposit-preset-btn" data-val="0">Rp 0</button>
+                <button type="button" class="deposit-preset-btn" data-val="100000">100 rb</button>
+                <button type="button" class="deposit-preset-btn" data-val="200000">200 rb</button>
+                <button type="button" class="deposit-preset-btn" data-val="300000">300 rb</button>
+                <button type="button" class="deposit-preset-btn" data-val="500000">500 rb</button>
+                <button type="button" class="deposit-preset-btn" data-val="1000000">1 jt</button>
+              </div>
+            </div>
             <div class="fg col2"><label>Catatan Pembayaran Tambahan</label><textarea id="field-catatan-bayar" class="fc" rows="2" placeholder="Contoh: Termasuk biaya listrik token"></textarea></div>
           </div>
         </div>
@@ -829,6 +839,7 @@
           <div class="fg"><label>Lantai</label><input type="text" id="field-lantai-kamar" class="fc" placeholder="1" /></div>
           <div class="fg"><label>Tipe</label><select id="field-tipe-kamar" class="fc"><option>Standar</option><option>Deluxe</option><option>VIP</option><option>AC</option><option>Non-AC</option></select></div>
           <div class="fg"><label>Harga Default (Rp)</label><input type="number" id="field-harga-kamar" class="fc" min="0" placeholder="1000000" /></div>
+          <div class="fg col2"><label>Jatuh Tempo Default (tgl setiap bulan)</label><input type="number" id="field-tempo-kamar" class="fc" min="1" max="28" placeholder="Contoh: 1, 5, atau 10 (otomatis tersambung ke penghuni baru)" /></div>
           <div class="fg col2"><label>Fasilitas</label><textarea id="field-fasilitas" class="fc" rows="2" placeholder="Kasur, lemari, WiFi…"></textarea></div>
         </div>
         <div class="modal-foot">

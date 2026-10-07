@@ -450,14 +450,14 @@ function generateInitialMultiKostData() {
     qrisUrl: ''
   };
   const kamar1 = [
-    { id: 'km_101', no: '101', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Kasur Springbed 160x200, Lemari 2 Pintu, Meja Belajar, Kamar Mandi Dalam' },
-    { id: 'km_102', no: '102', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Kasur Springbed, Lemari, Meja Belajar, Kamar Mandi Dalam' },
-    { id: 'km_103', no: '103', lantai: '1', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
-    { id: 'km_104', no: '104', lantai: '1', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
-    { id: 'km_201', no: '201', lantai: '2', tipe: 'VIP', harga: 1850000, fasilitas: 'AC, Smart TV 32", Water Heater, Meja Kerja Ergonomis, Balkon Pribadi' },
-    { id: 'km_202', no: '202', lantai: '2', tipe: 'VIP', harga: 1850000, fasilitas: 'AC, Smart TV 32", Water Heater, Meja Kerja Ergonomis, Balkon Pribadi' },
-    { id: 'km_203', no: '203', lantai: '2', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Springbed, Lemari 2 Pintu, Meja Kerja' },
-    { id: 'km_204', no: '204', lantai: '2', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur, Lemari, Meja' }
+    { id: 'km_101', no: '101', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, tempo: 1, fasilitas: 'AC, Kasur Springbed 160x200, Lemari 2 Pintu, Meja Belajar, Kamar Mandi Dalam' },
+    { id: 'km_102', no: '102', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, tempo: 1, fasilitas: 'AC, Kasur Springbed, Lemari, Meja Belajar, Kamar Mandi Dalam' },
+    { id: 'km_103', no: '103', lantai: '1', tipe: 'Standar', harga: 950000, tempo: 5, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
+    { id: 'km_104', no: '104', lantai: '1', tipe: 'Standar', harga: 950000, tempo: 5, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
+    { id: 'km_201', no: '201', lantai: '2', tipe: 'VIP', harga: 1850000, tempo: 10, fasilitas: 'AC, Smart TV 32", Water Heater, Meja Kerja Ergonomis, Balkon Pribadi' },
+    { id: 'km_202', no: '202', lantai: '2', tipe: 'VIP', harga: 1850000, tempo: 10, fasilitas: 'AC, Smart TV 32", Water Heater, Meja Kerja Ergonomis, Balkon Pribadi' },
+    { id: 'km_203', no: '203', lantai: '2', tipe: 'Deluxe AC', harga: 1500000, tempo: 15, fasilitas: 'AC, Springbed, Lemari 2 Pintu, Meja Kerja' },
+    { id: 'km_204', no: '204', lantai: '2', tipe: 'Standar', harga: 950000, tempo: 20, fasilitas: 'Kipas Angin, Kasur, Lemari, Meja' }
   ];
   const penghuni1 = [
     {
@@ -657,14 +657,14 @@ function generateInitialMultiKostData() {
     qrisUrl: ''
   };
   const kamar2 = [
-    { id: 'km_2_A01', no: 'A-01', lantai: '1', tipe: 'Studio Dago', harga: 1700000, fasilitas: 'AC, Kasur Queen Size, Meja Belajar Kayu Jati, Kamar Mandi Dalam' },
-    { id: 'km_2_A02', no: 'A-02', lantai: '1', tipe: 'Studio Dago', harga: 1700000, fasilitas: 'AC, Kasur Queen Size, Lemari Pakaian, Water Heater' },
-    { id: 'km_2_A03', no: 'A-03', lantai: '1', tipe: 'Deluxe Asri', harga: 1600000, fasilitas: 'AC, Kasur Springbed, Meja Kerja, KM Dalam' },
-    { id: 'km_2_A04', no: 'A-04', lantai: '1', tipe: 'Standar Bandung', harga: 1200000, fasilitas: 'Exhaust Fan, Kasur Busa, Lemari, KM Luar' },
-    { id: 'km_2_B01', no: 'B-01', lantai: '2', tipe: 'Executive Suite', harga: 1950000, fasilitas: 'AC, Smart TV, Kulkas Mini, Balkon View Bukit Dago' },
-    { id: 'km_2_B02', no: 'B-02', lantai: '2', tipe: 'Executive Suite', harga: 1950000, fasilitas: 'AC, Smart TV, Kulkas Mini, Balkon View Dago' },
-    { id: 'km_2_B03', no: 'B-03', lantai: '2', tipe: 'Deluxe Asri', harga: 1600000, fasilitas: 'AC, Kasur Springbed, Lemari 2 Pintu' },
-    { id: 'km_2_B04', no: 'B-04', lantai: '2', tipe: 'Standar Bandung', harga: 1200000, fasilitas: 'Exhaust Fan, Meja, Lemari' }
+    { id: 'km_2_A01', no: 'A-01', lantai: '1', tipe: 'Studio Dago', harga: 1700000, tempo: 10, fasilitas: 'AC, Kasur Queen Size, Meja Belajar Kayu Jati, Kamar Mandi Dalam' },
+    { id: 'km_2_A02', no: 'A-02', lantai: '1', tipe: 'Studio Dago', harga: 1700000, tempo: 1, fasilitas: 'AC, Kasur Queen Size, Lemari Pakaian, Water Heater' },
+    { id: 'km_2_A03', no: 'A-03', lantai: '1', tipe: 'Deluxe Asri', harga: 1600000, tempo: 5, fasilitas: 'AC, Kasur Springbed, Meja Kerja, KM Dalam' },
+    { id: 'km_2_A04', no: 'A-04', lantai: '1', tipe: 'Standar Bandung', harga: 1200000, tempo: 10, fasilitas: 'Exhaust Fan, Kasur Busa, Lemari, KM Luar' },
+    { id: 'km_2_B01', no: 'B-01', lantai: '2', tipe: 'Executive Suite', harga: 1950000, tempo: 1, fasilitas: 'AC, Smart TV, Kulkas Mini, Balkon View Bukit Dago' },
+    { id: 'km_2_B02', no: 'B-02', lantai: '2', tipe: 'Executive Suite', harga: 1950000, tempo: 5, fasilitas: 'AC, Smart TV, Kulkas Mini, Balkon View Dago' },
+    { id: 'km_2_B03', no: 'B-03', lantai: '2', tipe: 'Deluxe Asri', harga: 1600000, tempo: 15, fasilitas: 'AC, Kasur Springbed, Lemari 2 Pintu' },
+    { id: 'km_2_B04', no: 'B-04', lantai: '2', tipe: 'Standar Bandung', harga: 1200000, tempo: 20, fasilitas: 'Exhaust Fan, Meja, Lemari' }
   ];
   const penghuni2 = [
     { id: 'p_bdg_arya', nama: 'Arya Pratama', hp: '081211223301', kamar: 'A-01', lantai: '1', tglMasuk: '2025-05-10', tglKeluar: addDaysYMD(5), nik: '3273010101990001', gender: 'Laki-laki', tempatLahir: 'Bandung', tglLahir: '2001-02-14', alamatKtp: 'Jl. Riau No. 12, Bandung', email: 'arya.pratama@itb.ac.id', pekerjaan: 'Mahasiswa Teknik Informatika ITB', status: 'aktif', sewa: 1700000, tempo: 10, deposit: 500000, catatanDeposit: 'Lunas' },
@@ -701,14 +701,14 @@ function generateInitialMultiKostData() {
     qrisUrl: ''
   };
   const kamar3 = [
-    { id: 'km_3_101', no: '101', lantai: '1', tipe: 'Executive Studio', harga: 2500000, fasilitas: 'AC Inverter, Smart TV 40", Queen Bed, Water Heater, Meja Kerja' },
-    { id: 'km_3_102', no: '102', lantai: '1', tipe: 'Executive Studio', harga: 2500000, fasilitas: 'AC Inverter, Smart TV 40", Queen Bed, Water Heater, Meja Kerja' },
-    { id: 'km_3_103', no: '103', lantai: '1', tipe: 'Deluxe Room', harga: 2200000, fasilitas: 'AC Inverter, Single Bed 120, Lemari 2 Pintu, KM Dalam' },
-    { id: 'km_3_201', no: '201', lantai: '2', tipe: 'VIP Suite Tebet', harga: 2800000, fasilitas: 'AC, Kulkas 2 Pintu, Smart TV, Balkon Pribadi, Kamar Mandi Marmer' },
-    { id: 'km_3_202', no: '202', lantai: '2', tipe: 'VIP Suite Tebet', harga: 2800000, fasilitas: 'AC, Kulkas 2 Pintu, Smart TV, Balkon Pribadi, Kamar Mandi Marmer' },
-    { id: 'km_3_203', no: '203', lantai: '2', tipe: 'Deluxe Room', harga: 2200000, fasilitas: 'AC, Kasur Springbed, Meja Kerja Ergonomis' },
-    { id: 'km_3_301', no: '301', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' },
-    { id: 'km_3_302', no: '302', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' }
+    { id: 'km_3_101', no: '101', lantai: '1', tipe: 'Executive Studio', harga: 2500000, tempo: 1, fasilitas: 'AC Inverter, Smart TV 40", Queen Bed, Water Heater, Meja Kerja' },
+    { id: 'km_3_102', no: '102', lantai: '1', tipe: 'Executive Studio', harga: 2500000, tempo: 1, fasilitas: 'AC Inverter, Smart TV 40", Queen Bed, Water Heater, Meja Kerja' },
+    { id: 'km_3_103', no: '103', lantai: '1', tipe: 'Deluxe Room', harga: 2200000, tempo: 5, fasilitas: 'AC Inverter, Single Bed 120, Lemari 2 Pintu, KM Dalam' },
+    { id: 'km_3_201', no: '201', lantai: '2', tipe: 'VIP Suite Tebet', harga: 2800000, tempo: 5, fasilitas: 'AC, Kulkas 2 Pintu, Smart TV, Balkon Pribadi, Kamar Mandi Marmer' },
+    { id: 'km_3_202', no: '202', lantai: '2', tipe: 'VIP Suite Tebet', harga: 2800000, tempo: 5, fasilitas: 'AC, Kulkas 2 Pintu, Smart TV, Balkon Pribadi, Kamar Mandi Marmer' },
+    { id: 'km_3_203', no: '203', lantai: '2', tipe: 'Deluxe Room', harga: 2200000, tempo: 10, fasilitas: 'AC, Kasur Springbed, Meja Kerja Ergonomis' },
+    { id: 'km_3_301', no: '301', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, tempo: 1, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' },
+    { id: 'km_3_302', no: '302', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, tempo: 1, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' }
   ];
   const penghuni3 = [
     { id: 'p_jkt_farhan', nama: 'Farhan Ramadhan', hp: '081122334401', kamar: '101', lantai: '1', tglMasuk: '2025-03-01', tglKeluar: addDaysYMD(3), nik: '3174010101980001', gender: 'Laki-laki', tempatLahir: 'Jakarta', tglLahir: '1996-08-14', alamatKtp: 'Jl. Rawamangun No. 10, Jakarta Timur', email: 'farhan.ramadhan@mandirisec.co.id', pekerjaan: 'Investment Banker SCBD', status: 'aktif', sewa: 2500000, tempo: 1, deposit: 1000000, catatanDeposit: 'Lunas' },
@@ -3756,7 +3756,7 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
     $('field-sewa').value         = p.sewa || '';
     $('field-tempo').value        = p.tempo || '';
     $('field-deposit').value      = p.deposit || '';
-    $('field-catatan-deposit').value = p.catatanDeposit || '';
+    updateDepositPresetActive(p.deposit || '');
     $('field-catatan-bayar').value= p.catatanBayar || '';
     $('field-darurat-nama').value = p.daruratNama || '';
     $('field-darurat-hub').value  = p.daruratHub || '';
@@ -3777,24 +3777,82 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
     $('field-tgl-masuk').value = defMasuk;
     $('field-tgl-keluar').value = addMonthsYMD(1, defMasuk);
     
+    $('field-deposit').value = '';
+    updateDepositPresetActive('');
+    $('field-sewa').value = '';
+    $('field-tempo').value = '';
+    $('field-catatan-bayar').value = '';
+
     const roomToSelect = preselectedKamar || '';
     populateKamarSelect(roomToSelect);
     if (roomToSelect) {
       $('field-kamar').value = roomToSelect;
-      const matched = S.kamar.find(k => k.no === roomToSelect);
-      if (matched) {
-        if (matched.lantai) $('field-lantai').value = matched.lantai;
-        if (matched.harga) $('field-sewa').value = matched.harga;
-        const tip = $('field-kamar-tip');
-        if (tip) {
-          tip.textContent = `✓ Otomatis terisi: Kamar ${matched.no} (Lt ${matched.lantai || 1}) · Sewa ${rp(matched.harga || 0)}/bln`;
-          tip.style.display = 'block';
-        }
-      }
+      applyKamarDataToForm(roomToSelect);
     }
   }
   openModal('modal-penghuni');
 }
+
+// Helper: Sambungkan Harga dan Jatuh Tempo sesuai kamar yang dipilih
+function applyKamarDataToForm(kamarNo) {
+  if (!kamarNo) return;
+  const matched = S.kamar.find(k => String(k.no).toLowerCase() === String(kamarNo).toLowerCase().trim());
+  if (matched) {
+    if (matched.lantai && $('field-lantai')) $('field-lantai').value = matched.lantai;
+    if (matched.harga && $('field-sewa')) $('field-sewa').value = matched.harga;
+    
+    // Hubungkan Jatuh Tempo sesuai setting kamar (atau default kost / tgl masuk)
+    const tglMasukVal = $('field-tgl-masuk')?.value;
+    const dayFromMasuk = tglMasukVal ? parseInt(tglMasukVal.split('-')[2], 10) : null;
+    const computedTempo = matched.tempo || (S.kost && S.kost.tempoDefault) || dayFromMasuk || 1;
+    const tempoEl = $('field-tempo');
+    if (tempoEl) tempoEl.value = Math.min(Math.max(computedTempo, 1), 28);
+    
+    const tip = $('field-kamar-tip');
+    if (tip) {
+      const tempoDisplay = tempoEl?.value || computedTempo;
+      tip.textContent = `✓ Otomatis terisi: Kamar ${matched.no} (Lt ${matched.lantai || 1}) · Sewa ${rp(matched.harga || 0)}/bln · Jatuh Tempo tgl ${tempoDisplay}`;
+      tip.style.display = 'block';
+    }
+  }
+}
+window.applyKamarDataToForm = applyKamarDataToForm;
+
+// Helper: Update status active tombol preset deposit
+function updateDepositPresetActive(val) {
+  const numVal = (val !== '' && val !== null && val !== undefined) ? Number(val) : null;
+  document.querySelectorAll('.deposit-preset-btn').forEach(btn => {
+    const btnVal = Number(btn.dataset.val);
+    if (numVal !== null && numVal === btnVal) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+window.updateDepositPresetActive = updateDepositPresetActive;
+
+// Listener klik preset deposit (0, 100rb, 200rb, 300rb, 500rb, 1jt)
+document.querySelectorAll('.deposit-preset-btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const val = (this && this.dataset && this.dataset.val !== undefined) ? this.dataset.val : (btn.dataset ? btn.dataset.val : btn.getAttribute('data-val'));
+    const depInput = $('field-deposit');
+    if (depInput) {
+      depInput.value = val;
+      updateDepositPresetActive(val);
+      depInput.dispatchEvent(new Event('input', { bubbles: true }));
+      depInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+});
+
+$('field-deposit')?.addEventListener('input', function() {
+  updateDepositPresetActive(this.value);
+});
+$('field-deposit')?.addEventListener('change', function() {
+  updateDepositPresetActive(this.value);
+});
 
 window.openModalPenghuni = openModalPenghuni;
 window.openModalPenghuniWithRoom = function(roomNo) {
@@ -3818,18 +3876,19 @@ if (selKamarEl) {
       if (tip) tip.style.display = 'none';
       return;
     }
-    const matched = S.kamar.find(k => k.no === val);
-    if (matched) {
-      if (matched.lantai) $('field-lantai').value = matched.lantai;
-      if (matched.harga) $('field-sewa').value = matched.harga;
-      if (tip) {
-        tip.textContent = `✓ Otomatis terisi: Lantai ${matched.lantai || 1} & Sewa ${rp(matched.harga || 0)}/bln`;
-        tip.style.display = 'block';
-      }
-    } else if (tip) {
-      tip.style.display = 'none';
-    }
+    applyKamarDataToForm(val);
   });
+}
+
+// Input manual kamar change/input listener
+const manualKamarInp = $('field-kamar');
+if (manualKamarInp) {
+  const onManualKamar = function() {
+    const val = this.value.trim();
+    if (val) applyKamarDataToForm(val);
+  };
+  manualKamarInp.addEventListener('input', onManualKamar);
+  manualKamarInp.addEventListener('change', onManualKamar);
 }
 
 const btnToggleKamarEl = $('btn-toggle-manual-kamar');
@@ -4215,7 +4274,7 @@ $('form-penghuni').addEventListener('submit', async function(e) {
     sewa: $('field-sewa').value,
     tempo: $('field-tempo').value,
     deposit: $('field-deposit').value,
-    catatanDeposit: $('field-catatan-deposit').value.trim(),
+    catatanDeposit: (editId && S.penghuni.find(x => x.id === editId)?.catatanDeposit) || '',
     catatanBayar: $('field-catatan-bayar').value.trim(),
     daruratNama: $('field-darurat-nama').value.trim(),
     daruratHub: $('field-darurat-hub').value,
@@ -4719,6 +4778,7 @@ $('form-kamar').addEventListener('submit', async function(e) {
     lantai: $('field-lantai-kamar').value.trim() || '1',
     tipe: $('field-tipe-kamar').value,
     harga: $('field-harga-kamar').value,
+    tempo: $('field-tempo-kamar')?.value ? Number($('field-tempo-kamar').value) : null,
     fasilitas: $('field-fasilitas').value.trim()
   };
   const i = S.kamar.findIndex(k => k.id === id);
@@ -4739,6 +4799,7 @@ window.editKamar = function(id) {
   $('field-lantai-kamar').value = k.lantai || '';
   $('field-tipe-kamar').value = k.tipe || 'Standar';
   $('field-harga-kamar').value = k.harga || '';
+  if ($('field-tempo-kamar')) $('field-tempo-kamar').value = k.tempo || '';
   $('field-fasilitas').value = k.fasilitas || '';
   openModal('modal-kamar');
 };

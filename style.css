@@ -2307,6 +2307,41 @@ textarea.fc {
   animation: ocr-pulse 1.5s ease-out 2;
   border-color: #34d399 !important;
 }
+
+/* Quick Deposit Preset Pills */
+.deposit-presets-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.deposit-preset-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 0.76rem;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all var(--t);
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+}
+.deposit-preset-btn:hover {
+  border-color: var(--accent);
+  color: #fff;
+  background: var(--card-hover);
+}
+.deposit-preset-btn.active {
+  border-color: var(--accent);
+  background: rgba(16, 185, 129, 0.16);
+  color: var(--accent-light);
+  font-weight: 600;
+}
+
 .photo-row {
   display: flex;
   gap: 16px;
