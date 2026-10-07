@@ -509,18 +509,8 @@
               <h2 class="settings-title">Profil &amp; Identitas Kost</h2>
               <form id="form-kost" class="settings-form">
                 <div class="fg"><label>Nama Kost</label><input type="text" id="set-nama-kost" class="fc" placeholder="Kost Makmur Jaya" required /></div>
-                <div class="fg"><label>Pemilik / Pengelola</label><input type="text" id="set-pemilik" class="fc" placeholder="Nama pemilik / pengelola" required /></div>
-                <div class="fg"><label>Kota / Wilayah Kost</label><input type="text" id="set-kota-kost" class="fc" placeholder="Contoh: Sleman, Yogyakarta / Jakarta Selatan / Bandung" /></div>
-                <div class="fg"><label>Alamat Lengkap</label><textarea id="set-alamat" class="fc" rows="2" placeholder="Alamat lengkap kost"></textarea></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                  <div class="fg"><label>No. HP Pemilik / WA Resmi</label><input type="text" id="set-hp-pemilik" class="fc" placeholder="08xx-xxxx-xxxx" /></div>
-                  <div class="fg"><label>Jumlah Total Kamar</label><input type="number" id="set-total-kamar" class="fc" min="1" placeholder="10" /></div>
-                </div>
-                <div class="fg">
-                  <label>Default Tanggal Jatuh Tempo Sewa Bulanan</label>
-                  <input type="number" id="set-tempo-default" class="fc" min="1" max="31" placeholder="5 (Tiap tanggal 5 per bulan)" />
-                  <small style="color:var(--text-3);font-size:0.72rem">Otomatis menjadi nilai bawaan saat input anak kost baru.</small>
-                </div>
+                <div class="fg"><label>Jumlah Total Kamar</label><input type="number" id="set-total-kamar" class="fc" min="1" placeholder="10" /></div>
+                <div class="fg"><label>Alamat Kost</label><textarea id="set-alamat" class="fc" rows="2" placeholder="Alamat lengkap kost"></textarea></div>
                 <div style="display:flex;gap:10px;margin-top:10px">
                   <button type="submit" class="btn-primary" id="btn-submit-kost">💾 Simpan Profil Kost</button>
                 </div>

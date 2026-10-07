@@ -6046,13 +6046,9 @@ $('form-profil-pw').addEventListener('submit', async function(e) {
 
 // ── PENGATURAN (MANAGER) ──────────────────────────────────────
 function renderPengaturan() {
-  if ($('set-nama-kost'))     $('set-nama-kost').value     = S.kost.nama || '';
-  if ($('set-pemilik'))       $('set-pemilik').value       = S.kost.pemilik || '';
-  if ($('set-kota-kost'))      $('set-kota-kost').value      = S.kost.kota || (S.kost.alamat ? S.kost.alamat.split(',')[0].trim() : '');
-  if ($('set-alamat'))        $('set-alamat').value        = S.kost.alamat || '';
-  if ($('set-hp-pemilik'))    $('set-hp-pemilik').value    = S.kost.hp || '';
-  if ($('set-total-kamar'))   $('set-total-kamar').value   = S.kost.totalKamar || '';
-  if ($('set-tempo-default')) $('set-tempo-default').value = S.kost.tempoDefault || 5;
+  if ($('set-nama-kost'))   $('set-nama-kost').value   = S.kost.nama || '';
+  if ($('set-total-kamar')) $('set-total-kamar').value = S.kost.totalKamar || '';
+  if ($('set-alamat'))      $('set-alamat').value      = S.kost.alamat || '';
 
   const cfg = getSupabaseConfig();
   if (cfg) {
@@ -6075,25 +6071,12 @@ async function saveAllPengaturan(sourceForm = '') {
     if ($('set-nama-kost') && $('set-nama-kost').value.trim()) {
       S.kost.nama = $('set-nama-kost').value.trim();
     }
-    if ($('set-pemilik') && $('set-pemilik').value.trim()) {
-      S.kost.pemilik = $('set-pemilik').value.trim();
-    }
-    if ($('set-kota-kost') && $('set-kota-kost').value.trim()) {
-      S.kost.kota = $('set-kota-kost').value.trim();
+    if ($('set-total-kamar') && $('set-total-kamar').value) {
+      S.kost.totalKamar = Number($('set-total-kamar').value) || S.kost.totalKamar || 8;
     }
     if ($('set-alamat') && $('set-alamat').value.trim()) {
       S.kost.alamat = $('set-alamat').value.trim();
     }
-    if ($('set-hp-pemilik') && $('set-hp-pemilik').value.trim()) {
-      S.kost.hp = $('set-hp-pemilik').value.trim();
-    }
-    if ($('set-total-kamar') && $('set-total-kamar').value) {
-      S.kost.totalKamar = Number($('set-total-kamar').value) || S.kost.totalKamar || 8;
-    }
-    if ($('set-tempo-default') && $('set-tempo-default').value) {
-      S.kost.tempoDefault = Math.max(1, Math.min(31, Number($('set-tempo-default').value) || 5));
-    }
-
   }
 
   S.kost.updatedAt = Date.now();
@@ -6181,12 +6164,8 @@ document.querySelectorAll('.btn-save-quick').forEach(btn => {
 // Real-time Auto-Save pada setiap ketikan / perubahan field input pengaturan
 const settingAutoFields = [
   'set-nama-kost',
-  'set-pemilik',
-  'set-kota-kost',
-  'set-alamat',
-  'set-hp-pemilik',
   'set-total-kamar',
-  'set-tempo-default'
+  'set-alamat'
 ];
 
 settingAutoFields.forEach(id => {
