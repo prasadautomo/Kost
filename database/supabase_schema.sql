@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS public.kamar (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE public.kamar ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+ALTER TABLE IF EXISTS public.kamar DROP CONSTRAINT IF EXISTS kamar_no_key;
 
 -- 5. Tabel Pembayaran
 CREATE TABLE IF NOT EXISTS public.pembayaran (

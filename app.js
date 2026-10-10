@@ -1883,6 +1883,7 @@ ALTER TABLE IF EXISTS public.pengeluaran ADD COLUMN IF NOT EXISTS kost_id TEXT D
 
 ALTER TABLE IF EXISTS public.pembayaran DROP CONSTRAINT IF EXISTS pembayaran_penghuni_id_fkey;
 ALTER TABLE IF EXISTS public.keluhan DROP CONSTRAINT IF EXISTS keluhan_penghuni_id_fkey;
+ALTER TABLE IF EXISTS public.kamar DROP CONSTRAINT IF EXISTS kamar_no_key;
 
 ALTER TABLE IF EXISTS public.penghuni DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.kamar DISABLE ROW LEVEL SECURITY;
@@ -7660,6 +7661,17 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').then(reg => {
       console.log('SiKost Service Worker terdaftar (PWA Ready):', reg.scope);
+      try { reg.update(); } catch (_) {}
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              newWorker.postMessage('SKIP_WAITING');
+            }
+          });
+        }
+      });
     }).catch(err => {
       console.warn('PWA Service Worker registration warning:', err);
     });

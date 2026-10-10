@@ -14,9 +14,10 @@ ALTER TABLE IF EXISTS public.pembayaran ADD COLUMN IF NOT EXISTS kost_id TEXT DE
 ALTER TABLE IF EXISTS public.pengeluaran ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
 ALTER TABLE IF EXISTS public.keluhan ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
 
--- METODE 0.1: Lepas batasan foreign key pembayaran yang memblokir transaksi multi-cabang/asinkron
+-- METODE 0.1: Lepas batasan foreign key & unique kamar yang memblokir transaksi multi-cabang/asinkron
 ALTER TABLE IF EXISTS public.pembayaran DROP CONSTRAINT IF EXISTS pembayaran_penghuni_id_fkey;
 ALTER TABLE IF EXISTS public.keluhan DROP CONSTRAINT IF EXISTS keluhan_penghuni_id_fkey;
+ALTER TABLE IF EXISTS public.kamar DROP CONSTRAINT IF EXISTS kamar_no_key;
 
 -- METODE 1: Nonaktifkan Row Level Security (RLS) agar Web Client langsung memiliki akses simpan penuh
 ALTER TABLE IF EXISTS public.penghuni DISABLE ROW LEVEL SECURITY;
