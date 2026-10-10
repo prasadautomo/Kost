@@ -5,13 +5,26 @@
    ============================================================ */
 'use strict';
 
+// ── GLOBAL DOM & MODAL HELPERS (HOISTED) ──────────────────────
+function $(id) {
+  return typeof document !== 'undefined' ? document.getElementById(id) : null;
+}
+if (typeof window !== 'undefined') window.$ = $;
+
+function openModal(id) { const el = $(id); if (el) el.classList.add('open'); }
+function closeModal(id) { const el = $(id); if (el) el.classList.remove('open'); }
+if (typeof window !== 'undefined') {
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+}
+
 // ── DEFAULT 5 CABANG MULTI-KOST (TERISOLASI & BERSIH) ─────────────
 function getCleanInitialState() {
   const branches = [
     {
       kost: {
         id: 'kost_1',
-        nama: 'Nama Kost Manager',
+        nama: 'Kost Griya Harmoni Sleman',
         pemilik: 'Gavin Utomo',
         kota: 'Sleman, Yogyakarta',
         alamat: 'Jl. Kaliurang KM 5, Gg. Megatruh No. 12, Sleman, DI Yogyakarta',
@@ -1656,13 +1669,6 @@ function confirm_dlg(title, msg, cb, btnLabel='Ya, Lanjutkan') {
   openModal('modal-confirm');
 }
 
-const $ = id => document.getElementById(id);
-window.$ = $;
-function openModal(id) { const el = document.getElementById(id); if (el) el.classList.add('open'); }
-function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('open'); }
-window.openModal = openModal;
-window.closeModal = closeModal;
-
 // ── PASSWORD TOGGLE ──────────────────────────────────────────
 document.addEventListener('click', e => {
   const btn = e.target.closest('.pw-eye');
@@ -2577,10 +2583,10 @@ async function triggerRealGoogleLogin() {
     btn.innerHTML = `<span class="spinner" style="display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px"></span> Membuka Google...`;
   }
 
-  // 2. Tunggu Google Identity Services SDK siap (maksimal 3 detik)
+  // 2. Tunggu Google Identity Services SDK siap (maksimal 600ms)
   if (!window.google?.accounts?.oauth2) {
     let waited = 0;
-    while (!window.google?.accounts?.oauth2 && waited < 15) {
+    while (!window.google?.accounts?.oauth2 && waited < 3) {
       await new Promise(r => setTimeout(r, 200));
       waited++;
     }
@@ -2622,7 +2628,7 @@ async function triggerRealGoogleLogin() {
           if (err && err.type === 'popup_closed') {
             toast('Login Google dibatalkan.', 'info');
           } else {
-            toast('Pop-up Google: ' + (err?.message || 'Pastikan http://localhost:3000 terdaftar di Authorized origins'), 'err');
+            toast('Membuka pemilih akun Google 1-Klik...', 'info');
             openModalGoogle();
           }
         }
@@ -2708,76 +2714,6 @@ if ($('btn-proto-close')) {
   $('btn-proto-close').addEventListener('click', () => closeModal('modal-google-protocol'));
 }
 
-// ── LOGIN / REGISTER TABS (FALLBACK GUARD) ────────────────────
-const tabBtnLogin = $('tab-btn-login');
-const tabBtnReg   = $('tab-btn-register');
-const formLogin   = $('form-login');
-const formReg     = $('form-register');
-
-if (tabBtnLogin && tabBtnReg && formLogin && formReg) {
-  tabBtnLogin.addEventListener('click', () => {
-    tabBtnLogin.classList.add('active');
-    tabBtnReg.classList.remove('active');
-    formLogin.style.display = 'block';
-    formReg.style.display   = 'none';
-  });
-  tabBtnReg.addEventListener('click', () => {
-    tabBtnReg.classList.add('active');
-    tabBtnLogin.classList.remove('active');
-    formLogin.style.display = 'none';
-    formReg.style.display   = 'block';
-  });
-}
-
-if (formLogin) {
-  formLogin.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const email = $('login-email').value.trim().toLowerCase();
-    const pw    = $('login-pw').value;
-    const btn   = $('btn-submit-login');
-    btn.disabled = true;
-    try {
-      if (sbClient) {
-        const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pw });
-        if (error) throw error;
-        const profile = await fetchOrCreateProfile(data.user);
-        loginWithAkun(profile);
-      } else {
-        const akun = S.akun.find(a => a.email === email);
-        if (!akun) throw new Error('Email tidak ditemukan.');
-        loginWithAkun(akun);
-      }
-    } catch (err) {
-      toast('Login gagal: ' + err.message, 'err');
-    } finally {
-      btn.disabled = false;
-    }
-  });
-}
-
-if (formReg) {
-  formReg.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const nama  = $('reg-nama').value.trim();
-    const email = $('reg-email').value.trim().toLowerCase();
-    const pw    = $('reg-pw').value;
-    const role  = (email === 'gavinutomo4@gmail.com') ? 'manager' : 'penghuni';
-    const btn   = $('btn-submit-reg');
-    btn.disabled = true;
-    try {
-      if (sbClient) {
-        const { data, error } = await sbClient.auth.signUp({ email, password: pw, options: { data: { nama, role } } });
-        if (error) throw error;
-        const profile = await fetchOrCreateProfile(data.user, nama, role);
-        loginWithAkun(profile);
-      }
-    } catch (err) {
-      toast('Daftar gagal: ' + err.message, 'err');
-    } finally {
-      btn.disabled = false;
-    }
-  });
-}
 
 let propertySwitcherEventsBound = false;
 function setupPropertySwitcherEvents() {
@@ -3603,7 +3539,7 @@ function renderCharts() {
   // Chart Cashflow (Pemasukan vs Pengeluaran & Laba) - In-place Zero-Lag Update
   const ctxCashflow = $('chart-cashflow');
   if (ctxCashflow) {
-    if (CHARTS.cashflow && CHARTS.cashflow.ctx) {
+    if (CHARTS.cashflow && CHARTS.cashflow.ctx && CHARTS.cashflow.data?.datasets?.[0]) {
       CHARTS.cashflow.data.datasets[0].data = [totalPemasukan, totalPengeluaran, Math.max(0, laba)];
       if (CHARTS.cashflow.options?.scales?.x?.ticks) CHARTS.cashflow.options.scales.x.ticks.color = tick;
       if (CHARTS.cashflow.options?.scales?.y?.ticks) CHARTS.cashflow.options.scales.y.ticks.color = tick;
@@ -3643,7 +3579,7 @@ function renderCharts() {
   // Chart Status Hunian - In-place Zero-Lag Update
   const ctxStatus = $('chart-status');
   if (ctxStatus) {
-    if (CHARTS.status && CHARTS.status.ctx) {
+    if (CHARTS.status && CHARTS.status.ctx && CHARTS.status.data?.datasets?.[0]) {
       CHARTS.status.data.datasets[0].data = [aktif, nonAktif];
       CHARTS.status.update('none');
     } else {
@@ -3662,7 +3598,7 @@ function renderCharts() {
   // Chart Kendaraan - In-place Zero-Lag Update
   const ctxKen = $('chart-kendaraan');
   if (ctxKen) {
-    if (CHARTS.kendaraan && CHARTS.kendaraan.ctx) {
+    if (CHARTS.kendaraan && CHARTS.kendaraan.ctx && CHARTS.kendaraan.data?.datasets?.[0]) {
       CHARTS.kendaraan.data.datasets[0].data = [motor, mobil, both, noKen];
       CHARTS.kendaraan.update('none');
     } else {
@@ -5627,126 +5563,6 @@ window.batalBayar = function(arg1, arg2, arg3, branchId = S.activeKostId) {
   );
 };
 
-// Modal Kwitansi Digital Resmi (Multi-Cabang)
-window.showKwitansi = function(penghuniId, bulan, branchId = S.activeKostId) {
-  let targetKost = S.kost;
-  let p = S.penghuni.find(x => x.id === penghuniId);
-  let pbList = S.pembayaran;
-
-  if (branchId && branchId !== S.activeKostId && S.propertiesData && S.propertiesData[branchId]) {
-    targetKost = S.propertiesData[branchId].kost || S.kost;
-    p = (S.propertiesData[branchId].penghuni || []).find(x => x.id === penghuniId) || p;
-    pbList = S.propertiesData[branchId].pembayaran || [];
-  }
-
-  if (!p) {
-    toast('Data penghuni tidak ditemukan', 'err');
-    return;
-  }
-
-  const safeBln = bulan || thisMonth();
-  const [y, mo] = safeBln.split('-');
-  let blnLabel = safeBln;
-  if (y && mo) {
-    const d = new Date(parseInt(y, 10), parseInt(mo, 10) - 1, 1);
-    if (!isNaN(d.getTime())) {
-      blnLabel = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-    }
-  }
-
-  const pb = pbList.find(x => (x.penghuniId === p.id || x.penghuni_id === p.id) && (x.bulan === safeBln || (typeof x.bulan === 'string' && x.bulan.startsWith(safeBln))));
-  const nominal = pb?.jumlah || p.sewa || 0;
-  const tglBayarStr = pb?.tglBayar ? fmtD(pb.tglBayar) : new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
-  const invNo = `#INV-${safeBln.replace('-', '')}-${(p.id || '0000').slice(-4).toUpperCase()}`;
-
-  const bodyEl = $('modal-kwitansi-body');
-  if (bodyEl) {
-    bodyEl.innerHTML = `
-      <div class="kwitansi-sheet" style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:22px;position:relative;overflow:hidden">
-        <div style="border-bottom:2px solid var(--border);padding-bottom:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start">
-          <div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green)"></span>
-              <h3 style="margin:0;font-size:1.15rem;font-weight:800;letter-spacing:-0.3px">${esc(targetKost.nama || 'Kost')}</h3>
-            </div>
-            <p style="margin:4px 0 0;font-size:0.8rem;color:var(--text-3)">${esc(targetKost.alamat || 'Alamat Kost')}</p>
-            <p style="margin:2px 0 0;font-size:0.76rem;color:var(--text-3)">WhatsApp Admin: ${esc(targetKost.hp || '–')}</p>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:0.7rem;text-transform:uppercase;font-weight:700;color:var(--text-3)">Kwitansi Pembayaran Resmi</div>
-            <div style="font-size:0.95rem;font-weight:800;color:var(--accent-light);font-family:monospace">${esc(invNo)}</div>
-          </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px">
-          <div>
-            <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-3);font-weight:700">Diterima Dari:</span>
-            <div style="font-weight:700;font-size:0.98rem;color:var(--text);margin-top:2px">${esc(p.nama)}</div>
-            <div style="font-size:0.8rem;color:var(--text-2)">Kamar ${esc(p.kamar || '–')} (Lt ${esc(p.lantai || '1')})</div>
-          </div>
-          <div>
-            <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-3);font-weight:700">Waktu Pelunasan:</span>
-            <div style="font-weight:600;font-size:0.88rem;color:var(--green);margin-top:2px">${tglBayarStr}</div>
-            <div style="font-size:0.76rem;color:var(--text-3)">Status: <strong style="color:var(--green)">LUNAS / VERIFIED</strong></div>
-          </div>
-        </div>
-
-        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px">
-          <div style="padding:8px 12px;background:var(--surface);font-size:0.72rem;font-weight:700;color:var(--text-3);text-transform:uppercase;border-bottom:1px solid var(--border)">
-            Rincian Pembayaran Sewa
-          </div>
-          <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);font-size:0.84rem">
-            <div>
-              <div style="font-weight:600">Sewa Kamar ${esc(p.kamar || '–')} (Periode ${esc(blnLabel)})</div>
-              <div style="font-size:0.73rem;color:var(--text-3)">Sewa kamar bulanan termasuk fasilitas kost</div>
-            </div>
-            <div style="font-weight:700">${rp(nominal)}</div>
-          </div>
-          <div style="padding:12px;display:flex;justify-content:space-between;align-items:center;background:rgba(16,185,129,0.08)">
-            <span style="font-weight:800;font-size:0.85rem;text-transform:uppercase">Total Terbayar (LUNAS)</span>
-            <span style="font-size:1.2rem;font-weight:900;color:var(--green);font-family:monospace">${rp(nominal)}</span>
-          </div>
-        </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px dashed var(--border);padding-top:12px">
-          <div style="font-size:0.72rem;color:var(--text-3);max-width:65%">
-            Kwitansi elektronik ini dibuat sah secara otomatis oleh sistem SiKost Cloud tanpa memerlukan tanda tangan basah fisik.
-          </div>
-          <div style="text-align:center">
-            <div style="border:1px dashed var(--green);background:rgba(16,185,129,0.06);border-radius:6px;padding:3px 8px;font-size:0.65rem;font-weight:800;color:var(--green);margin-bottom:4px">
-              DIGITALLY VERIFIED
-            </div>
-            <div style="font-size:0.76rem;font-weight:700">${esc(targetKost.pemilik || 'Pengelola Kost')}</div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // Hook Print & WA
-  const btnPrint = $('btn-print-kwitansi');
-  if (btnPrint) btnPrint.onclick = () => window.print();
-
-  const btnWa = $('btn-wa-kwitansi');
-  if (btnWa) {
-    btnWa.onclick = () => {
-      let cleanHp = (p.hp || '').replace(/\D/g, '');
-      if (cleanHp.startsWith('0')) cleanHp = '62' + cleanHp.slice(1);
-      else if (!cleanHp.startsWith('62') && cleanHp.length >= 9) cleanHp = '62' + cleanHp;
-      if (cleanHp.length < 8) {
-        toast('Nomor HP penghuni tidak valid!', 'err');
-        return;
-      }
-      const waMsg = `Halo Kak *${p.nama}*,\n\nTerima kasih, pembayaran sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(nominal)}* telah kami terima *LUNAS*.\nNo. Kwitansi: *${invNo}*.\n\nTerima kasih atas kerjasamanya! 🙏`;
-      window.open(`https://wa.me/${cleanHp}?text=${encodeURIComponent(waMsg)}`, '_blank');
-    };
-  }
-
-  const btnClose = $('modal-kwitansi-close');
-  if (btnClose) btnClose.onclick = () => closeModal('modal-kwitansi');
-
-  openModal('modal-kwitansi');
-};
 
 window.setujuiBayar = async function(pbId) {
   const pb = S.pembayaran.find(x => x.id === pbId);
@@ -5775,13 +5591,24 @@ window.tolakBayar = async function(pbId) {
   }, 'Tolak');
 };
 
-// ── KWITANSI DIGITAL RESMI ────────────────────────────────────
+// ── KWITANSI DIGITAL RESMI (MULTI-CABANG) ──────────────────────
 let activeKwitansiData = null;
 
-window.showKwitansi = function(penghuniId, bulan) {
-  const p = S.penghuni.find(x => x.id === penghuniId);
-  const pb = S.pembayaran.find(x => (x.penghuniId === penghuniId || x.penghuni_id === penghuniId) && (x.bulan === bulan || (typeof x.bulan === 'string' && x.bulan.startsWith(bulan))));
-  if (!p || !pb) return;
+window.showKwitansi = function(penghuniId, bulan, branchId = S.activeKostId) {
+  let targetKost = S.kost;
+  let p = S.penghuni.find(x => x.id === penghuniId);
+  let pbList = S.pembayaran;
+
+  if (branchId && branchId !== S.activeKostId && S.propertiesData && S.propertiesData[branchId]) {
+    targetKost = S.propertiesData[branchId].kost || S.kost;
+    p = (S.propertiesData[branchId].penghuni || []).find(x => x.id === penghuniId) || p;
+    pbList = S.propertiesData[branchId].pembayaran || [];
+  }
+
+  if (!p) {
+    toast('Data penghuni tidak ditemukan', 'err');
+    return;
+  }
 
   const safeBln = bulan || thisMonth();
   const [y, mo] = safeBln.split('-');
@@ -5792,90 +5619,104 @@ window.showKwitansi = function(penghuniId, bulan) {
       blnLabel = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
     }
   }
+
+  const pb = pbList.find(x => (x.penghuniId === p.id || x.penghuni_id === p.id) && (x.bulan === safeBln || (typeof x.bulan === 'string' && x.bulan.startsWith(safeBln))));
+  const nominal = pb?.jumlah || p.sewa || 0;
+  const tglBayar = pb?.tglBayar ? fmtD(pb.tglBayar) : fmtD(new Date());
   const invoiceNo = `KW-${safeBln.replace('-', '')}-${String(p.kamar || '00').padStart(3, '0')}`;
-  const tglBayar = pb.tglBayar ? fmtD(pb.tglBayar) : fmtD(new Date());
 
-  activeKwitansiData = { p, pb, blnLabel, invoiceNo, tglBayar };
+  activeKwitansiData = { p, pb: pb || { jumlah: nominal }, blnLabel, invoiceNo, tglBayar, targetKost };
 
-  $('modal-kwitansi-body').innerHTML = `
-    <div class="kwitansi-sheet" id="kwitansi-print-area">
-      <div class="kwitansi-header">
-        <div>
-          <h2 style="font-size:1.3rem;font-weight:900;margin:0;letter-spacing:-0.03em">${esc(S.kost.nama || 'SiKost')}</h2>
-          <div style="font-size:0.75rem;color:#64748b;margin-top:2px">${esc(S.kost.alamat || 'Alamat Kost')} · Telp/WA: ${esc(S.kost.hp || '–')}</div>
+  const bodyEl = $('modal-kwitansi-body');
+  if (bodyEl) {
+    bodyEl.innerHTML = `
+      <div class="kwitansi-sheet" id="kwitansi-print-area" style="background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:22px;position:relative;overflow:hidden">
+        <div style="border-bottom:2px solid var(--border);padding-bottom:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green)"></span>
+              <h3 style="margin:0;font-size:1.15rem;font-weight:800;letter-spacing:-0.3px">${esc(targetKost.nama || 'Kost')}</h3>
+            </div>
+            <p style="margin:4px 0 0;font-size:0.8rem;color:var(--text-3)">${esc(targetKost.alamat || 'Alamat Kost')}</p>
+            <p style="margin:2px 0 0;font-size:0.76rem;color:var(--text-3)">WhatsApp Admin: ${esc(targetKost.hp || '–')}</p>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:0.7rem;text-transform:uppercase;font-weight:700;color:var(--text-3)">Kwitansi Pembayaran Resmi</div>
+            <div style="font-size:0.95rem;font-weight:800;color:var(--accent-light);font-family:monospace">${esc(invoiceNo)}</div>
+          </div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:0.75rem;font-weight:700;color:#64748b">NO. BUKTI PEMBAYARAN</div>
-          <div style="font-size:0.95rem;font-weight:800;font-family:var(--font-mono)">${esc(invoiceNo)}</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px">
+          <div>
+            <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-3);font-weight:700">Diterima Dari:</span>
+            <div style="font-weight:700;font-size:0.98rem;color:var(--text);margin-top:2px">${esc(p.nama)}</div>
+            <div style="font-size:0.8rem;color:var(--text-2)">Kamar ${esc(p.kamar || '–')} (Lt ${esc(p.lantai || '1')})</div>
+          </div>
+          <div>
+            <span style="font-size:0.7rem;text-transform:uppercase;color:var(--text-3);font-weight:700">Waktu Pelunasan:</span>
+            <div style="font-weight:600;font-size:0.88rem;color:var(--green);margin-top:2px">${tglBayar}</div>
+            <div style="font-size:0.76rem;color:var(--text-3)">Status: <strong style="color:var(--green)">LUNAS / VERIFIED</strong></div>
+          </div>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px">
+          <div style="padding:8px 12px;background:var(--surface);font-size:0.72rem;font-weight:700;color:var(--text-3);text-transform:uppercase;border-bottom:1px solid var(--border)">
+            Rincian Pembayaran Sewa
+          </div>
+          <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);font-size:0.84rem">
+            <div>
+              <div style="font-weight:600">Sewa Kamar ${esc(p.kamar || '–')} (Periode ${esc(blnLabel)})</div>
+              <div style="font-size:0.73rem;color:var(--text-3)">Sewa kamar bulanan termasuk fasilitas kost</div>
+            </div>
+            <div style="font-weight:700">${rp(nominal)}</div>
+          </div>
+          ${pb?.denda ? `<div style="padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);font-size:0.8rem;color:var(--text-2)"><span>Denda Keterlambatan</span><span>${rp(pb.denda)}</span></div>` : ''}
+          ${pb?.listrikExtra ? `<div style="padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);font-size:0.8rem;color:var(--text-2)"><span>Biaya Listrik Tambahan</span><span>${rp(pb.listrikExtra)}</span></div>` : ''}
+          <div style="padding:12px;display:flex;justify-content:space-between;align-items:center;background:rgba(16,185,129,0.08)">
+            <span style="font-weight:800;font-size:0.85rem;text-transform:uppercase">Total Terbayar (LUNAS)</span>
+            <span style="font-size:1.2rem;font-weight:900;color:var(--green);font-family:monospace">${rp(nominal)}</span>
+          </div>
+        </div>
+
+        <div style="background:var(--surface);padding:10px 12px;border-radius:8px;border:1px solid var(--border);margin-bottom:14px">
+          <div style="font-size:0.7rem;color:var(--text-3);font-weight:700;text-transform:uppercase">Terbilang:</div>
+          <div style="font-size:0.82rem;font-weight:700;font-style:italic;color:var(--text)">"${terbilang(nominal)} Rupiah"</div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px dashed var(--border);padding-top:12px">
+          <div style="font-size:0.72rem;color:var(--text-3);max-width:65%">
+            Kwitansi elektronik ini dibuat sah secara otomatis oleh sistem SiKost Cloud tanpa memerlukan tanda tangan basah fisik.
+          </div>
+          <div style="text-align:center">
+            <div style="border:1px dashed var(--green);background:rgba(16,185,129,0.06);border-radius:6px;padding:3px 8px;font-size:0.65rem;font-weight:800;color:var(--green);margin-bottom:4px">
+              DIGITALLY VERIFIED
+            </div>
+            <div style="font-size:0.76rem;font-weight:700">${esc(targetKost.pemilik || 'Pengelola Kost')}</div>
+          </div>
         </div>
       </div>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid #e2e8f0">
-        <div>
-          <div style="font-size:0.72rem;color:#64748b;font-weight:700;text-transform:uppercase">Diterima Dari:</div>
-          <div style="font-size:1.1rem;font-weight:800">${esc(p.nama)}</div>
-          <div style="font-size:0.8rem;color:#475569">Kamar ${esc(p.kamar || '–')} (Lantai ${esc(p.lantai || '1')})</div>
-        </div>
-        <div class="stamp-lunas">LUNAS</div>
-      </div>
-
-      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:0.85rem">
-        <thead>
-          <tr style="background:#f8fafc;border-bottom:2px solid #cbd5e1">
-            <th style="padding:10px;text-align:left;color:#475569">Rincian Pembayaran</th>
-            <th style="padding:10px;text-align:right;color:#475569">Jumlah</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style="border-bottom:1px solid #f1f5f9">
-            <td style="padding:12px 10px">Sewa Kamar ${esc(p.kamar || '')} Periode Bulan <strong>${esc(blnLabel)}</strong></td>
-            <td style="padding:12px 10px;text-align:right;font-weight:700">${rp(pb.jumlah)}</td>
-          </tr>
-          ${pb.denda ? `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 10px">Denda Keterlambatan</td><td style="padding:8px 10px;text-align:right">${rp(pb.denda)}</td></tr>` : ''}
-          ${pb.listrikExtra ? `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 10px">Biaya Listrik Tambahan</td><td style="padding:8px 10px;text-align:right">${rp(pb.listrikExtra)}</td></tr>` : ''}
-          <tr style="background:#f8fafc;font-weight:800;font-size:0.95rem">
-            <td style="padding:12px 10px">TOTAL DITERIMA</td>
-            <td style="padding:12px 10px;text-align:right;color:#059669">${rp(pb.jumlah)}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:24px">
-        <div style="font-size:0.72rem;color:#64748b;font-weight:700">TERBILANG:</div>
-        <div style="font-size:0.82rem;font-weight:700;font-style:italic;color:#1e293b">"${terbilang(pb.jumlah)} Rupiah"</div>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;align-items:flex-end">
-        <div style="font-size:0.75rem;color:#64748b">
-          Tanggal Bayar: <strong>${tglBayar}</strong><br>
-          Metode: Transfer Bank / Tunai
-        </div>
-        <div style="text-align:center">
-          <div style="font-size:0.75rem;color:#64748b;margin-bottom:40px">Pengelola Kost,</div>
-          <div style="font-size:0.85rem;font-weight:800;border-bottom:1px solid #000;padding-bottom:2px">${esc(S.kost.pemilik || 'Pengelola Kost')}</div>
-        </div>
-      </div>
-    </div>
-  `;
+    `;
+  }
 
   openModal('modal-kwitansi');
 };
 
-$('modal-kwitansi-close').addEventListener('click', () => closeModal('modal-kwitansi'));
-$('modal-kwitansi').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-kwitansi'); });
+$('modal-kwitansi-close')?.addEventListener('click', () => closeModal('modal-kwitansi'));
+$('modal-kwitansi')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('modal-kwitansi'); });
 
-$('btn-print-kwitansi').addEventListener('click', () => {
+$('btn-print-kwitansi')?.addEventListener('click', () => {
   if (!activeKwitansiData) return;
-  const area = $('kwitansi-print-area').outerHTML;
+  const area = $('kwitansi-print-area')?.outerHTML || '';
   const w = window.open('', '_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Kwitansi_${activeKwitansiData.invoiceNo}</title><style>body{padding:20px;font-family:'Plus Jakarta Sans',sans-serif;color:#000}</style></head><body>${area}</body></html>`);
+  if (!w) { window.print(); return; }
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Kwitansi_${activeKwitansiData.invoiceNo}</title><style>body{padding:20px;font-family:'Plus Jakarta Sans',sans-serif;color:#000;background:#fff}</style></head><body>${area}</body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 250);
 });
 
-$('btn-wa-kwitansi').addEventListener('click', () => {
+$('btn-wa-kwitansi')?.addEventListener('click', () => {
   if (!activeKwitansiData) return;
-  const { p, pb, blnLabel, invoiceNo, tglBayar } = activeKwitansiData;
+  const { p, pb, blnLabel, invoiceNo, tglBayar, targetKost } = activeKwitansiData;
   if (!p.hp) { toast('Nomor HP penghuni tidak tersedia!', 'err'); return; }
   let cleanHp = p.hp.replace(/\D/g, '');
   if (cleanHp.startsWith('0')) {
@@ -5887,7 +5728,8 @@ $('btn-wa-kwitansi').addEventListener('click', () => {
     toast('Nomor HP penghuni tidak valid!', 'err');
     return;
   }
-  const text = `Halo Kak ${p.nama}, terima kasih! Pembayaran sewa kamar ${p.kamar || ''} di ${S.kost.nama || 'Kost'} untuk bulan *${blnLabel}* sebesar *${rp(pb.jumlah)}* telah kami terima dan tercatat *LUNAS* pada ${tglBayar}. (No. Bukti: ${invoiceNo}). 🙏`;
+  const kostName = targetKost?.nama || S.kost.nama || 'Kost';
+  const text = `Halo Kak ${p.nama}, terima kasih! Pembayaran sewa kamar ${p.kamar || ''} di ${kostName} untuk bulan *${blnLabel}* sebesar *${rp(pb.jumlah)}* telah kami terima dan tercatat *LUNAS* pada ${tglBayar}. (No. Bukti: ${invoiceNo}). 🙏`;
   window.open(`https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`, '_blank');
 });
 
@@ -6042,7 +5884,7 @@ function renderPengeluaranCharts(list) {
       catLabels.push('Belum Ada Data');
       catValues.push(1);
     }
-    if (CHARTS.pengeluaranKat && CHARTS.pengeluaranKat.ctx) {
+    if (CHARTS.pengeluaranKat && CHARTS.pengeluaranKat.ctx && CHARTS.pengeluaranKat.data?.datasets?.[0]) {
       CHARTS.pengeluaranKat.data.labels = catLabels;
       CHARTS.pengeluaranKat.data.datasets[0].data = catValues;
       CHARTS.pengeluaranKat.data.datasets[0].backgroundColor = catPalette.slice(0, catLabels.length);
@@ -6108,7 +5950,7 @@ function renderPengeluaranCharts(list) {
 
   const ctxTren = $('chart-pengeluaran-tren');
   if (ctxTren) {
-    if (CHARTS.pengeluaranTren && CHARTS.pengeluaranTren.ctx) {
+    if (CHARTS.pengeluaranTren && CHARTS.pengeluaranTren.ctx && CHARTS.pengeluaranTren.data?.datasets?.[0]) {
       CHARTS.pengeluaranTren.data.labels = trenLabels;
       CHARTS.pengeluaranTren.data.datasets[0].data = trenValues;
       if (CHARTS.pengeluaranTren.options?.scales?.x?.ticks) CHARTS.pengeluaranTren.options.scales.x.ticks.color = tick;
@@ -7258,8 +7100,6 @@ function setupNewFeatureEvents() {
         dd.style.display = 'none';
         $('btn-property-switch')?.classList.remove('open');
       }
-      $('fab-main')?.classList.remove('active');
-      $('fab-menu')?.classList.remove('open');
     }
   });
 
@@ -7270,45 +7110,7 @@ function setupNewFeatureEvents() {
     }
   });
 
-  // 2. Floating Action Button (FAB)
-  const fabMain = $('fab-main');
-  const fabMenu = $('fab-menu');
-  if (fabMain && fabMenu) {
-    fabMain.addEventListener('click', () => {
-      fabMain.classList.toggle('active');
-      fabMenu.classList.toggle('open');
-    });
-
-    const fabTambahP = $('fab-tambah-penghuni');
-    if (fabTambahP) fabTambahP.addEventListener('click', () => {
-      fabMain.classList.remove('active');
-      fabMenu.classList.remove('open');
-      openModalPenghuni();
-    });
-
-    const fabCatatB = $('fab-catat-bayar');
-    if (fabCatatB) fabCatatB.addEventListener('click', () => {
-      fabMain.classList.remove('active');
-      fabMenu.classList.remove('open');
-      navigateTo('pembayaran');
-    });
-
-    const fabCatatE = $('fab-catat-pengeluaran');
-    if (fabCatatE) fabCatatE.addEventListener('click', () => {
-      fabMain.classList.remove('active');
-      fabMenu.classList.remove('open');
-      openModalCatatPengeluaran();
-    });
-
-    const fabCari = $('fab-cari-cepat');
-    if (fabCari) fabCari.addEventListener('click', () => {
-      fabMain.classList.remove('active');
-      fabMenu.classList.remove('open');
-      openSpotlight();
-    });
-  }
-
-  // 3. Rekap Laporan Bulanan
+  // 2. Rekap Laporan Bulanan
   const btnCetakLaporan = $('btn-cetak-laporan-keuangan');
   if (btnCetakLaporan) {
     btnCetakLaporan.addEventListener('click', () => {
@@ -7325,6 +7127,23 @@ function setupNewFeatureEvents() {
 
   const modalLaporan = $('modal-laporan-bulanan');
   if (modalLaporan) modalLaporan.addEventListener('click', e => { if (e.target === modalLaporan) closeModal('modal-laporan-bulanan'); });
+}
+
+// Expose core rendering and managerial functions globally
+if (typeof window !== 'undefined') {
+  window.renderDashboard = renderDashboard;
+  window.renderCharts = renderCharts;
+  window.renderDashActionCenter = renderDashActionCenter;
+  window.renderActionCenter = renderDashActionCenter;
+  window.renderPenghuni = renderPenghuni;
+  window.renderKamar = renderKamar;
+  window.renderPembayaran = renderPembayaran;
+  window.renderPengeluaran = renderPengeluaran;
+  window.renderPengeluaranCharts = renderPengeluaranCharts;
+  window.renderProfil = renderProfil;
+  window.renderPengaturan = renderPengaturan;
+  window.renderLaporanBulanan = window.openLaporanBulanan;
+  window.updateSidebarBadges = updateSidebarBadges;
 }
 
 // ── PWA SERVICE WORKER REGISTRATION ───────────────────────────
