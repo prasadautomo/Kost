@@ -434,6 +434,41 @@ test('Branch Settings Cards rendered without phone number and bank info', () => 
   }
 });
 
+// 18. Verify Light Theme Toggle and CSS Token Structure
+test('Theme switcher toggles between Dark and Light mode seamlessly', () => {
+  const toggleBtn = elementsById['theme-toggle'];
+  const themeIcon = elementsById['theme-icon'];
+  if (!toggleBtn) throw new Error('theme-toggle element not found!');
+
+  // Trigger toggle to switch to light
+  mockDocument.documentElement.setAttribute('data-theme', 'dark');
+  toggleBtn.click();
+  if (mockDocument.documentElement.getAttribute('data-theme') !== 'light') {
+    throw new Error('data-theme should be light after clicking toggle!');
+  }
+  if (themeIcon.textContent !== 'dark_mode') {
+    throw new Error(`theme-icon should show "dark_mode" in light mode, got: ${themeIcon.textContent}`);
+  }
+
+  // Verify style.css includes complete light surface tokens
+  const css = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
+  if (!css.includes('--surface-container-low:     #f8fafc;')) {
+    throw new Error('Missing --surface-container-low in light theme!');
+  }
+  if (!css.includes('[data-theme="light"] .nav-item.active')) {
+    throw new Error('Missing light theme active nav override in style.css!');
+  }
+
+  // Toggle back to dark
+  toggleBtn.click();
+  if (mockDocument.documentElement.getAttribute('data-theme') !== 'dark') {
+    throw new Error('data-theme should be dark after second click!');
+  }
+  if (themeIcon.textContent !== 'light_mode') {
+    throw new Error(`theme-icon should show "light_mode" in dark mode, got: ${themeIcon.textContent}`);
+  }
+});
+
 console.log('\n--- SIMULATION SUMMARY ---');
 console.log(`Total errors: ${errors.length}`);
 if (errors.length > 0) {

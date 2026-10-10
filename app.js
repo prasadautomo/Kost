@@ -2890,10 +2890,12 @@ document.addEventListener('click', e => {
 $('theme-toggle').addEventListener('click', () => {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  $('theme-icon').textContent = isDark ? 'dark_mode' : 'light_mode';
-  localStorage.setItem('sk3_theme', isDark ? 'light' : 'dark');
-  if ($('page-dashboard').classList.contains('active')) renderCharts();
+  const newTheme = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', newTheme);
+  $('theme-icon').textContent = newTheme === 'dark' ? 'light_mode' : 'dark_mode';
+  localStorage.setItem('sk3_theme', newTheme);
+  if ($('page-dashboard')?.classList.contains('active')) renderCharts();
+  if ($('page-pengeluaran')?.classList.contains('active') && typeof renderPengeluaran === 'function') renderPengeluaran();
 });
 
 // ── ACTION CENTER: FOKUS & TUGAS HARI INI (5 CABANG KONSOLIDASI) ────
@@ -5926,10 +5928,11 @@ function renderPengeluaran() {
 }
 
 // ── GRAFIK ANALISIS PENGELUARAN ──────────────────────────────
-function renderPengeluaranCharts(list) {
+function renderPengeluaranCharts(list = S.pengeluaran || []) {
   if (typeof Chart === 'undefined') return;
   const pagePengeluaran = $('page-pengeluaran');
   if (!pagePengeluaran || !pagePengeluaran.classList.contains('active')) return;
+  const safeList = Array.isArray(list) ? list : (S.pengeluaran || []);
 
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
   const tick   = isDark ? '#94a3b8' : '#64748b';
@@ -5937,7 +5940,7 @@ function renderPengeluaranCharts(list) {
 
   // 1. Chart Komposisi Kategori (Donut)
   const catMap = {};
-  list.forEach(x => {
+  safeList.forEach(x => {
     const k = x.kategori || 'Lainnya';
     catMap[k] = (catMap[k] || 0) + (Number(x.jumlah) || 0);
   });
@@ -7232,7 +7235,7 @@ if ('serviceWorker' in navigator) {
   // Dark Mode default
   const t = localStorage.getItem('sk3_theme') || 'dark';
   document.documentElement.setAttribute('data-theme', t);
-  $('theme-icon').textContent = t === 'dark' ? 'dark_mode' : 'light_mode';
+  $('theme-icon').textContent = t === 'dark' ? 'light_mode' : 'dark_mode';
 
   // Coba inisialisasi Supabase
   const hasSb = initSupabase();
