@@ -469,8 +469,113 @@ test('Theme switcher toggles between Dark and Light mode seamlessly', () => {
   }
 });
 
+// 19. Verify Strict Multi-Branch Database Isolation (BranchDB)
+test('BranchDB strictly isolates tenants, rooms, payments, and expenses per branch', () => {
+  const branchIds = ['kost_1', 'kost_2', 'kost_3', 'kost_4', 'kost_5'];
+  
+  // Verify each branch has its own isolated database entry in localStorage
+  branchIds.forEach(bid => {
+    const pKey = `sk3_branch_${bid}_penghuni`;
+    const kKey = `sk3_branch_${bid}_kamar`;
+    const pbKey = `sk3_branch_${bid}_pembayaran`;
+    const expKey = `sk3_branch_${bid}_pengeluaran`;
+    
+    if (!mockLocalStorage.getItem(pKey)) throw new Error(`Missing BranchDB key: ${pKey}`);
+    if (!mockLocalStorage.getItem(kKey)) throw new Error(`Missing BranchDB key: ${kKey}`);
+    if (!mockLocalStorage.getItem(pbKey)) throw new Error(`Missing BranchDB key: ${pbKey}`);
+    if (!mockLocalStorage.getItem(expKey)) throw new Error(`Missing BranchDB key: ${expKey}`);
+  });
+
+  // Verify tenants in kost_1 and kost_2 are distinct sets
+  const p1 = global.window.BranchDB.getPenghuni('kost_1');
+  const p2 = global.window.BranchDB.getPenghuni('kost_2');
+  if (!p1 || p1.length === 0) throw new Error('Branch 1 tenants should not be empty');
+  if (!p2 || p2.length === 0) throw new Error('Branch 2 tenants should not be empty');
+
+  const names1 = p1.map(x => x.nama);
+  const names2 = p2.map(x => x.nama);
+  const overlap = names1.filter(n => names2.includes(n));
+  if (overlap.length > 0) {
+    throw new Error(`Data pollution detected between kost_1 and kost_2: [${overlap.join(', ')}]`);
+  }
+
+  // Adding a tenant to kost_2 must not alter kost_1
+  global.window.switchKost('kost_2');
+  const initialCount1 = global.window.BranchDB.getPenghuni('kost_1').length;
+  const initialCount2 = global.window.BranchDB.getPenghuni('kost_2').length;
+
+  elementsById['field-nama'].value = 'Penghuni Khusus Dago';
+  elementsById['field-hp'].value = '081299998888';
+  elementsById['field-kamar'].value = 'D-09';
+  elementsById['field-tgl-masuk'].value = '2026-04-01';
+  elementsById['field-nik'].value = '3273010101900001';
+  elementsById['field-gender'].value = 'Laki-laki';
+  elementsById['field-sewa'].value = '1.850.000';
+  elementsById['form-penghuni'].dispatchEvent('submit');
+
+  const afterCount1 = global.window.BranchDB.getPenghuni('kost_1').length;
+  const afterCount2 = global.window.BranchDB.getPenghuni('kost_2').length;
+
+  if (afterCount1 !== initialCount1) {
+    throw new Error(`kost_1 tenant count leaked! Expected ${initialCount1}, got ${afterCount1}`);
+  }
+  if (afterCount2 !== initialCount2 + 1) {
+    throw new Error(`kost_2 tenant count should increment by 1! Got ${afterCount2}`);
+  }
+
+  // Adding expense to kost_2 must not leak to kost_1
+  const initExp1 = global.window.BranchDB.getPengeluaran('kost_1').length;
+  elementsById['field-pengeluaran-id'].value = 'exp-dago-isolated';
+  elementsById['field-pengeluaran-tgl'].value = '2026-04-05';
+  elementsById['field-pengeluaran-kategori'].value = 'Listrik/PLN';
+  elementsById['field-pengeluaran-jumlah'].value = '350000';
+  elementsById['field-pengeluaran-ket'].value = 'Token Listrik Dago Isolated';
+  elementsById['form-pengeluaran'].dispatchEvent('submit');
+
+  const afterExp1 = global.window.BranchDB.getPengeluaran('kost_1').length;
+  const afterExp2 = global.window.BranchDB.getPengeluaran('kost_2');
+  if (afterExp1 !== initExp1) {
+    throw new Error(`kost_1 expenses polluted! Expected ${initExp1}, got ${afterExp1}`);
+  }
+  const foundInDago = afterExp2.find(x => x.id === 'exp-dago-isolated');
+  if (!foundInDago) {
+    throw new Error('New expense not saved in kost_2 BranchDB database!');
+  }
+});
+
+// 20. Verify Multi-Branch Filtering across Penghuni, Pembayaran, and Pengeluaran
+test('Multi-branch filters seamlessly toggle between active branch and consolidated views', () => {
+  // Penghuni Filter
+  global.window.switchKost('kost_1');
+  const selPenghuni = elementsById['filter-cabang-penghuni'];
+  selPenghuni.value = 'active';
+  global.window.renderPenghuni();
+
+  selPenghuni.value = 'all';
+  global.window.renderPenghuni();
+  const gridHtml = elementsById['penghuni-grid'].innerHTML;
+  const listHtml = elementsById['tbody-penghuni'].innerHTML;
+  if (!gridHtml.includes('badge-accent') && !listHtml.includes('badge-accent')) {
+    throw new Error('Consolidated penghuni view must show branch badges!');
+  }
+
+  // Pengeluaran Filter
+  const selExp = elementsById['filter-cabang-pengeluaran'];
+  selExp.value = 'active';
+  global.window.renderPengeluaran();
+  const expActive = elementsById['tbody-pengeluaran'].innerHTML;
+
+  selExp.value = 'all';
+  global.window.renderPengeluaran();
+  const expAll = elementsById['tbody-pengeluaran'].innerHTML;
+  if (!expAll.includes('badge-accent')) {
+    throw new Error('Consolidated pengeluaran view must show branch badges!');
+  }
+});
+
 console.log('\n--- SIMULATION SUMMARY ---');
 console.log(`Total errors: ${errors.length}`);
 if (errors.length > 0) {
   console.log(errors);
 }
+

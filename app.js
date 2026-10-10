@@ -18,149 +18,60 @@ if (typeof window !== 'undefined') {
   window.closeModal = closeModal;
 }
 
-// ── DEFAULT 5 CABANG MULTI-KOST (TERISOLASI & BERSIH) ─────────────
+// ── HELPER KALKULASI TANGGAL & BULAN (HOISTED) ───────────────
+function todayYMD() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+if (typeof window !== 'undefined') window.todayYMD = todayYMD;
+
+function thisMonth() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+if (typeof window !== 'undefined') window.thisMonth = thisMonth;
+
+function addDaysYMD(days, baseDateStr = null) {
+  let d;
+  if (baseDateStr && /^\d{4}-\d{2}-\d{2}$/.test(baseDateStr)) {
+    const [y, m, day] = baseDateStr.split('-').map(Number);
+    d = new Date(y, m - 1, day);
+  } else {
+    d = baseDateStr ? new Date(baseDateStr) : new Date();
+  }
+  d.setDate(d.getDate() + Number(days));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+if (typeof window !== 'undefined') window.addDaysYMD = addDaysYMD;
+
+function addMonthsYMD(months, baseDateStr = null) {
+  let [y, m, day] = (baseDateStr || todayYMD()).split('-').map(Number);
+  if (!y || !m || !day) {
+    const d = new Date();
+    y = d.getFullYear(); m = d.getMonth() + 1; day = d.getDate();
+  }
+  let targetMonth = m + Number(months);
+  let targetYear = y + Math.floor((targetMonth - 1) / 12);
+  targetMonth = ((targetMonth - 1) % 12 + 12) % 12 + 1;
+  const maxDays = new Date(targetYear, targetMonth, 0).getDate();
+  const safeDay = Math.min(day, maxDays);
+  return `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
+}
+if (typeof window !== 'undefined') window.addMonthsYMD = addMonthsYMD;
+
+// ── DEFAULT 5 CABANG MULTI-KOST (TERISOLASI DENGAN DATABASE MANDIRI) ───
 function getCleanInitialState() {
-  const branches = [
-    {
-      kost: {
-        id: 'kost_1',
-        nama: 'Kost Griya Harmoni Sleman',
-        pemilik: 'Gavin Utomo',
-        kota: 'Sleman, Yogyakarta',
-        alamat: 'Jl. Kaliurang KM 5, Gg. Megatruh No. 12, Sleman, DI Yogyakarta',
-        totalKamar: 8,
-        qrisUrl: ''
-      },
-      kamar: [
-        { id: 'km_101', no: '101', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Kasur Springbed 160x200, Lemari 2 Pintu, Meja Belajar, Kamar Mandi Dalam' },
-        { id: 'km_102', no: '102', lantai: '1', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Kasur Springbed, Lemari, Meja Belajar, Kamar Mandi Dalam' },
-        { id: 'km_103', no: '103', lantai: '1', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
-        { id: 'km_104', no: '104', lantai: '1', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur Busa, Lemari, Meja, Kamar Mandi Luar' },
-        { id: 'km_201', no: '201', lantai: '2', tipe: 'VIP', harga: 1850000, fasilitas: 'AC, Smart TV 32", Water Heater, Meja Kerja Ergonomis, Balkon Pribadi' },
-        { id: 'km_202', no: '202', lantai: '2', tipe: 'VIP', harga: 1850000, fasilitas: 'AC, Smart TV 32", Water Heater, Meja Kerja Ergonomis, Balkon Pribadi' },
-        { id: 'km_203', no: '203', lantai: '2', tipe: 'Deluxe AC', harga: 1500000, fasilitas: 'AC, Springbed, Lemari 2 Pintu, Meja Kerja' },
-        { id: 'km_204', no: '204', lantai: '2', tipe: 'Standar', harga: 950000, fasilitas: 'Kipas Angin, Kasur, Lemari, Meja' }
-      ]
-    },
-    {
-      kost: {
-        id: 'kost_2',
-        nama: 'Kost Graha Asri Dago',
-        pemilik: 'Gavin Utomo',
-        kota: 'Dago, Bandung',
-        alamat: 'Jl. Cisitu Lama No. 28, Dago, Coblong, Kota Bandung, Jawa Barat',
-        totalKamar: 8,
-        qrisUrl: ''
-      },
-      kamar: [
-        { id: 'km_2_A01', no: 'A-01', lantai: '1', tipe: 'Studio Dago', harga: 1700000, fasilitas: 'AC, Kasur Queen Size, Meja Belajar Kayu Jati, Kamar Mandi Dalam' },
-        { id: 'km_2_A02', no: 'A-02', lantai: '1', tipe: 'Studio Dago', harga: 1700000, fasilitas: 'AC, Kasur Queen Size, Lemari Pakaian, Water Heater' },
-        { id: 'km_2_A03', no: 'A-03', lantai: '1', tipe: 'Deluxe Asri', harga: 1600000, fasilitas: 'AC, Kasur Springbed, Meja Kerja, KM Dalam' },
-        { id: 'km_2_A04', no: 'A-04', lantai: '1', tipe: 'Standar Bandung', harga: 1200000, fasilitas: 'Exhaust Fan, Kasur Busa, Lemari, KM Luar' },
-        { id: 'km_2_B01', no: 'B-01', lantai: '2', tipe: 'Executive Suite', harga: 1950000, fasilitas: 'AC, Smart TV, Kulkas Mini, Balkon View Bukit Dago' },
-        { id: 'km_2_B02', no: 'B-02', lantai: '2', tipe: 'Executive Suite', harga: 1950000, fasilitas: 'AC, Smart TV, Kulkas Mini, Balkon View Dago' },
-        { id: 'km_2_B03', no: 'B-03', lantai: '2', tipe: 'Deluxe Asri', harga: 1600000, fasilitas: 'AC, Kasur Springbed, Lemari 2 Pintu' },
-        { id: 'km_2_B04', no: 'B-04', lantai: '2', tipe: 'Standar Bandung', harga: 1200000, fasilitas: 'Exhaust Fan, Meja, Lemari' }
-      ]
-    },
-    {
-      kost: {
-        id: 'kost_3',
-        nama: 'Kost Puri Indah Tebet',
-        pemilik: 'Gavin Utomo',
-        kota: 'Tebet, Jakarta Selatan',
-        alamat: 'Jl. Tebet Barat Dalam VII No. 14, Tebet, Jakarta Selatan, DKI Jakarta',
-        totalKamar: 8,
-        qrisUrl: ''
-      },
-      kamar: [
-        { id: 'km_3_101', no: '101', lantai: '1', tipe: 'Executive Studio', harga: 2500000, fasilitas: 'AC Inverter, Smart TV 40", Queen Bed, Water Heater, Meja Kerja' },
-        { id: 'km_3_102', no: '102', lantai: '1', tipe: 'Executive Studio', harga: 2500000, fasilitas: 'AC Inverter, Smart TV 40", Queen Bed, Water Heater, Meja Kerja' },
-        { id: 'km_3_103', no: '103', lantai: '1', tipe: 'Deluxe Room', harga: 2200000, fasilitas: 'AC Inverter, Single Bed 120, Lemari 2 Pintu, KM Dalam' },
-        { id: 'km_3_201', no: '201', lantai: '2', tipe: 'VIP Suite Tebet', harga: 2800000, fasilitas: 'AC, Kulkas 2 Pintu, Smart TV, Balkon Pribadi, Kamar Mandi Marmer' },
-        { id: 'km_3_202', no: '202', lantai: '2', tipe: 'VIP Suite Tebet', harga: 2800000, fasilitas: 'AC, Kulkas 2 Pintu, Smart TV, Balkon Pribadi, Kamar Mandi Marmer' },
-        { id: 'km_3_203', no: '203', lantai: '2', tipe: 'Deluxe Room', harga: 2200000, fasilitas: 'AC, Kasur Springbed, Meja Kerja Ergonomis' },
-        { id: 'km_3_301', no: '301', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' },
-        { id: 'km_3_302', no: '302', lantai: '3', tipe: 'Penthouse Studio', harga: 3000000, fasilitas: 'AC Central, Kitchenette, Rooftop Access, Smart TV 50"' }
-      ]
-    },
-    {
-      kost: {
-        id: 'kost_4',
-        nama: 'Kost Surya Kencana Gubeng',
-        pemilik: 'Gavin Utomo',
-        kota: 'Gubeng, Surabaya',
-        alamat: 'Jl. Dharmawangsa Barat No. 55, Airlangga, Gubeng, Surabaya, Jawa Timur',
-        totalKamar: 8,
-        qrisUrl: ''
-      },
-      kamar: [
-        { id: 'km_4_G01', no: 'G-01', lantai: '1', tipe: 'Modern Compact AC', harga: 1650000, fasilitas: 'AC Daikin 1/2 PK, Springbed, Meja Belajar, KM Dalam Shower' },
-        { id: 'km_4_G02', no: 'G-02', lantai: '1', tipe: 'Modern Compact AC', harga: 1650000, fasilitas: 'AC Daikin 1/2 PK, Springbed, Meja Belajar, KM Dalam Shower' },
-        { id: 'km_4_G03', no: 'G-03', lantai: '1', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Exhaust Fan, Meja, Lemari 2 Pintu, KM Luar Bersih' },
-        { id: 'km_4_G04', no: 'G-04', lantai: '1', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Exhaust Fan, Meja, Lemari 2 Pintu, KM Luar Bersih' },
-        { id: 'km_4_U01', no: 'U-01', lantai: '2', tipe: 'Deluxe Airlangga', harga: 1800000, fasilitas: 'AC, Kulkas Pribadi, Kasur King Size, Smart TV 32"' },
-        { id: 'km_4_U02', no: 'U-02', lantai: '2', tipe: 'Deluxe Airlangga', harga: 1800000, fasilitas: 'AC, Kulkas Pribadi, Kasur King Size, Smart TV 32"' },
-        { id: 'km_4_U03', no: 'U-03', lantai: '2', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Kipas Angin Dinding, Kasur, Meja Belajar' },
-        { id: 'km_4_U04', no: 'U-04', lantai: '2', tipe: 'Standard Surabaya', harga: 1300000, fasilitas: 'Kipas Angin Dinding, Kasur, Meja Belajar' }
-      ]
-    },
-    {
-      kost: {
-        id: 'kost_5',
-        nama: 'Kost Cendana Residence',
-        pemilik: 'Gavin Utomo',
-        kota: 'Lowokwaru, Malang',
-        alamat: 'Jl. Bendungan Sigura-gura No. 42, Lowokwaru, Kota Malang, Jawa Timur',
-        totalKamar: 8,
-        qrisUrl: ''
-      },
-      kamar: [
-        { id: 'km_5_01', no: '01', lantai: '1', tipe: 'Panorama View', harga: 1350000, fasilitas: 'Kasur Springbed Comfort, Meja Belajar Besar, Lemari 2 Pintu, KM Dalam' },
-        { id: 'km_5_02', no: '02', lantai: '1', tipe: 'Panorama View', harga: 1350000, fasilitas: 'Kasur Springbed Comfort, Meja Belajar Besar, Lemari 2 Pintu, KM Dalam' },
-        { id: 'km_5_03', no: '03', lantai: '1', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Busa Tebal, Meja, Lemari, KM Luar Bersih' },
-        { id: 'km_5_04', no: '04', lantai: '1', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Busa Tebal, Meja, Lemari, KM Luar Bersih' },
-        { id: 'km_5_05', no: '05', lantai: '2', tipe: 'Balkon Gunung', harga: 1450000, fasilitas: 'Kasur Queen, Balkon Hadap Gunung Panderman, Meja Belajar, KM Dalam' },
-        { id: 'km_5_06', no: '06', lantai: '2', tipe: 'Balkon Gunung', harga: 1450000, fasilitas: 'Kasur Queen, Balkon Hadap Gunung Panderman, Meja Belajar, KM Dalam' },
-        { id: 'km_5_07', no: '07', lantai: '2', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Springbed, Meja Kayu Pinus, Lemari' },
-        { id: 'km_5_08', no: '08', lantai: '2', tipe: 'Standard Sejuk', harga: 1150000, fasilitas: 'Kasur Springbed, Meja Kayu Pinus, Lemari' }
-      ]
-    }
-  ];
-
-  const properties = branches.map(b => ({
-    id: b.kost.id,
-    nama: b.kost.nama,
-    kota: b.kost.kota,
-    alamat: b.kost.alamat,
-    pemilik: b.kost.pemilik,
-    totalKamar: b.kost.totalKamar
-  }));
-
-  const propertiesData = {};
-  branches.forEach(b => {
-    propertiesData[b.kost.id] = {
-      kost: { ...b.kost },
-      kamar: [...b.kamar],
-      penghuni: [],
-      pembayaran: [],
-      pengeluaran: [],
-      keluhan: []
-    };
-  });
-
-  const defaultKost = { ...branches[0].kost };
-  return { properties, propertiesData, defaultKost };
+  return generateInitialMultiKostData();
 }
 
-// ── STATE (5 CABANG AKTIF, BERSIH DARI DATA DUMMY PENGHUNI) ──────
+// ── STATE (5 CABANG AKTIF, DATABASE TERPISAH PER CABANG) ─────────
 const _initCleanState = getCleanInitialState();
 let S = {
-  penghuni:   [],
-  kamar:      [..._initCleanState.propertiesData['kost_1'].kamar],
-  pembayaran: [],
-  pengeluaran:[], // [{id, tanggal, kategori, jumlah, keterangan, buktiNota, createdBy}]
-  keluhan:    [], // [{id, penghuniId, kamar, judul, kategori, deskripsi, foto, status, responManager, tglLapor, tglSelesai}]
+  penghuni:   [...(_initCleanState.propertiesData['kost_1']?.penghuni || [])],
+  kamar:      [...(_initCleanState.propertiesData['kost_1']?.kamar || [])],
+  pembayaran: [...(_initCleanState.propertiesData['kost_1']?.pembayaran || [])],
+  pengeluaran:[...(_initCleanState.propertiesData['kost_1']?.pengeluaran || [])],
+  keluhan:    [...(_initCleanState.propertiesData['kost_1']?.keluhan || [])],
   akun:       [],
   kost:       { ..._initCleanState.defaultKost },
   activeKostId: 'kost_1',
@@ -850,56 +761,51 @@ function generateInitialMultiKostData() {
 
 
   const properties = [
-    { id: 'kost_1', nama: kost1.nama, kota: kost1.kota, alamat: kost1.alamat, hp: kost1.hp, pemilik: kost1.pemilik, totalKamar: kost1.totalKamar },
-    { id: 'kost_2', nama: kost2.nama, kota: kost2.kota, alamat: kost2.alamat, hp: kost2.hp, pemilik: kost2.pemilik, totalKamar: kost2.totalKamar },
-    { id: 'kost_3', nama: kost3.nama, kota: kost3.kota, alamat: kost3.alamat, hp: kost3.hp, pemilik: kost3.pemilik, totalKamar: kost3.totalKamar },
-    { id: 'kost_4', nama: kost4.nama, kota: kost4.kota, alamat: kost4.alamat, hp: kost4.hp, pemilik: kost4.pemilik, totalKamar: kost4.totalKamar },
-    { id: 'kost_5', nama: kost5.nama, kota: kost5.kota, alamat: kost5.alamat, hp: kost5.hp, pemilik: kost5.pemilik, totalKamar: kost5.totalKamar }
+    { id: 'kost_1', nama: kost1.nama, kota: kost1.kota, alamat: kost1.alamat, pemilik: kost1.pemilik, totalKamar: kost1.totalKamar },
+    { id: 'kost_2', nama: kost2.nama, kota: kost2.kota, alamat: kost2.alamat, pemilik: kost2.pemilik, totalKamar: kost2.totalKamar },
+    { id: 'kost_3', nama: kost3.nama, kota: kost3.kota, alamat: kost3.alamat, pemilik: kost3.pemilik, totalKamar: kost3.totalKamar },
+    { id: 'kost_4', nama: kost4.nama, kota: kost4.kota, alamat: kost4.alamat, pemilik: kost4.pemilik, totalKamar: kost4.totalKamar },
+    { id: 'kost_5', nama: kost5.nama, kota: kost5.kota, alamat: kost5.alamat, pemilik: kost5.pemilik, totalKamar: kost5.totalKamar }
   ];
 
+  // Pastikan setiap record memiliki kostId dan branchId yang konsisten
+  const tagBranch = (arr, bid) => (arr || []).map(x => ({ ...x, kostId: bid, branchId: bid }));
+
   const propertiesData = {
-    kost_1: { kost: kost1, kamar: kamar1, penghuni: penghuni1, pembayaran: pembayaran1, pengeluaran: pengeluaran1, keluhan: keluhan1 },
-    kost_2: { kost: kost2, kamar: kamar2, penghuni: penghuni2, pembayaran: pembayaran2, pengeluaran: pengeluaran2, keluhan: keluhan2 },
-    kost_3: { kost: kost3, kamar: kamar3, penghuni: penghuni3, pembayaran: pembayaran3, pengeluaran: pengeluaran3, keluhan: keluhan3 },
-    kost_4: { kost: kost4, kamar: kamar4, penghuni: penghuni4, pembayaran: pembayaran4, pengeluaran: pengeluaran4, keluhan: keluhan4 },
-    kost_5: { kost: kost5, kamar: kamar5, penghuni: penghuni5, pembayaran: pembayaran5, pengeluaran: pengeluaran5, keluhan: keluhan5 }
+    kost_1: { kost: kost1, kamar: tagBranch(kamar1, 'kost_1'), penghuni: tagBranch(penghuni1, 'kost_1'), pembayaran: tagBranch(pembayaran1, 'kost_1'), pengeluaran: tagBranch(pengeluaran1, 'kost_1'), keluhan: tagBranch(keluhan1, 'kost_1') },
+    kost_2: { kost: kost2, kamar: tagBranch(kamar2, 'kost_2'), penghuni: tagBranch(penghuni2, 'kost_2'), pembayaran: tagBranch(pembayaran2, 'kost_2'), pengeluaran: tagBranch(pengeluaran2, 'kost_2'), keluhan: tagBranch(keluhan2, 'kost_2') },
+    kost_3: { kost: kost3, kamar: tagBranch(kamar3, 'kost_3'), penghuni: tagBranch(penghuni3, 'kost_3'), pembayaran: tagBranch(pembayaran3, 'kost_3'), pengeluaran: tagBranch(pengeluaran3, 'kost_3'), keluhan: tagBranch(keluhan3, 'kost_3') },
+    kost_4: { kost: kost4, kamar: tagBranch(kamar4, 'kost_4'), penghuni: tagBranch(penghuni4, 'kost_4'), pembayaran: tagBranch(pembayaran4, 'kost_4'), pengeluaran: tagBranch(pengeluaran4, 'kost_4'), keluhan: tagBranch(keluhan4, 'kost_4') },
+    kost_5: { kost: kost5, kamar: tagBranch(kamar5, 'kost_5'), penghuni: tagBranch(penghuni5, 'kost_5'), pembayaran: tagBranch(pembayaran5, 'kost_5'), pengeluaran: tagBranch(pengeluaran5, 'kost_5'), keluhan: tagBranch(keluhan5, 'kost_5') }
   };
 
-  return { properties, propertiesData };
+  const defaultKost = { ...kost1 };
+  return { properties, propertiesData, defaultKost };
 }
 
-// ── INITIAL DATA INITIALIZER (DEFAULT: BERSIH DENGAN 5 CABANG AKTIF) ──────────────
+// ── INITIAL DATA INITIALIZER (5 CABANG AKTIF DENGAN DATABASE TERPISAH) ──────────────
 function initDefaultMultiKostData(force = false) {
-  if (!force && S.propertiesData && Object.keys(S.propertiesData).length >= 5 && S.properties && S.properties.length >= 5) return;
+  const initData = generateInitialMultiKostData();
+  S.properties = initData.properties;
+  S.propertiesData = initData.propertiesData;
+  S.activeKostId = S.activeKostId || 'kost_1';
 
-  // Cek apakah ada data yang tersimpan sebelumnya di localStorage
-  if (!force && typeof localStorage !== 'undefined') {
-    const saved = localStorage.getItem('sk3_properties_data');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length >= 5) {
-          S.propertiesData = parsed;
-          const savedProps = localStorage.getItem('sk3_properties');
-          if (savedProps) {
-            try { S.properties = JSON.parse(savedProps); } catch {}
-          }
-          if (S.properties && S.properties.length >= 5) return;
-        }
-      } catch {}
-    }
+  // Simpan setiap cabang ke database independen masing-masing (BranchDB)
+  if (typeof BranchDB !== 'undefined') {
+    Object.keys(S.propertiesData).forEach(bid => {
+      BranchDB.saveBranch(bid, S.propertiesData[bid]);
+    });
   }
 
-  const clean = getCleanInitialState();
-  S.properties = clean.properties;
-  S.propertiesData = clean.propertiesData;
-  S.activeKostId = 'kost_1';
-  S.kost = { ...clean.defaultKost };
-  S.kamar = [...clean.propertiesData['kost_1'].kamar];
-  S.penghuni = [];
-  S.pembayaran = [];
-  S.pengeluaran = [];
-  S.keluhan = [];
+  const cur = S.propertiesData[S.activeKostId] || S.propertiesData['kost_1'];
+  if (cur) {
+    S.kost = { ...cur.kost };
+    S.kamar = [...(cur.kamar || [])];
+    S.penghuni = [...(cur.penghuni || [])];
+    S.pembayaran = [...(cur.pembayaran || [])];
+    S.pengeluaran = [...(cur.pengeluaran || [])];
+    S.keluhan = [...(cur.keluhan || [])];
+  }
 
   LS.save();
 }
@@ -909,6 +815,11 @@ function seedDemoDataForTesting() {
   S.properties = initData.properties;
   S.propertiesData = initData.propertiesData;
   S.activeKostId = 'kost_1';
+  if (typeof BranchDB !== 'undefined') {
+    Object.keys(S.propertiesData).forEach(bid => {
+      BranchDB.saveBranch(bid, S.propertiesData[bid]);
+    });
+  }
   const cur = S.propertiesData['kost_1'];
   if (cur) {
     S.kost = { ...cur.kost };
@@ -941,9 +852,9 @@ function switchKost(targetKostId) {
     return;
   }
 
-  // 1. Simpan data aktif saat ini ke bucket cabangnya
+  // 1. Simpan data aktif saat ini ke database cabangnya
   if (S.activeKostId && S.propertiesData[S.activeKostId]) {
-    S.propertiesData[S.activeKostId] = {
+    const curData = {
       kost: { ...(S.kost || {}) },
       penghuni: [...(S.penghuni || [])],
       kamar: [...(S.kamar || [])],
@@ -951,17 +862,24 @@ function switchKost(targetKostId) {
       pengeluaran: [...(S.pengeluaran || [])],
       keluhan: [...(S.keluhan || [])]
     };
+    S.propertiesData[S.activeKostId] = curData;
+    if (typeof BranchDB !== 'undefined') {
+      BranchDB.saveBranch(S.activeKostId, curData);
+    }
   }
 
-  // 2. Muat cabang sasaran
+  // 2. Muat cabang sasaran dari database mandirinya
   S.activeKostId = targetKostId;
-  const target = S.propertiesData[targetKostId];
-  S.kost = { ...(target.kost || {}) };
-  S.penghuni = [...(target.penghuni || [])];
-  S.kamar = [...(target.kamar || [])];
-  S.pembayaran = [...(target.pembayaran || [])];
-  S.pengeluaran = [...(target.pengeluaran || [])];
-  S.keluhan = [...(target.keluhan || [])];
+  const target = (typeof BranchDB !== 'undefined' ? BranchDB.getBranch(targetKostId) : null) || S.propertiesData[targetKostId];
+  if (target) {
+    S.propertiesData[targetKostId] = target;
+    S.kost = { ...(target.kost || {}) };
+    S.penghuni = [...(target.penghuni || [])];
+    S.kamar = [...(target.kamar || [])];
+    S.pembayaran = [...(target.pembayaran || [])];
+    S.pengeluaran = [...(target.pengeluaran || [])];
+    S.keluhan = [...(target.keluhan || [])];
+  }
 
   // 3. Simpan state terisolasi
   LS.save();
@@ -980,7 +898,7 @@ function switchKost(targetKostId) {
   const activePage = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
   navigateTo(activePage);
 
-  toast(`Beralih ke ${S.kost.nama} (${target.kost?.kota || (target.kost?.alamat ? target.kost.alamat.split(',')[0] : 'Indonesia')})`, 'success');
+  toast(`Beralih ke ${S.kost.nama} (${target?.kost?.kota || (target?.kost?.alamat ? target.kost.alamat.split(',')[0] : 'Indonesia')})`, 'success');
 }
 window.switchKost = switchKost;
 
@@ -1187,6 +1105,7 @@ function renderSettingsCabangList() {
     const aktifPenghuni = (data.penghuni || []).filter(x => x.status === 'aktif');
     const terisiCount = [...new Set(aktifPenghuni.map(x => x.kamar).filter(Boolean))].length;
     const totalKamar = data.kost?.totalKamar || (data.kamar ? data.kamar.length : 8);
+    const totalPenghuni = (data.penghuni || []).length;
 
     return `
       <div class="panel" style="padding:16px 20px;border-radius:12px;background:var(--surface-2);border:${isActive ? '2px solid var(--accent)' : '1px solid var(--border)'}">
@@ -1199,8 +1118,11 @@ function renderSettingsCabangList() {
                 ${isActive ? '<span class="badge badge-accent" style="margin-left:6px;font-size:0.7rem">Sedang Aktif</span>' : ''}
               </div>
               <div style="font-size:0.78rem;color:var(--text-3);margin-top:2px">${esc(data.kost.alamat)}</div>
-              <div style="font-size:0.74rem;color:var(--text-2);margin-top:2px">
-                Okupansi: <strong>${terisiCount}/${totalKamar} kamar terisi</strong>
+              <div style="font-size:0.74rem;color:var(--text-2);margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span>Okupansi: <strong>${terisiCount}/${totalKamar} kamar terisi</strong></span>
+                <span>·</span>
+                <span><strong>${totalPenghuni} Penghuni</strong></span>
+                <span class="badge" style="background:rgba(16,185,129,0.12);color:var(--green);font-size:0.68rem;padding:1px 6px">Database Mandiri</span>
               </div>
             </div>
           </div>
@@ -1217,11 +1139,167 @@ function renderSettingsCabangList() {
 }
 window.renderSettingsCabangList = renderSettingsCabangList;
 
+// ── BRANCH DATABASE SYSTEM (DATABASE TERPISAH PER CABANG) ─────────
+const BranchDB = {
+  getPrefix(branchId) {
+    return `sk3_branch_${branchId || 'kost_1'}_`;
+  },
+
+  getPenghuni(branchId) {
+    try {
+      const raw = localStorage.getItem(this.getPrefix(branchId) + 'penghuni');
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) { return null; }
+  },
+
+  savePenghuni(branchId, list) {
+    try {
+      localStorage.setItem(this.getPrefix(branchId) + 'penghuni', JSON.stringify(list || []));
+      if (S.propertiesData && S.propertiesData[branchId]) {
+        S.propertiesData[branchId].penghuni = [...(list || [])];
+      }
+      if (S.activeKostId === branchId) {
+        S.penghuni = [...(list || [])];
+        localStorage.setItem('sk3_penghuni', JSON.stringify(S.penghuni));
+      }
+    } catch (e) { console.warn('BranchDB savePenghuni warning:', e); }
+  },
+
+  getKamar(branchId) {
+    try {
+      const raw = localStorage.getItem(this.getPrefix(branchId) + 'kamar');
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) { return null; }
+  },
+
+  saveKamar(branchId, list) {
+    try {
+      localStorage.setItem(this.getPrefix(branchId) + 'kamar', JSON.stringify(list || []));
+      if (S.propertiesData && S.propertiesData[branchId]) {
+        S.propertiesData[branchId].kamar = [...(list || [])];
+      }
+      if (S.activeKostId === branchId) {
+        S.kamar = [...(list || [])];
+        localStorage.setItem('sk3_kamar', JSON.stringify(S.kamar));
+      }
+    } catch (e) { console.warn('BranchDB saveKamar warning:', e); }
+  },
+
+  getPembayaran(branchId) {
+    try {
+      const raw = localStorage.getItem(this.getPrefix(branchId) + 'pembayaran');
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) { return null; }
+  },
+
+  savePembayaran(branchId, list) {
+    try {
+      localStorage.setItem(this.getPrefix(branchId) + 'pembayaran', JSON.stringify(list || []));
+      if (S.propertiesData && S.propertiesData[branchId]) {
+        S.propertiesData[branchId].pembayaran = [...(list || [])];
+      }
+      if (S.activeKostId === branchId) {
+        S.pembayaran = [...(list || [])];
+        localStorage.setItem('sk3_pembayaran', JSON.stringify(S.pembayaran));
+      }
+    } catch (e) { console.warn('BranchDB savePembayaran warning:', e); }
+  },
+
+  getPengeluaran(branchId) {
+    try {
+      const raw = localStorage.getItem(this.getPrefix(branchId) + 'pengeluaran');
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) { return null; }
+  },
+
+  savePengeluaran(branchId, list) {
+    try {
+      localStorage.setItem(this.getPrefix(branchId) + 'pengeluaran', JSON.stringify(list || []));
+      if (S.propertiesData && S.propertiesData[branchId]) {
+        S.propertiesData[branchId].pengeluaran = [...(list || [])];
+      }
+      if (S.activeKostId === branchId) {
+        S.pengeluaran = [...(list || [])];
+        localStorage.setItem('sk3_pengeluaran', JSON.stringify(S.pengeluaran));
+      }
+    } catch (e) { console.warn('BranchDB savePengeluaran warning:', e); }
+  },
+
+  getKeluhan(branchId) {
+    try {
+      const raw = localStorage.getItem(this.getPrefix(branchId) + 'keluhan');
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) { return null; }
+  },
+
+  saveKeluhan(branchId, list) {
+    try {
+      localStorage.setItem(this.getPrefix(branchId) + 'keluhan', JSON.stringify(list || []));
+      if (S.propertiesData && S.propertiesData[branchId]) {
+        S.propertiesData[branchId].keluhan = [...(list || [])];
+      }
+      if (S.activeKostId === branchId) {
+        S.keluhan = [...(list || [])];
+        localStorage.setItem('sk3_keluhan', JSON.stringify(S.keluhan));
+      }
+    } catch (e) { console.warn('BranchDB saveKeluhan warning:', e); }
+  },
+
+  getKost(branchId) {
+    try {
+      const raw = localStorage.getItem(this.getPrefix(branchId) + 'kost');
+      return raw ? JSON.parse(raw) : null;
+    } catch (_) { return null; }
+  },
+
+  saveKost(branchId, data) {
+    try {
+      localStorage.setItem(this.getPrefix(branchId) + 'kost', JSON.stringify(data || {}));
+      if (S.propertiesData && S.propertiesData[branchId]) {
+        S.propertiesData[branchId].kost = { ...(data || {}) };
+      }
+      if (S.activeKostId === branchId) {
+        S.kost = { ...(data || {}) };
+        localStorage.setItem('sk3_kost', JSON.stringify(S.kost));
+      }
+    } catch (e) { console.warn('BranchDB saveKost warning:', e); }
+  },
+
+  getBranch(branchId) {
+    const p = this.getPenghuni(branchId);
+    const k = this.getKamar(branchId);
+    const pb = this.getPembayaran(branchId);
+    const exp = this.getPengeluaran(branchId);
+    const kl = this.getKeluhan(branchId);
+    const kost = this.getKost(branchId);
+    if (!p && !k && !kost) return null;
+    return {
+      kost: kost || {},
+      penghuni: p || [],
+      kamar: k || [],
+      pembayaran: pb || [],
+      pengeluaran: exp || [],
+      keluhan: kl || []
+    };
+  },
+
+  saveBranch(branchId, data) {
+    if (!branchId || !data) return;
+    if (data.kost) this.saveKost(branchId, data.kost);
+    if (data.penghuni) this.savePenghuni(branchId, data.penghuni);
+    if (data.kamar) this.saveKamar(branchId, data.kamar);
+    if (data.pembayaran) this.savePembayaran(branchId, data.pembayaran);
+    if (data.pengeluaran) this.savePengeluaran(branchId, data.pengeluaran);
+    if (data.keluhan) this.saveKeluhan(branchId, data.keluhan);
+  }
+};
+window.BranchDB = BranchDB;
+
 // ── STORAGE ──────────────────────────────────────────────────
 const LS = {
   save() {
     try {
-      // Sinkronkan data cabang yang sedang aktif ke dalam bucket propertiesData
+      // 1. Sinkronkan data cabang yang sedang aktif ke dalam bucket propertiesData
       if (S.activeKostId && S.propertiesData) {
         S.propertiesData[S.activeKostId] = {
           kost: { ...S.kost },
@@ -1233,7 +1311,7 @@ const LS = {
         };
       }
 
-      // Sinkronkan ke daftar properties (5 cabang)
+      // 2. Sinkronkan ke daftar properties (5 cabang)
       if (Array.isArray(S.properties) && S.activeKostId && S.kost) {
         const prop = S.properties.find(p => p.id === S.activeKostId);
         if (prop) {
@@ -1243,6 +1321,16 @@ const LS = {
           prop.totalKamar = S.kost.totalKamar || prop.totalKamar;
           prop.kota = S.kost.kota || (S.kost.alamat ? S.kost.alamat.split(',')[0].trim() : prop.kota);
         }
+      }
+
+      // 3. Simpan setiap cabang ke database independen masing-masing (BranchDB)
+      if (S.propertiesData) {
+        Object.keys(S.propertiesData).forEach(bid => {
+          const b = S.propertiesData[bid];
+          if (b) {
+            BranchDB.saveBranch(bid, b);
+          }
+        });
       }
 
       localStorage.setItem('sk3_properties_data', JSON.stringify(S.propertiesData));
@@ -1272,100 +1360,74 @@ const LS = {
         S.activeKostId = savedActiveId || 'kost_1';
         const rawProps = localStorage.getItem('sk3_properties');
         if (rawProps) S.properties = JSON.parse(rawProps);
-
-        const branchKeys = Object.keys(S.propertiesData || {});
-        if (branchKeys.length === 0) {
-          initDefaultMultiKostData(true);
-        } else {
-          // Rehydrate cabang yang hilang agar tetap lengkap 5 cabang
-          if (branchKeys.length < 5 || !S.properties || S.properties.length < 5) {
-            const clean = getCleanInitialState();
-            if (!S.properties || S.properties.length < 5) {
-              S.properties = clean.properties;
-            }
-            if (!S.propertiesData) S.propertiesData = {};
-            clean.properties.forEach(p => {
-              if (!S.propertiesData[p.id]) {
-                S.propertiesData[p.id] = clean.propertiesData[p.id];
-              } else if (!S.propertiesData[p.id].kamar || S.propertiesData[p.id].kamar.length === 0) {
-                S.propertiesData[p.id].kamar = clean.propertiesData[p.id].kamar;
-              }
-            });
-            LS.save();
-          }
-
-          if (!S.propertiesData[S.activeKostId]) {
-            S.activeKostId = Object.keys(S.propertiesData)[0] || 'kost_1';
-          }
-          const cur = S.propertiesData[S.activeKostId] || S.propertiesData['kost_1'];
-          if (cur) {
-            S.kost = { ...cur.kost };
-
-            // Muat override sk3_kost mandiri jika ada
-            if (rawKost) {
-              try {
-                const parsedKost = JSON.parse(rawKost);
-                if (parsedKost && parsedKost.nama) {
-                  S.kost = { ...S.kost, ...parsedKost };
-                  if (S.propertiesData[S.activeKostId]) {
-                    S.propertiesData[S.activeKostId].kost = { ...S.kost };
-                  }
-                }
-              } catch {}
-            }
-
-            S.penghuni = cur.penghuni || [];
-            S.kamar = cur.kamar || [];
-            S.pembayaran = cur.pembayaran || [];
-            S.pengeluaran = cur.pengeluaran || [];
-            S.keluhan = cur.keluhan || [];
-          }
-        }
       } catch (e) {
-        console.warn('Load multi-kost failed, fallback to init:', e);
-        initDefaultMultiKostData(true);
+        console.warn('Load multi-kost parse failed:', e);
       }
-    } else {
-      initDefaultMultiKostData(true);
     }
 
-    // Auto-clean residu dummy tenants pada localStorage pengguna asli jika belum dibersihkan (di luar mode testing)
-    let isTestingEnv = false;
-    try {
-      if (typeof window !== 'undefined') {
-        if (window.__TEST_MODE__) {
-          isTestingEnv = true;
-        } else if (window.location && window.location.href && window.location.href.includes('test_runner.html')) {
-          isTestingEnv = true;
-        } else if (window.parent && window.parent !== window) {
-          try {
-            if (window.parent.location && window.parent.location.href && window.parent.location.href.includes('test_runner.html')) {
-              isTestingEnv = true;
-            }
-          } catch (_) {
-            // Protected against cross-origin iframe security restrictions
-          }
+    const branchKeys = Object.keys(S.propertiesData || {});
+    if (branchKeys.length < 5 || !S.properties || S.properties.length < 5) {
+      initDefaultMultiKostData(true);
+    } else {
+      // Rehidrasi setiap cabang dari database terisolasinya masing-masing jika ada
+      branchKeys.forEach(bid => {
+        const dbBranch = BranchDB.getBranch(bid);
+        if (dbBranch && dbBranch.penghuni && dbBranch.penghuni.length > 0) {
+          S.propertiesData[bid] = dbBranch;
+        } else if (S.propertiesData[bid]) {
+          BranchDB.saveBranch(bid, S.propertiesData[bid]);
         }
+      });
+    }
+
+    // Pastikan setiap cabang memiliki data terpisah & terisi penghuni sesuai cabangnya
+    const initialSeed = generateInitialMultiKostData();
+    Object.keys(initialSeed.propertiesData).forEach(bid => {
+      const dbBranch = BranchDB.getBranch(bid);
+      const curBranch = (dbBranch && dbBranch.penghuni && dbBranch.penghuni.length > 0) ? dbBranch : S.propertiesData[bid];
+      if (!curBranch || !curBranch.penghuni || curBranch.penghuni.length === 0) {
+        const seedB = initialSeed.propertiesData[bid];
+        if (seedB) {
+          if (!S.propertiesData[bid]) S.propertiesData[bid] = {};
+          S.propertiesData[bid].kost = S.propertiesData[bid].kost || seedB.kost;
+          S.propertiesData[bid].kamar = (S.propertiesData[bid].kamar && S.propertiesData[bid].kamar.length > 0) ? S.propertiesData[bid].kamar : seedB.kamar;
+          S.propertiesData[bid].penghuni = seedB.penghuni;
+          S.propertiesData[bid].pembayaran = (S.propertiesData[bid].pembayaran && S.propertiesData[bid].pembayaran.length > 0) ? S.propertiesData[bid].pembayaran : seedB.pembayaran;
+          S.propertiesData[bid].pengeluaran = (S.propertiesData[bid].pengeluaran && S.propertiesData[bid].pengeluaran.length > 0) ? S.propertiesData[bid].pengeluaran : seedB.pengeluaran;
+          S.propertiesData[bid].keluhan = S.propertiesData[bid].keluhan || seedB.keluhan;
+          BranchDB.saveBranch(bid, S.propertiesData[bid]);
+        }
+      } else {
+        S.propertiesData[bid] = curBranch;
+        BranchDB.saveBranch(bid, curBranch);
       }
-    } catch (_) {}
-    const hasOldMockTenants = (S.penghuni || []).some(p => ['p_dimas', 'p_anisa', 'p_kevin', 'p_sarah', 'p_fajar', 'p_rian'].includes(p.id));
-    if (hasOldMockTenants && !isTestingEnv && !localStorage.getItem('sk3_mock_cleaned_v4')) {
-      S.penghuni = [];
-      S.pembayaran = [];
-      S.pengeluaran = [];
-      S.keluhan = [];
-      if (S.propertiesData) {
-        Object.values(S.propertiesData).forEach(b => {
-          if (b) {
-            b.penghuni = [];
-            b.pembayaran = [];
-            b.pengeluaran = [];
-            b.keluhan = [];
+    });
+
+    if (!S.propertiesData[S.activeKostId]) {
+      S.activeKostId = Object.keys(S.propertiesData)[0] || 'kost_1';
+    }
+    const cur = S.propertiesData[S.activeKostId] || S.propertiesData['kost_1'];
+    if (cur) {
+      S.kost = { ...cur.kost };
+
+      // Muat override sk3_kost mandiri jika ada
+      if (rawKost) {
+        try {
+          const parsedKost = JSON.parse(rawKost);
+          if (parsedKost && parsedKost.nama) {
+            S.kost = { ...S.kost, ...parsedKost };
+            if (S.propertiesData[S.activeKostId]) {
+              S.propertiesData[S.activeKostId].kost = { ...S.kost };
+            }
           }
-        });
+        } catch {}
       }
-      localStorage.setItem('sk3_mock_cleaned_v4', '1');
-      LS.save();
+
+      S.penghuni = cur.penghuni || [];
+      S.kamar = cur.kamar || [];
+      S.pembayaran = cur.pembayaran || [];
+      S.pengeluaran = cur.pengeluaran || [];
+      S.keluhan = cur.keluhan || [];
     }
 
     // Bersihkan residu no telp dan rekening bank seluruh cabang kost
@@ -1694,6 +1756,7 @@ function showScreen(name) {
 function mapPenghuniToDb(p) {
   return {
     id: p.id,
+    kost_id: p.kostId || p.branchId || S.activeKostId || 'kost_1',
     nama: p.nama || '',
     hp: p.hp || '',
     kamar: p.kamar || '',
@@ -1703,7 +1766,6 @@ function mapPenghuniToDb(p) {
     tempat_lahir: p.tempatLahir || '',
     tgl_lahir: p.tglLahir || null,
     alamat_ktp: p.alamatKtp || '',
-    email: p.email || '',
     pekerjaan: p.pekerjaan || '',
     lantai: p.lantai || '',
     tgl_keluar: p.tglKeluar || null,
@@ -1732,6 +1794,8 @@ function mapPenghuniToDb(p) {
 function mapPenghuniFromDb(r) {
   return {
     id: r.id,
+    kostId: r.kost_id || S.activeKostId || 'kost_1',
+    branchId: r.kost_id || S.activeKostId || 'kost_1',
     nama: r.nama || '',
     hp: r.hp || '',
     kamar: r.kamar || '',
@@ -1741,7 +1805,6 @@ function mapPenghuniFromDb(r) {
     tempatLahir: r.tempat_lahir || '',
     tglLahir: r.tgl_lahir || '',
     alamatKtp: r.alamat_ktp || '',
-    email: r.email || '',
     pekerjaan: r.pekerjaan || '',
     lantai: r.lantai || '',
     tglKeluar: r.tgl_keluar || '',
@@ -1771,6 +1834,7 @@ function mapPenghuniFromDb(r) {
 function mapBayarToDb(b) {
   return {
     id: b.id,
+    kost_id: b.kostId || b.branchId || S.activeKostId || 'kost_1',
     penghuni_id: b.penghuniId,
     bulan: b.bulan,
     jumlah: Number(b.jumlah) || 0,
@@ -1787,6 +1851,8 @@ function mapBayarToDb(b) {
 function mapBayarFromDb(r) {
   return {
     id: r.id,
+    kostId: r.kost_id || S.activeKostId || 'kost_1',
+    branchId: r.kost_id || S.activeKostId || 'kost_1',
     penghuniId: r.penghuni_id,
     bulan: r.bulan,
     jumlah: Number(r.jumlah) || 0,
@@ -1905,11 +1971,24 @@ const DB = {
   async fetchData(renderNow = true) {
     if (!sbClient) return;
     try {
-      // 1. Penghuni (Cloud-First: sinkron langsung dari web database)
+      // 1. Penghuni (Cloud-First: sinkron per cabang dari database web)
       const { data: pList, error: pErr } = await sbClient.from('penghuni').select('*').order('created_at', { ascending: false });
       if (!pErr && Array.isArray(pList)) {
         if (pList.length > 0 || (window.self === window.top)) {
-          S.penghuni = pList.map(mapPenghuniFromDb);
+          pList.forEach(raw => {
+            const p = mapPenghuniFromDb(raw);
+            const bId = raw.kost_id || S.activeKostId || 'kost_1';
+            if (S.propertiesData && S.propertiesData[bId]) {
+              const list = S.propertiesData[bId].penghuni = S.propertiesData[bId].penghuni || [];
+              const idx = list.findIndex(x => x.id === p.id);
+              if (idx !== -1) list[idx] = p;
+              else list.push(p);
+              if (typeof BranchDB !== 'undefined') BranchDB.savePenghuni(bId, list);
+            }
+          });
+          if (S.propertiesData && S.propertiesData[S.activeKostId]) {
+            S.penghuni = S.propertiesData[S.activeKostId].penghuni;
+          }
         }
       }
 
@@ -1917,7 +1996,19 @@ const DB = {
       const { data: kList, error: kErr } = await sbClient.from('kamar').select('*').order('no', { ascending: true });
       if (!kErr && Array.isArray(kList)) {
         if (kList.length > 0 || (window.self === window.top)) {
-          S.kamar = kList;
+          kList.forEach(raw => {
+            const bId = raw.kost_id || S.activeKostId || 'kost_1';
+            if (S.propertiesData && S.propertiesData[bId]) {
+              const list = S.propertiesData[bId].kamar = S.propertiesData[bId].kamar || [];
+              const idx = list.findIndex(x => x.id === raw.id || x.no === raw.no);
+              if (idx !== -1) list[idx] = raw;
+              else list.push(raw);
+              if (typeof BranchDB !== 'undefined') BranchDB.saveKamar(bId, list);
+            }
+          });
+          if (S.propertiesData && S.propertiesData[S.activeKostId]) {
+            S.kamar = S.propertiesData[S.activeKostId].kamar;
+          }
         }
       }
 
@@ -1925,7 +2016,20 @@ const DB = {
       const { data: bList, error: bErr } = await sbClient.from('pembayaran').select('*');
       if (!bErr && Array.isArray(bList)) {
         if (bList.length > 0 || (window.self === window.top)) {
-          S.pembayaran = bList.map(mapBayarFromDb);
+          bList.forEach(raw => {
+            const pb = mapBayarFromDb(raw);
+            const bId = raw.kost_id || S.activeKostId || 'kost_1';
+            if (S.propertiesData && S.propertiesData[bId]) {
+              const list = S.propertiesData[bId].pembayaran = S.propertiesData[bId].pembayaran || [];
+              const idx = list.findIndex(x => x.id === pb.id);
+              if (idx !== -1) list[idx] = pb;
+              else list.push(pb);
+              if (typeof BranchDB !== 'undefined') BranchDB.savePembayaran(bId, list);
+            }
+          });
+          if (S.propertiesData && S.propertiesData[S.activeKostId]) {
+            S.pembayaran = S.propertiesData[S.activeKostId].pembayaran;
+          }
         }
       }
 
@@ -1933,20 +2037,35 @@ const DB = {
       const { data: expList, error: expErr } = await sbClient.from('pengeluaran').select('*').order('tanggal', { ascending: false });
       if (!expErr && Array.isArray(expList)) {
         if (expList.length > 0 || (window.self === window.top)) {
-          S.pengeluaran = expList.map(x => ({
-            id: x.id,
-            tanggal: x.tanggal,
-            kategori: x.kategori,
-            jumlah: Number(x.jumlah) || 0,
-            keterangan: x.keterangan || '',
-            buktiNota: x.bukti_nota,
-            createdBy: x.created_by
-          }));
+          expList.forEach(x => {
+            const exp = {
+              id: x.id,
+              tanggal: x.tanggal,
+              kategori: x.kategori,
+              jumlah: Number(x.jumlah) || 0,
+              keterangan: x.keterangan || '',
+              buktiNota: x.bukti_nota,
+              createdBy: x.created_by,
+              kostId: x.kost_id || S.activeKostId || 'kost_1',
+              branchId: x.kost_id || S.activeKostId || 'kost_1'
+            };
+            const bId = exp.kostId;
+            if (S.propertiesData && S.propertiesData[bId]) {
+              const list = S.propertiesData[bId].pengeluaran = S.propertiesData[bId].pengeluaran || [];
+              const idx = list.findIndex(item => item.id === exp.id);
+              if (idx !== -1) list[idx] = exp;
+              else list.push(exp);
+              if (typeof BranchDB !== 'undefined') BranchDB.savePengeluaran(bId, list);
+            }
+          });
+          if (S.propertiesData && S.propertiesData[S.activeKostId]) {
+            S.pengeluaran = S.propertiesData[S.activeKostId].pengeluaran;
+          }
         }
       }
 
       // 5. Kost Pengaturan
-      const { data: kRow, error: kostErr } = await sbClient.from('kost_pengaturan').select('*').limit(1).maybeSingle();
+      const { data: kRow, error: kostErr } = await sbClient.from('kost_pengaturan').select('*').eq('id', S.activeKostId).maybeSingle();
       if (!kostErr && kRow) {
         S.kost = {
           ...S.kost,
@@ -1996,6 +2115,7 @@ const DB = {
     if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
     try {
       const payload = mapPenghuniToDb(d);
+      payload.kost_id = d.kostId || d.branchId || S.activeKostId || 'kost_1';
       const { data, error } = await sbClient.from('penghuni').upsert(payload);
       if (error) {
         DB.handleSupabaseError(error, 'Penghuni');
@@ -2032,7 +2152,8 @@ const DB = {
         lantai: k.lantai || '1',
         tipe: k.tipe || 'Standar',
         harga: Number(k.harga) || 0,
-        fasilitas: k.fasilitas || ''
+        fasilitas: k.fasilitas || '',
+        kost_id: k.kostId || k.branchId || S.activeKostId || 'kost_1'
       };
       const { data, error } = await sbClient.from('kamar').upsert(payload);
       if (error) {
@@ -2065,6 +2186,7 @@ const DB = {
     if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
     try {
       const payload = mapBayarToDb(pb);
+      payload.kost_id = pb.kostId || pb.branchId || S.activeKostId || 'kost_1';
       const { data, error } = await sbClient.from('pembayaran').upsert(payload);
       if (error) {
         DB.handleSupabaseError(error, 'Pembayaran');
@@ -2117,7 +2239,8 @@ const DB = {
         jumlah: Number(exp.jumlah) || 0,
         keterangan: exp.keterangan || '',
         bukti_nota: exp.buktiNota || null,
-        created_by: exp.createdBy || currentUser?.nama
+        created_by: exp.createdBy || currentUser?.nama,
+        kost_id: exp.kostId || exp.branchId || S.activeKostId || 'kost_1'
       };
       const { data, error } = await sbClient.from('pengeluaran').upsert(payload);
       if (error) {
@@ -2150,7 +2273,7 @@ const DB = {
     if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
     try {
       const payload = {
-        id: 'default',
+        id: S.activeKostId || 'default',
         nama: S.kost.nama,
         pemilik: S.kost.pemilik,
         alamat: S.kost.alamat,
@@ -3286,6 +3409,9 @@ window.checkoutPenghuni = function(pid, branchId = S.activeKostId) {
       p.status = 'tidak aktif';
       p.tglKeluar = new Date().toISOString().slice(0, 10);
 
+      if (typeof BranchDB !== 'undefined') {
+        BranchDB.savePenghuni(S.activeKostId, S.penghuni);
+      }
       LS.save();
       renderPenghuni();
       if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
@@ -3811,7 +3937,19 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
   }
 
   if (id) {
-    const p = S.penghuni.find(x => x.id === id);
+    let p = S.penghuni.find(x => x.id === id);
+    if (!p && S.propertiesData) {
+      for (const bid of Object.keys(S.propertiesData)) {
+        const found = (S.propertiesData[bid]?.penghuni || []).find(x => x.id === id);
+        if (found) {
+          if (typeof switchKost === 'function' && bid !== S.activeKostId) {
+            switchKost(bid);
+          }
+          p = found;
+          break;
+        }
+      }
+    }
     if (!p) return;
     $('modal-penghuni-title').textContent = 'Edit Data Penghuni';
     $('field-id').value           = p.id;
@@ -4751,6 +4889,8 @@ $('form-penghuni').addEventListener('submit', async function(e) {
 
   const d = {
     id: editId || uid(),
+    kostId: S.activeKostId || 'kost_1',
+    branchId: S.activeKostId || 'kost_1',
     nama, hp, kamar, tglMasuk,
     nik: $('field-nik').value.trim(),
     gender: $('field-gender').value,
@@ -4789,6 +4929,9 @@ $('form-penghuni').addEventListener('submit', async function(e) {
     toast('Penghuni berhasil ditambahkan!', 'success');
   }
 
+  if (typeof BranchDB !== 'undefined') {
+    BranchDB.savePenghuni(S.activeKostId, S.penghuni);
+  }
   LS.save();
   closeModal('modal-penghuni');
   renderPenghuni();
@@ -4801,9 +4944,30 @@ $('form-penghuni').addEventListener('submit', async function(e) {
 });
 
 window.hapusPenghuni = function(id) {
-  const p = S.penghuni.find(x => x.id === id);
+  let targetBranchId = S.activeKostId;
+  let p = S.penghuni.find(x => x.id === id);
+  if (!p && S.propertiesData) {
+    for (const bid of Object.keys(S.propertiesData)) {
+      const found = (S.propertiesData[bid]?.penghuni || []).find(x => x.id === id);
+      if (found) {
+        p = found;
+        targetBranchId = bid;
+        break;
+      }
+    }
+  }
   confirm_dlg('Hapus Penghuni', `Hapus data penghuni "${esc(p?.nama||id)}"?`, async () => {
-    S.penghuni = S.penghuni.filter(x => x.id !== id);
+    if (targetBranchId === S.activeKostId) {
+      S.penghuni = S.penghuni.filter(x => x.id !== id);
+      if (typeof BranchDB !== 'undefined') {
+        BranchDB.savePenghuni(S.activeKostId, S.penghuni);
+      }
+    } else if (S.propertiesData && S.propertiesData[targetBranchId]) {
+      S.propertiesData[targetBranchId].penghuni = (S.propertiesData[targetBranchId].penghuni || []).filter(x => x.id !== id);
+      if (typeof BranchDB !== 'undefined') {
+        BranchDB.savePenghuni(targetBranchId, S.propertiesData[targetBranchId].penghuni);
+      }
+    }
     LS.save();
     renderPenghuni();
     if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
@@ -4818,7 +4982,19 @@ window.hapusPenghuni = function(id) {
 // ── DETAIL PENGHUNI MODAL ─────────────────────────────────────
 window.openDetail = function(id) {
   detailId = id;
-  const p = S.penghuni.find(x => x.id === id);
+  let p = S.penghuni.find(x => x.id === id);
+  if (!p && S.propertiesData) {
+    for (const bid of Object.keys(S.propertiesData)) {
+      const found = (S.propertiesData[bid]?.penghuni || []).find(x => x.id === id);
+      if (found) {
+        if (typeof switchKost === 'function' && bid !== S.activeKostId) {
+          switchKost(bid);
+        }
+        p = found;
+        break;
+      }
+    }
+  }
   if (!p) return;
   const bln = thisMonth(), pb = S.pembayaran.find(x => x.penghuniId === p.id && x.bulan === bln);
   const age = ageOf(p.tglLahir);
@@ -4950,6 +5126,9 @@ $('form-perpanjang-kontrak')?.addEventListener('submit', async (e) => {
     p.catatan = (p.catatan ? p.catatan + ' | ' : '') + `Perpanjang s.d ${fmtD(newTgl)} (${catatan})`;
   }
 
+  if (typeof BranchDB !== 'undefined') {
+    BranchDB.savePenghuni(S.activeKostId, S.penghuni);
+  }
   LS.save();
   closeModal('modal-perpanjang-kontrak');
   renderPenghuni();
@@ -5272,11 +5451,16 @@ $('form-kamar').addEventListener('submit', async function(e) {
     lantai: $('field-lantai-kamar').value.trim() || '1',
     tipe: $('field-tipe-kamar').value,
     harga: cleanNumber($('field-harga-kamar').value),
-    fasilitas: $('field-fasilitas').value.trim()
+    fasilitas: $('field-fasilitas').value.trim(),
+    kostId: S.activeKostId || 'kost_1',
+    branchId: S.activeKostId || 'kost_1'
   };
   const i = S.kamar.findIndex(k => k.id === id);
   if (i !== -1) { S.kamar[i] = d; toast('Kamar diperbarui!'); }
   else { S.kamar.push(d); toast('Kamar ditambahkan!'); }
+  if (typeof BranchDB !== 'undefined') {
+    BranchDB.saveKamar(S.activeKostId, S.kamar);
+  }
   LS.save();
   closeModal('modal-kamar');
   renderKamar();
@@ -5307,8 +5491,14 @@ window.hapusKamar = function(id) {
   confirm_dlg('Hapus Kamar', confirmMsg, async () => {
     if (occupants.length > 0) {
       occupants.forEach(p => { p.kamar = ''; });
+      if (typeof BranchDB !== 'undefined') {
+        BranchDB.savePenghuni(S.activeKostId, S.penghuni);
+      }
     }
     S.kamar = S.kamar.filter(x => x.id !== id);
+    if (typeof BranchDB !== 'undefined') {
+      BranchDB.saveKamar(S.activeKostId, S.kamar);
+    }
     LS.save();
     renderKamar();
     if ($('page-penghuni')?.classList.contains('active')) renderPenghuni();
@@ -5556,12 +5746,15 @@ window.tandaiBayar = async function(pid, bln, jumlah, branchId = S.activeKostId)
 
   let pb = targetPbList.find(x => (x.penghuniId === pid || x.penghuni_id === pid) && (x.bulan === bln || (typeof x.bulan === 'string' && x.bulan.startsWith(bln))));
   if (pb) {
-    pb.status = 'lunas'; pb.jumlah = jumlah; pb.tglBayar = new Date().toISOString(); pb.verifiedAt = new Date().toISOString();
+    pb.status = 'lunas'; pb.jumlah = jumlah; pb.tglBayar = new Date().toISOString(); pb.verifiedAt = new Date().toISOString(); pb.branchId = branchId; pb.kostId = branchId;
   } else {
-    pb = { id: uid(), penghuniId: pid, bulan: bln, jumlah, status: 'lunas', tglBayar: new Date().toISOString(), verifiedAt: new Date().toISOString() };
+    pb = { id: uid(), penghuniId: pid, bulan: bln, jumlah, status: 'lunas', tglBayar: new Date().toISOString(), verifiedAt: new Date().toISOString(), branchId, kostId: branchId };
     targetPbList.push(pb);
   }
 
+  if (typeof BranchDB !== 'undefined') {
+    BranchDB.savePembayaran(branchId, targetPbList);
+  }
   if (!isOtherBranch && S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
     S.propertiesData[S.activeKostId].pembayaran = [...S.pembayaran];
   }
@@ -5605,6 +5798,9 @@ window.batalBayar = function(arg1, arg2, arg3, branchId = S.activeKostId) {
           if (matchesPid && matchesBln) return false;
           return true;
         });
+        if (typeof BranchDB !== 'undefined') {
+          BranchDB.savePembayaran(branchId, S.propertiesData[branchId].pembayaran);
+        }
       } else {
         S.pembayaran = S.pembayaran.filter(pb => {
           if (pbId && pb.id === pbId) return false;
@@ -5613,6 +5809,9 @@ window.batalBayar = function(arg1, arg2, arg3, branchId = S.activeKostId) {
           if (matchesPid && matchesBln) return false;
           return true;
         });
+        if (typeof BranchDB !== 'undefined') {
+          BranchDB.savePembayaran(S.activeKostId, S.pembayaran);
+        }
         if (S.activeKostId && S.propertiesData && S.propertiesData[S.activeKostId]) {
           S.propertiesData[S.activeKostId].pembayaran = [...S.pembayaran];
         }
@@ -5808,10 +6007,26 @@ $('btn-wa-kwitansi')?.addEventListener('click', () => {
 function renderPengeluaran() {
   if (!Array.isArray(S.pengeluaran)) S.pengeluaran = [];
 
+  const isKonsolidasi = $('filter-cabang-pengeluaran')?.value === 'all';
+  let sourcePengeluaran = S.pengeluaran;
+  if (isKonsolidasi && S.propertiesData) {
+    sourcePengeluaran = [];
+    Object.keys(S.propertiesData).forEach(bid => {
+      const bData = S.propertiesData[bid];
+      (bData?.pengeluaran || []).forEach(exp => {
+        sourcePengeluaran.push({
+          ...exp,
+          branchId: bid,
+          branchNama: bData.kost?.nama || bid
+        });
+      });
+    });
+  }
+
   const sel = $('filter-bulan-pengeluaran');
   if (sel) {
     const curVal = sel.value;
-    const expenseMonths = [...new Set(S.pengeluaran.map(x => (x.tanggal || '').slice(0, 7)).filter(Boolean))];
+    const expenseMonths = [...new Set(sourcePengeluaran.map(x => (x.tanggal || '').slice(0, 7)).filter(Boolean))];
     const now = new Date();
     const recentMonths = [];
     for (let i = 0; i < 12; i++) {
@@ -5842,13 +6057,14 @@ function renderPengeluaran() {
   const qCari = ($('cari-pengeluaran')?.value || '').toLowerCase().trim();
 
   // Filter list
-  const list = S.pengeluaran.filter(x => {
+  const list = sourcePengeluaran.filter(x => {
     const mBln = !bln || (x.tanggal || '').startsWith(bln);
     const mKat = !katFilter || x.kategori === katFilter;
     const mCari = !qCari ||
       (x.keterangan || '').toLowerCase().includes(qCari) ||
       (x.kategori || '').toLowerCase().includes(qCari) ||
       (x.tanggal || '').toLowerCase().includes(qCari) ||
+      (x.branchNama || '').toLowerCase().includes(qCari) ||
       String(x.jumlah || '').includes(qCari);
     return mBln && mKat && mCari;
   });
@@ -5909,11 +6125,12 @@ function renderPengeluaran() {
   if (tbodyEl) {
     tbodyEl.innerHTML = list.map(exp => {
       const safeBukti = safeUrl(exp.buktiNota);
+      const branchBadge = isKonsolidasi && exp.branchNama ? `<span class="badge badge-accent" style="font-size:0.65rem;margin-left:6px">${esc(exp.branchNama)}</span>` : '';
       return `
       <tr>
         <td>${fmtD(exp.tanggal)}</td>
         <td><span class="badge badge-purple">${esc(exp.kategori)}</span></td>
-        <td><strong>${esc(exp.keterangan || '–')}</strong></td>
+        <td><strong>${esc(exp.keterangan || '–')}</strong>${branchBadge}</td>
         <td><strong style="color:var(--red)">${rp(exp.jumlah)}</strong></td>
         <td>${safeBukti ? `<a href="${safeBukti}" target="_blank" rel="noopener noreferrer" title="Lihat Bukti Nota"><img src="${safeBukti}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--border)"/></a>` : '<span style="color:var(--text-4)">–</span>'}</td>
         <td>
@@ -6104,6 +6321,7 @@ function exportPengeluaranCsv() {
 }
 window.exportPengeluaranCsv = exportPengeluaranCsv;
 
+$('filter-cabang-pengeluaran')?.addEventListener('change', renderPengeluaran);
 $('filter-bulan-pengeluaran')?.addEventListener('change', renderPengeluaran);
 $('filter-kategori-pengeluaran')?.addEventListener('change', renderPengeluaran);
 let searchPengeluaranTimer;
@@ -6207,7 +6425,12 @@ $('form-pengeluaran')?.addEventListener('submit', async function(e) {
 
   if (!Array.isArray(S.pengeluaran)) S.pengeluaran = [];
 
-  const expData = { id, tanggal, kategori, jumlah, keterangan, buktiNota, createdBy: currentUser?.nama || 'Manager' };
+  const expData = {
+    id, tanggal, kategori, jumlah, keterangan, buktiNota,
+    createdBy: currentUser?.nama || 'Manager',
+    kostId: S.activeKostId || 'kost_1',
+    branchId: S.activeKostId || 'kost_1'
+  };
   const idx = S.pengeluaran.findIndex(x => x.id === id);
   if (idx !== -1) {
     S.pengeluaran[idx] = expData;
@@ -6215,6 +6438,10 @@ $('form-pengeluaran')?.addEventListener('submit', async function(e) {
   } else {
     S.pengeluaran.unshift(expData);
     toast('Pengeluaran berhasil dicatat!', 'success');
+  }
+
+  if (typeof BranchDB !== 'undefined') {
+    BranchDB.savePengeluaran(S.activeKostId, S.pengeluaran);
   }
 
   // Jika sedang membuka halaman pengeluaran dengan filter tertentu, sesuaikan pilihan bulan
@@ -6240,7 +6467,20 @@ $('form-pengeluaran')?.addEventListener('submit', async function(e) {
 });
 
 window.editPengeluaran = function(id) {
-  const exp = S.pengeluaran.find(x => x.id === id); if (!exp) return;
+  let exp = S.pengeluaran.find(x => x.id === id);
+  if (!exp && S.propertiesData) {
+    for (const bid of Object.keys(S.propertiesData)) {
+      const found = (S.propertiesData[bid]?.pengeluaran || []).find(x => x.id === id);
+      if (found) {
+        if (typeof switchKost === 'function' && bid !== S.activeKostId) {
+          switchKost(bid);
+        }
+        exp = found;
+        break;
+      }
+    }
+  }
+  if (!exp) return;
   const titleEl = $('modal-pengeluaran-title');
   if (titleEl) titleEl.textContent = 'Edit Catatan Pengeluaran';
   const idEl = $('field-pengeluaran-id');
@@ -6273,8 +6513,30 @@ window.editPengeluaran = function(id) {
 };
 
 window.hapusPengeluaran = function(id) {
+  let targetBranchId = S.activeKostId;
+  let exp = S.pengeluaran.find(x => x.id === id);
+  if (!exp && S.propertiesData) {
+    for (const bid of Object.keys(S.propertiesData)) {
+      const found = (S.propertiesData[bid]?.pengeluaran || []).find(x => x.id === id);
+      if (found) {
+        exp = found;
+        targetBranchId = bid;
+        break;
+      }
+    }
+  }
   confirm_dlg('Hapus Catatan Pengeluaran', 'Apakah Anda yakin ingin menghapus catatan pengeluaran ini?', async () => {
-    S.pengeluaran = S.pengeluaran.filter(x => x.id !== id);
+    if (targetBranchId === S.activeKostId) {
+      S.pengeluaran = S.pengeluaran.filter(x => x.id !== id);
+      if (typeof BranchDB !== 'undefined') {
+        BranchDB.savePengeluaran(S.activeKostId, S.pengeluaran);
+      }
+    } else if (S.propertiesData && S.propertiesData[targetBranchId]) {
+      S.propertiesData[targetBranchId].pengeluaran = (S.propertiesData[targetBranchId].pengeluaran || []).filter(x => x.id !== id);
+      if (typeof BranchDB !== 'undefined') {
+        BranchDB.savePengeluaran(targetBranchId, S.propertiesData[targetBranchId].pengeluaran);
+      }
+    }
     LS.save();
     renderPengeluaran();
     if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
