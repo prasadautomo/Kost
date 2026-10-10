@@ -28,11 +28,7 @@ function getCleanInitialState() {
         pemilik: 'Gavin Utomo',
         kota: 'Sleman, Yogyakarta',
         alamat: 'Jl. Kaliurang KM 5, Gg. Megatruh No. 12, Sleman, DI Yogyakarta',
-        hp: '081234567890',
         totalKamar: 8,
-        bankNama: 'Bank BCA',
-        bankRekening: '8465-1234-90',
-        bankAtasNama: 'Gavin Utomo',
         qrisUrl: ''
       },
       kamar: [
@@ -53,11 +49,7 @@ function getCleanInitialState() {
         pemilik: 'Gavin Utomo',
         kota: 'Dago, Bandung',
         alamat: 'Jl. Cisitu Lama No. 28, Dago, Coblong, Kota Bandung, Jawa Barat',
-        hp: '081388224411',
         totalKamar: 8,
-        bankNama: 'Bank Mandiri',
-        bankRekening: '131-00-9876543-1',
-        bankAtasNama: 'Gavin Utomo',
         qrisUrl: ''
       },
       kamar: [
@@ -78,11 +70,7 @@ function getCleanInitialState() {
         pemilik: 'Gavin Utomo',
         kota: 'Tebet, Jakarta Selatan',
         alamat: 'Jl. Tebet Barat Dalam VII No. 14, Tebet, Jakarta Selatan, DKI Jakarta',
-        hp: '081199887722',
         totalKamar: 8,
-        bankNama: 'Bank BCA',
-        bankRekening: '5271-8899-00',
-        bankAtasNama: 'Gavin Utomo',
         qrisUrl: ''
       },
       kamar: [
@@ -103,11 +91,7 @@ function getCleanInitialState() {
         pemilik: 'Gavin Utomo',
         kota: 'Gubeng, Surabaya',
         alamat: 'Jl. Dharmawangsa Barat No. 55, Airlangga, Gubeng, Surabaya, Jawa Timur',
-        hp: '081277113399',
         totalKamar: 8,
-        bankNama: 'Bank BNI',
-        bankRekening: '045-8899-123',
-        bankAtasNama: 'Gavin Utomo',
         qrisUrl: ''
       },
       kamar: [
@@ -128,11 +112,7 @@ function getCleanInitialState() {
         pemilik: 'Gavin Utomo',
         kota: 'Lowokwaru, Malang',
         alamat: 'Jl. Bendungan Sigura-gura No. 42, Lowokwaru, Kota Malang, Jawa Timur',
-        hp: '081544228866',
         totalKamar: 8,
-        bankNama: 'Bank BRI',
-        bankRekening: '0038-01-029384-50-2',
-        bankAtasNama: 'Gavin Utomo',
         qrisUrl: ''
       },
       kamar: [
@@ -153,7 +133,6 @@ function getCleanInitialState() {
     nama: b.kost.nama,
     kota: b.kost.kota,
     alamat: b.kost.alamat,
-    hp: b.kost.hp,
     pemilik: b.kost.pemilik,
     totalKamar: b.kost.totalKamar
   }));
@@ -514,11 +493,7 @@ function generateInitialMultiKostData() {
     pemilik: 'Gavin Utomo',
     kota: 'Sleman, Yogyakarta',
     alamat: 'Jl. Kaliurang KM 5, Gg. Megatruh No. 12, Sleman, DI Yogyakarta',
-    hp: '081234567890',
     totalKamar: 8,
-    bankNama: 'Bank BCA',
-    bankRekening: '8465-1234-90',
-    bankAtasNama: 'Gavin Utomo',
     qrisUrl: ''
   };
   const kamar1 = [
@@ -721,11 +696,7 @@ function generateInitialMultiKostData() {
     pemilik: 'Gavin Utomo',
     kota: 'Dago, Bandung',
     alamat: 'Jl. Cisitu Lama No. 28, Dago, Coblong, Kota Bandung, Jawa Barat',
-    hp: '081388224411',
     totalKamar: 8,
-    bankNama: 'Bank Mandiri',
-    bankRekening: '131-00-9876543-1',
-    bankAtasNama: 'Gavin Utomo',
     qrisUrl: ''
   };
   const kamar2 = [
@@ -765,11 +736,7 @@ function generateInitialMultiKostData() {
     pemilik: 'Gavin Utomo',
     kota: 'Tebet, Jakarta Selatan',
     alamat: 'Jl. Tebet Barat Dalam VII No. 14, Tebet, Jakarta Selatan, DKI Jakarta',
-    hp: '081199887722',
     totalKamar: 8,
-    bankNama: 'Bank BCA',
-    bankRekening: '5271-8899-00',
-    bankAtasNama: 'Gavin Utomo',
     qrisUrl: ''
   };
   const kamar3 = [
@@ -809,11 +776,7 @@ function generateInitialMultiKostData() {
     pemilik: 'Gavin Utomo',
     kota: 'Gubeng, Surabaya',
     alamat: 'Jl. Dharmawangsa Barat No. 55, Airlangga, Gubeng, Surabaya, Jawa Timur',
-    hp: '081277113399',
     totalKamar: 8,
-    bankNama: 'Bank BNI',
-    bankRekening: '045-8899-123',
-    bankAtasNama: 'Gavin Utomo',
     qrisUrl: ''
   };
   const kamar4 = [
@@ -853,11 +816,7 @@ function generateInitialMultiKostData() {
     pemilik: 'Gavin Utomo',
     kota: 'Lowokwaru, Malang',
     alamat: 'Jl. Bendungan Sigura-gura No. 42, Lowokwaru, Kota Malang, Jawa Timur',
-    hp: '081544228866',
     totalKamar: 8,
-    bankNama: 'Bank BRI',
-    bankRekening: '0038-01-029384-50-2',
-    bankAtasNama: 'Gavin Utomo',
     qrisUrl: ''
   };
   const kamar5 = [
@@ -1241,7 +1200,7 @@ function renderSettingsCabangList() {
               </div>
               <div style="font-size:0.78rem;color:var(--text-3);margin-top:2px">${esc(data.kost.alamat)}</div>
               <div style="font-size:0.74rem;color:var(--text-2);margin-top:2px">
-                Okupansi: <strong>${terisiCount}/${totalKamar} kamar terisi</strong> · Telp/WA: ${esc(data.kost.hp || '–')} · ${esc(data.kost.bankNama || 'Bank')}: ${esc(data.kost.bankRekening || '–')} (a.n ${esc(data.kost.bankAtasNama || '–')})
+                Okupansi: <strong>${terisiCount}/${totalKamar} kamar terisi</strong>
               </div>
             </div>
           </div>
@@ -1281,7 +1240,6 @@ const LS = {
           prop.nama = S.kost.nama || prop.nama;
           prop.pemilik = S.kost.pemilik || prop.pemilik;
           prop.alamat = S.kost.alamat || prop.alamat;
-          prop.hp = S.kost.hp || prop.hp;
           prop.totalKamar = S.kost.totalKamar || prop.totalKamar;
           prop.kota = S.kost.kota || (S.kost.alamat ? S.kost.alamat.split(',')[0].trim() : prop.kota);
         }
@@ -1408,6 +1366,27 @@ const LS = {
       }
       localStorage.setItem('sk3_mock_cleaned_v4', '1');
       LS.save();
+    }
+
+    // Bersihkan residu no telp dan rekening bank seluruh cabang kost
+    if (S.kost) {
+      delete S.kost.hp;
+      delete S.kost.bankNama;
+      delete S.kost.bankRekening;
+      delete S.kost.bankAtasNama;
+    }
+    if (Array.isArray(S.properties)) {
+      S.properties.forEach(p => { if (p) delete p.hp; });
+    }
+    if (S.propertiesData) {
+      Object.values(S.propertiesData).forEach(b => {
+        if (b && b.kost) {
+          delete b.kost.hp;
+          delete b.kost.bankNama;
+          delete b.kost.bankRekening;
+          delete b.kost.bankAtasNama;
+        }
+      });
     }
 
     const rawAkun = localStorage.getItem('sk3_akun');
@@ -1974,11 +1953,7 @@ const DB = {
           nama: kRow.nama || S.kost.nama || 'Nama Kost Manager',
           pemilik: kRow.pemilik || S.kost.pemilik || '',
           alamat: kRow.alamat || S.kost.alamat || '',
-          hp: kRow.hp || S.kost.hp || '',
           totalKamar: kRow.total_kamar || S.kost.totalKamar || 0,
-          bankNama: kRow.bank_nama || S.kost.bankNama || '',
-          bankRekening: kRow.bank_rekening || S.kost.bankRekening || '',
-          bankAtasNama: kRow.bank_atas_nama || S.kost.bankAtasNama || '',
           qrisUrl: kRow.qris_url || S.kost.qrisUrl || '',
           updatedAt: kRow.updated_at ? new Date(kRow.updated_at).getTime() : Date.now()
         };
@@ -2179,11 +2154,11 @@ const DB = {
         nama: S.kost.nama,
         pemilik: S.kost.pemilik,
         alamat: S.kost.alamat,
-        hp: S.kost.hp,
+        hp: '',
         total_kamar: Number(S.kost.totalKamar) || 0,
-        bank_nama: S.kost.bankNama || '',
-        bank_rekening: S.kost.bankRekening || '',
-        bank_atas_nama: S.kost.bankAtasNama || '',
+        bank_nama: '',
+        bank_rekening: '',
+        bank_atas_nama: '',
         qris_url: S.kost.qrisUrl || '',
         updated_at: new Date().toISOString()
       };
@@ -3158,7 +3133,7 @@ function renderDashActionCenter() {
                     </div>
                   </div>
                   <div class="action-card-actions">
-                    <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${esc(p.id)}', '${esc(curMonth)}', '${esc(item.branchId)}')" title="Kirim WA Pengingat dengan rekening cabang ini">
+                    <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${esc(p.id)}', '${esc(curMonth)}', '${esc(item.branchId)}')" title="Kirim WA Pengingat">
                       <span class="material-symbols-outlined" style="font-size:14px">chat</span> WA
                     </button>
                     <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${esc(p.id)}', '${esc(curMonth)}', '${esc(item.branchId)}')" title="Tandai langsung lunas">
@@ -5016,7 +4991,6 @@ window.printSpk = function(p) {
   <table>
     <tr><td class="label">1. Nama Pengelola / Pemilik</td><td>: ${S.kost.pemilik || 'Pengelola Kost'}</td></tr>
     <tr><td class="label">   Alamat Kost</td><td>: ${S.kost.alamat || '–'}</td></tr>
-    <tr><td class="label">   No. Telepon / WA</td><td>: ${S.kost.hp || '–'}</td></tr>
     <tr><td colspan="2">Selanjutnya disebut sebagai <strong>PIHAK PERTAMA (Pemilik/Pengelola)</strong>.</td></tr>
   </table>
 
@@ -5089,7 +5063,7 @@ td:first-child{font-weight:700;width:150px;background:#f5f5f5}
 .sh{background:#111;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 7px}
 @media print{body{padding:10px}}
 </style></head><body>
-<h1>KARTU DATA PENGHUNI KOST</h1><div class="sub">${S.kost.nama} · ${S.kost.alamat||'–'} · HP: ${S.kost.hp||'–'}</div>
+<h1>KARTU DATA PENGHUNI KOST</h1><div class="sub">${S.kost.nama} · ${S.kost.alamat||'–'}</div>
 <div class="hero">${p.foto?`<img class="av" src="${p.foto}" alt="${p.nama}"/>`:`<div class="av-ph">${init(p.nama)}</div>`}
 <div><h2>${p.nama}</h2><div class="badges"><span class="badge">Kamar ${p.kamar||'–'}</span><span class="badge">${p.status==='aktif'?'Aktif':'Tidak Aktif'}</span>${p.kendaraan&&p.kendaraan!=='tidak ada'?`<span class="badge">${p.kendaraan}</span>`:''}</div><div style="font-size:11px;color:#666">Masuk: ${fmtD(p.tglMasuk)} · ${durasi(p.tglMasuk)}</div></div></div>
 <table>
@@ -5556,12 +5530,6 @@ window.kirimWaTagihan = function(pid, bln, branchId = S.activeKostId) {
     }
   }
 
-  // Sertakan info rekening bank & nomor kamar secara otomatis sesuai cabang
-  let rekInfo = '';
-  if (targetKost.bankNama && targetKost.bankRekening) {
-    rekInfo = `\n\nPembayaran dapat ditransfer ke:\n${targetKost.bankNama}: *${targetKost.bankRekening}*\na.n ${targetKost.bankAtasNama || targetKost.pemilik}`;
-  }
-
   const jt = getPenghuniJatuhTempo(p, safeBln);
   let text = '';
   if (targetKost.waTemplate && targetKost.waTemplate.trim()) {
@@ -5571,12 +5539,10 @@ window.kirimWaTagihan = function(pid, bln, branchId = S.activeKostId) {
       .replace(/{bulan}/g, blnLabel)
       .replace(/{nominal}/g, rp(p.sewa))
       .replace(/{kost}/g, targetKost.nama || 'Kost')
-      .replace(/{bank}/g, targetKost.bankNama || 'Bank')
-      .replace(/{rekening}/g, targetKost.bankRekening || '')
-      .replace(/{pemilik}/g, targetKost.bankAtasNama || targetKost.pemilik || '')
       .replace(/{tempo}/g, fmtD(jt.dateStr));
+  } else {
     const infoKeluar = p.tglKeluar ? `sesuai tanggal keluar ${fmtD(p.tglKeluar)}` : `siklus sewa ${fmtD(p.tglMasuk)}`;
-    text = `Halo Kak *${p.nama}*,\n\nMengingatkan tagihan sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(p.sewa)}* (Jatuh tempo: ${fmtD(jt.dateStr)}, ${infoKeluar}).${rekInfo}\n\nMohon konfirmasi jika sudah melakukan transfer ya. Terima kasih!`;
+    text = `Halo Kak *${p.nama}*,\n\nMengingatkan tagihan sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(p.sewa)}* (Jatuh tempo: ${fmtD(jt.dateStr)}, ${infoKeluar}).\n\nMohon konfirmasi jika sudah melakukan pembayaran ya. Terima kasih!`;
   }
 
   const url = `https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`;
@@ -5742,7 +5708,6 @@ window.showKwitansi = function(penghuniId, bulan, branchId = S.activeKostId) {
               <h3 style="margin:0;font-size:1.15rem;font-weight:800;letter-spacing:-0.3px">${esc(targetKost.nama || 'Kost')}</h3>
             </div>
             <p style="margin:4px 0 0;font-size:0.8rem;color:var(--text-3)">${esc(targetKost.alamat || 'Alamat Kost')}</p>
-            <p style="margin:2px 0 0;font-size:0.76rem;color:var(--text-3)">WhatsApp Admin: ${esc(targetKost.hp || '–')}</p>
           </div>
           <div style="text-align:right">
             <div style="font-size:0.7rem;text-transform:uppercase;font-weight:700;color:var(--text-3)">Kwitansi Pembayaran Resmi</div>
@@ -6384,7 +6349,6 @@ async function saveAllPengaturan(sourceForm = '') {
       prop.nama = S.kost.nama;
       prop.pemilik = S.kost.pemilik;
       prop.alamat = S.kost.alamat;
-      prop.hp = S.kost.hp;
       prop.totalKamar = S.kost.totalKamar;
       prop.kota = S.kost.kota;
     }
@@ -6491,7 +6455,6 @@ window.openEditCabang = function(cabangId) {
   $('edit-cabang-nama').value       = k.nama || '';
   $('edit-cabang-kota').value       = k.kota || (k.alamat ? k.alamat.split(',')[0].trim() : '');
   $('edit-cabang-alamat').value     = k.alamat || '';
-  $('edit-cabang-hp').value         = k.hp || '';
   $('edit-cabang-totalkamar').value = k.totalKamar || 8;
   $('edit-cabang-pemilik').value    = k.pemilik || S.kost.pemilik || '';
   openModal('modal-edit-cabang');
@@ -6508,7 +6471,6 @@ if (formEditCabang) {
     targetKost.nama       = $('edit-cabang-nama').value.trim();
     targetKost.kota       = $('edit-cabang-kota').value.trim();
     targetKost.alamat     = $('edit-cabang-alamat').value.trim();
-    targetKost.hp         = $('edit-cabang-hp').value.trim();
     targetKost.totalKamar = Number($('edit-cabang-totalkamar').value) || 8;
     targetKost.pemilik    = $('edit-cabang-pemilik').value.trim();
 
@@ -6532,7 +6494,6 @@ if (formEditCabang) {
         prop.nama = targetKost.nama;
         prop.kota = targetKost.kota;
         prop.alamat = targetKost.alamat;
-        prop.hp = targetKost.hp;
         prop.totalKamar = targetKost.totalKamar;
         prop.pemilik = targetKost.pemilik;
       }
@@ -7073,7 +7034,7 @@ window.openLaporanBulanan = function(targetBln = thisMonth()) {
       <div style="border-bottom:2px solid #0f172a;padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start">
         <div>
           <h1 style="font-size:1.35rem;font-weight:800;margin:0;letter-spacing:-0.5px">${esc(S.kost.nama || 'SiKost')}</h1>
-          <p style="margin:4px 0 0;font-size:0.8rem;color:#64748b">${esc(S.kost.alamat || 'Alamat Kost')} · Telp/WA: ${esc(S.kost.hp || '–')}</p>
+          <p style="margin:4px 0 0;font-size:0.8rem;color:#64748b">${esc(S.kost.alamat || 'Alamat Kost')}</p>
         </div>
         <div style="text-align:right">
           <div style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase">Laporan Keuangan Bulanan</div>

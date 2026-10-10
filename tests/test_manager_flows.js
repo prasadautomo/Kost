@@ -414,6 +414,26 @@ test('Zero Dead-Code: Email field completely removed from tenant form', () => {
   }
 });
 
+// 16. Zero Dead-Code: Verify edit-cabang-hp completely removed from branch modal DOM
+test('Zero Dead-Code: edit-cabang-hp removed completely from branch edit modal', () => {
+  if (elementsById['edit-cabang-hp']) {
+    throw new Error('edit-cabang-hp element still exists in DOM! Must be completely removed per Zero Dead-Code Policy.');
+  }
+});
+
+// 17. Verify Branch Settings Cards rendered without phone number and bank details
+test('Branch Settings Cards rendered without phone number and bank info', () => {
+  win.renderSettingsCabangList();
+  const container = elementsById['settings-cabang-list'];
+  if (!container || !container.innerHTML) throw new Error('settings-cabang-list container empty');
+  if (container.innerHTML.includes('Telp/WA:')) {
+    throw new Error('Branch cards still contain Telp/WA:!');
+  }
+  if (container.innerHTML.includes('Bank BCA') || container.innerHTML.includes('Bank Mandiri') || container.innerHTML.includes('Bank BNI') || container.innerHTML.includes('Bank BRI')) {
+    throw new Error('Branch cards still contain Bank details!');
+  }
+});
+
 console.log('\n--- SIMULATION SUMMARY ---');
 console.log(`Total errors: ${errors.length}`);
 if (errors.length > 0) {
