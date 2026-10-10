@@ -268,7 +268,7 @@ function updateCloudStatusUI(connected, url = '') {
   const loginText = $('login-cloud-text');
   if (loginPill && loginText) {
     loginPill.className = 'cloud-pill ' + (connected ? 'connected' : 'disconnected');
-    loginText.textContent = connected ? `🟢 Cloud Supabase (${domain})` : '☁️ Mode Lokal (Klik hubungkan Supabase)';
+    loginText.textContent = connected ? `Cloud Supabase (${domain})` : 'Mode Lokal (Klik hubungkan Supabase)';
   }
 
   const topbarBtn = $('topbar-cloud-btn');
@@ -281,7 +281,7 @@ function updateCloudStatusUI(connected, url = '') {
   const settingsStatus = $('settings-cloud-status-text');
   const settingsEndpoint = $('settings-cloud-endpoint');
   if (settingsStatus) {
-    settingsStatus.textContent = connected ? '🟢 Terhubung ke Supabase Cloud (Realtime Aktif)' : '🔴 Belum Terhubung (Mode Penyimpanan Lokal)';
+    settingsStatus.textContent = connected ? 'Terhubung ke Supabase Cloud (Realtime Aktif)' : 'Belum Terhubung (Mode Penyimpanan Lokal)';
     settingsStatus.style.color = connected ? 'var(--green)' : 'var(--red)';
   }
   if (settingsEndpoint) {
@@ -1021,7 +1021,7 @@ function switchKost(targetKostId) {
   const activePage = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
   navigateTo(activePage);
 
-  toast(`🏢 Beralih ke ${S.kost.nama} (${target.kost?.kota || (target.kost?.alamat ? target.kost.alamat.split(',')[0] : 'Indonesia')})`, 'success');
+  toast(`Beralih ke ${S.kost.nama} (${target.kost?.kota || (target.kost?.alamat ? target.kost.alamat.split(',')[0] : 'Indonesia')})`, 'success');
 }
 window.switchKost = switchKost;
 
@@ -1031,12 +1031,12 @@ function updatePropertySwitcherUI() {
   const sbNameEl = $('sb-kost-name');
   const sbLocEl = $('sb-kost-loc');
 
-  const locText = '📍 ' + (S.kost.kota || (S.kost.alamat ? S.kost.alamat.split(',')[0] : 'Indonesia'));
+  const locText = S.kost.kota || (S.kost.alamat ? S.kost.alamat.split(',')[0] : 'Indonesia');
 
   if (activeNameEl) activeNameEl.textContent = S.kost.nama || 'SiKost';
   if (activeLocEl)  activeLocEl.textContent  = locText;
   if (sbNameEl)     sbNameEl.textContent     = 'Kost Manager';
-  if (sbLocEl)      sbLocEl.textContent      = '📍 Portal Multi-Cabang';
+  if (sbLocEl)      sbLocEl.textContent      = 'Portal Multi-Cabang';
 
   const switcherWrap = $('topbar-property-selector');
   if (switcherWrap) {
@@ -1054,10 +1054,10 @@ function updatePropertySwitcherUI() {
 
       return `
         <div class="prop-dd-item ${isActive ? 'active' : ''}" onclick="switchKost('${esc(p.id)}')">
-          <div class="prop-dd-item-icon">🏢</div>
+          <div class="prop-dd-item-icon"><span class="material-symbols-outlined" style="font-size:18px">apartment</span></div>
           <div class="prop-dd-item-info">
             <div class="prop-dd-item-name">${esc(data.kost.nama)}</div>
-            <div class="prop-dd-item-loc">📍 ${esc(data.kost.kota || data.kost.alamat.split(',')[0])}</div>
+            <div class="prop-dd-item-loc">${esc(data.kost.kota || data.kost.alamat.split(',')[0])}</div>
             <div class="prop-dd-item-meta">${penghuniCount} Penghuni Aktif · ${totalKamar} Kamar</div>
           </div>
           ${isActive ? '<span class="badge badge-accent" style="font-size:0.68rem">Aktif</span>' : ''}
@@ -1124,24 +1124,24 @@ function renderMultiKostCards() {
     summaryBar.innerHTML = `
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;padding:14px 18px;background:var(--surface);border-radius:12px;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.06)">
         <div>
-          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">🏢 Portofolio Terpadu</div>
+          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Portofolio Terpadu</div>
           <div style="font-size:1.15rem;font-weight:800;color:var(--text);margin-top:2px">5 Cabang Aktif</div>
           <div style="font-size:0.72rem;color:var(--text-3);margin-top:2px">Pindah cepat: <kbd style="background:var(--bg-2);padding:1px 5px;border-radius:4px;border:1px solid var(--border);font-size:0.68rem">Alt + 1..5</kbd></div>
         </div>
         <div>
-          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">🛏️ Okupansi Konsolidasi</div>
+          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Okupansi Konsolidasi</div>
           <div style="font-size:1.15rem;font-weight:800;color:var(--accent-light);margin-top:2px">${totalTerisiAll} / ${totalKamarAll} <span style="font-size:0.8rem">(${pctAll}%)</span></div>
           <div style="font-size:0.72rem;color:var(--green);margin-top:2px">${totalKamarAll - totalTerisiAll} Kamar Kosong Siap Huni</div>
         </div>
         <div>
-          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">💰 Estimasi Omset / Bulan</div>
+          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Estimasi Omset / Bulan</div>
           <div style="font-size:1.15rem;font-weight:800;color:var(--green);margin-top:2px">${rp(totalOmsetAll)}</div>
           <div style="font-size:0.72rem;color:var(--text-3);margin-top:2px">${totalPenghuniAktifAll} Penghuni Aktif</div>
         </div>
         <div>
-          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">⚠️ Tagihan Menunggak (${blnLabel})</div>
+          <div style="font-size:0.72rem;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Tagihan Menunggak (${blnLabel})</div>
           <div style="font-size:1.15rem;font-weight:800;color:${totalBelumBayarAll > 0 ? 'var(--red)' : 'var(--green)'};margin-top:2px">
-            ${totalBelumBayarAll > 0 ? `${totalBelumBayarAll} Belum Lunas` : 'Semua Lunas 🎉'}
+            ${totalBelumBayarAll > 0 ? `${totalBelumBayarAll} Belum Lunas` : 'Semua Lunas'}
           </div>
           <div style="font-size:0.72rem;color:${totalBelumBayarAll > 0 ? 'var(--red)' : 'var(--text-3)'};margin-top:2px">
             ${totalBelumBayarAll > 0 ? `${rp(totalNominalBelumBayar)} pending` : 'Arus kas sehat'}
@@ -1155,12 +1155,12 @@ function renderMultiKostCards() {
     return `
       <div class="kost-branch-card ${b.isActive ? 'active-branch' : ''}" style="cursor:pointer" onclick="switchKost('${esc(b.p.id)}')">
         <div class="branch-card-header">
-          <div class="branch-card-icon">🏢</div>
+          <div class="branch-card-icon"><span class="material-symbols-outlined" style="font-size:20px">apartment</span></div>
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px">
               <div class="branch-card-title" style="margin-bottom:0">${esc(b.data.kost.nama)}</div>
             </div>
-            <div class="branch-card-loc">📍 ${esc(b.data.kost.kota || b.data.kost.alamat.split(',')[0])}</div>
+            <div class="branch-card-loc">${esc(b.data.kost.kota || b.data.kost.alamat.split(',')[0])}</div>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
             <span class="badge ${b.isActive ? 'badge-accent' : 'badge-gray'}" style="font-size:0.66rem;font-family:monospace" title="Shortcut keyboard: Alt+${b.idx + 1}">Alt+${b.idx + 1}</span>
@@ -1182,13 +1182,13 @@ function renderMultiKostCards() {
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:0.74rem">
           <span style="color:var(--text-3)">Status Bulan Ini:</span>
           ${b.belumBayarCount > 0 
-            ? `<span class="badge badge-orange" style="font-size:0.68rem">⚠️ ${b.belumBayarCount} Belum Lunas</span>` 
-            : `<span class="badge badge-green" style="font-size:0.68rem">✅ Lunas Semua</span>`}
+            ? `<span class="badge badge-orange" style="font-size:0.68rem">${b.belumBayarCount} Belum Lunas</span>` 
+            : `<span class="badge badge-green" style="font-size:0.68rem">Lunas Semua</span>`}
         </div>
 
         <div style="display:flex;gap:6px" onclick="event.stopPropagation()">
           <button type="button" class="branch-card-btn ${b.isActive ? 'btn-ghost' : 'btn-primary'}" style="flex:1" onclick="switchKost('${b.p.id}')">
-            ${b.isActive ? '✓ Sedang Dikelola' : 'Kelola Cabang ⚡'}
+            ${b.isActive ? '✓ Sedang Dikelola' : 'Kelola Cabang'}
           </button>
           <button type="button" class="btn-ghost btn-sm" onclick="quickTambahPenghuni('${b.p.id}')" title="Tambah penghuni ke cabang ini" style="padding:6px 10px;font-size:0.75rem">
             + Penghuni
@@ -1233,22 +1233,22 @@ function renderSettingsCabangList() {
       <div class="panel" style="padding:16px 20px;border-radius:12px;background:var(--surface-2);border:${isActive ? '2px solid var(--accent)' : '1px solid var(--border)'}">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div style="display:flex;align-items:center;gap:14px">
-            <div style="width:44px;height:44px;border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:1.4rem;border:1px solid var(--border)">🏢</div>
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center;border:1px solid var(--border)"><span class="material-symbols-outlined" style="font-size:22px;color:var(--accent-light)">apartment</span></div>
             <div>
               <div style="font-weight:800;font-size:1.02rem;color:var(--text)">
                 ${esc(data.kost.nama)} 
                 ${isActive ? '<span class="badge badge-accent" style="margin-left:6px;font-size:0.7rem">Sedang Aktif</span>' : ''}
               </div>
-              <div style="font-size:0.78rem;color:var(--text-3);margin-top:2px">📍 ${esc(data.kost.alamat)}</div>
+              <div style="font-size:0.78rem;color:var(--text-3);margin-top:2px">${esc(data.kost.alamat)}</div>
               <div style="font-size:0.74rem;color:var(--text-2);margin-top:2px">
-                Okupansi: <strong>${terisiCount}/${totalKamar} kamar terisi</strong> · 📞 Telp/WA: ${esc(data.kost.hp || '–')} · 🏦 ${esc(data.kost.bankNama || 'Bank')}: ${esc(data.kost.bankRekening || '–')} (a.n ${esc(data.kost.bankAtasNama || '–')})
+                Okupansi: <strong>${terisiCount}/${totalKamar} kamar terisi</strong> · Telp/WA: ${esc(data.kost.hp || '–')} · ${esc(data.kost.bankNama || 'Bank')}: ${esc(data.kost.bankRekening || '–')} (a.n ${esc(data.kost.bankAtasNama || '–')})
               </div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <button class="btn-outline btn-sm" onclick="openEditCabang('${esc(p.id)}')">✏️ Edit Info</button>
+            <button class="btn-outline btn-sm" onclick="openEditCabang('${esc(p.id)}')">Edit Info</button>
             <button class="btn-primary btn-sm" onclick="switchKost('${esc(p.id)}')">
-              ${isActive ? '✓ Sedang Dikelola' : 'Beralih ke Cabang Ini ⚡'}
+              ${isActive ? '✓ Sedang Dikelola' : 'Beralih ke Cabang Ini'}
             </button>
           </div>
         </div>
@@ -1652,11 +1652,11 @@ function maskNik(nik, id) {
   if (!nik) return '–';
   const safeId = esc(id);
   if (unmaskedNiks.has(id)) {
-    return `${esc(nik)} <button class="nik-toggle-btn" onclick="toggleMaskNik('${safeId}')" title="Sembunyikan NIK">👁️ Tutup</button>`;
+    return `${esc(nik)} <button class="nik-toggle-btn" onclick="toggleMaskNik('${safeId}')" title="Sembunyikan NIK">Tutup</button>`;
   }
   const clean = String(nik).trim();
   const masked = clean.length > 8 ? clean.slice(0, 4) + '••••••••' + clean.slice(-4) : '••••••••••••';
-  return `<span class="nik-masked">${esc(masked)}</span> <button class="nik-toggle-btn" onclick="toggleMaskNik('${safeId}')" title="Lihat NIK">👁️ Buka</button>`;
+  return `<span class="nik-masked">${esc(masked)}</span> <button class="nik-toggle-btn" onclick="toggleMaskNik('${safeId}')" title="Lihat NIK">Buka</button>`;
 }
 
 window.toggleMaskNik = function(id) {
@@ -1695,7 +1695,7 @@ document.addEventListener('click', e => {
   const inp = $(btn.dataset.target);
   if (!inp) return;
   inp.type = inp.type === 'password' ? 'text' : 'password';
-  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+  btn.innerHTML = inp.type === 'password' ? '<span class="material-symbols-outlined" style="font-size:18px">visibility</span>' : '<span class="material-symbols-outlined" style="font-size:18px">visibility_off</span>';
 });
 
 // ── SCREEN ROUTING ────────────────────────────────────────────
@@ -1885,7 +1885,7 @@ async function checkSupabaseWritePermission(notify = true) {
     if (insErr) {
       if (insErr.code === '42501' || insErr.message?.includes('row-level security')) {
         if (notify) {
-          toast('⚠️ Supabase menolak izin simpan (RLS 42501). Buka Bantuan SQL!', 'err');
+          toast('Supabase menolak izin simpan (RLS 42501). Buka Bantuan SQL!', 'err');
           showSupabaseRlsModal();
         }
         return { ok: false, code: '42501', error: insErr };
@@ -1896,7 +1896,7 @@ async function checkSupabaseWritePermission(notify = true) {
     await sbClient.from('penghuni').delete().eq('id', testId);
     if (notify) {
       confirm_dlg(
-        '🎉 Izin Penyimpanan Web Sempurna!',
+        'Izin Penyimpanan Web Sempurna!',
         'Supabase Cloud telah mengizinkan penyimpanan penuh dari web browser!<br><br>Seluruh data penghuni, kamar, pembayaran, dan pengeluaran yang Anda tambahkan akan otomatis tersimpan langsung ke web.',
         () => {},
         'Mantap!'
@@ -1916,10 +1916,10 @@ const DB = {
     if (!error) return;
     console.error(`Gagal menyimpan ${entityName} ke Supabase:`, error);
     if (error.code === '42501' || error.message?.includes('row-level security')) {
-      toast(`⚠️ Belum tersimpan di Web: Izin RLS Supabase membatasi penulisan. Silakan klik "Aktifkan Akses Web (SQL 1-Klik)" di Pengaturan!`, 'err');
+      toast(`Belum tersimpan di Web: Izin RLS Supabase membatasi penulisan. Silakan klik "Aktifkan Akses Web (SQL 1-Klik)" di Pengaturan!`, 'err');
       showSupabaseRlsModal();
     } else {
-      toast(`⚠️ Gagal simpan ${entityName} ke Web: ${error.message || error.code}`, 'err');
+      toast(`Gagal simpan ${entityName} ke Web: ${error.message || error.code}`, 'err');
     }
   },
 
@@ -2010,7 +2010,7 @@ const DB = {
         if ($('page-pengeluaran')?.classList.contains('active')) renderPengeluaran();
         if ($('page-pengaturan')?.classList.contains('active')) renderPengaturan();
         if ($('sb-kost-name')) $('sb-kost-name').textContent = 'Kost Manager';
-        if ($('sb-kost-loc'))  $('sb-kost-loc').textContent  = '📍 Portal Multi-Cabang';
+        if ($('sb-kost-loc'))  $('sb-kost-loc').textContent  = 'Portal Multi-Cabang';
       }
     } catch (e) {
       console.warn('Gagal sinkron data Supabase:', e);
@@ -2213,7 +2213,7 @@ const DB = {
       for (const pb of S.pembayaran) await this.savePembayaran(pb);
       for (const exp of S.pengeluaran) await this.savePengeluaran(exp);
 
-      if (!silent) toast('Semua data lokal berhasil diunggah ke Supabase Cloud! 🎉');
+      if (!silent) toast('Semua data lokal berhasil diunggah ke Supabase Cloud!', 'success');
       await this.fetchData(true);
     } catch (err) {
       console.error(err);
@@ -2332,7 +2332,7 @@ function createGoogleAccountCard(acc, isInline = false) {
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-      <span class="google-acc-role mgr">Manager 👑</span>
+      <span class="google-acc-role mgr">Manager</span>
       <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-3)">arrow_forward</span>
     </div>
   `;
@@ -2340,7 +2340,7 @@ function createGoogleAccountCard(acc, isInline = false) {
   card.addEventListener('click', () => {
     closeModalGoogle();
     loginWithAkun(acc);
-    toast(`Masuk sebagai ${acc.nama} (${acc.role}) via Google! 🚀`);
+    toast(`Masuk sebagai ${acc.nama} (${acc.role}) via Google!`, 'success');
   });
 
   return card;
@@ -2454,7 +2454,7 @@ function handleCustomGoogleLogin(rawEmail, rawNama) {
     LS.save();
   }
   loginWithAkun(akun);
-  toast(`Berhasil masuk sebagai ${akun.nama} (${akun.role}) via Google! 🚀`);
+  toast(`Berhasil masuk sebagai ${akun.nama} (${akun.role}) via Google!`, 'success');
 }
 
 if (formCustomGoogle) {
@@ -2532,7 +2532,7 @@ async function handleGoogleUserProfile(profile) {
   }
 
   loginWithAkun(akun);
-  toast(`Berhasil masuk via Google: ${nama} (${isMgr ? 'Manager 👑' : 'Penghuni 👤'})! 🚀`);
+  toast(`Berhasil masuk via Google: ${nama} (${isMgr ? 'Manager' : 'Penghuni'})!`, 'success');
 }
 
 async function handleGoogleCredentialResponse(response) {
@@ -2715,11 +2715,11 @@ if ($('btn-copy-callback')) {
     const inp = $('google-callback-url');
     if (inp) {
       navigator.clipboard.writeText(inp.value).then(() => {
-        toast('Redirect URL disalin ke clipboard! 📋');
+        toast('Redirect URL disalin ke clipboard!', 'ok');
       }).catch(() => {
         inp.select();
         document.execCommand('copy');
-        toast('Redirect URL disalin! 📋');
+        toast('Redirect URL disalin!', 'ok');
       });
     }
   });
@@ -2796,7 +2796,7 @@ function enterApp() {
   renderUserChip();
   if ($('login-kost-title')) $('login-kost-title').textContent = S.kost?.nama || 'SiKost';
   if ($('sb-kost-name'))     $('sb-kost-name').textContent     = 'Kost Manager';
-  if ($('sb-kost-loc'))      $('sb-kost-loc').textContent      = '📍 Portal Multi-Cabang';
+  if ($('sb-kost-loc'))      $('sb-kost-loc').textContent      = 'Portal Multi-Cabang';
   if ($('topbar-prop-name')) $('topbar-prop-name').textContent = S.kost?.nama || 'SiKost';
   document.title = (S.kost?.nama || 'SiKost') + ' – Manajemen Kost Modern';
   updatePropertySwitcherUI();
@@ -2814,19 +2814,19 @@ function enterApp() {
 
 // ── SIDEBAR NAVIGATION ITEMS ─────────────────────────────────
 const NAV_MANAGER = [
-  { id:'dashboard',   icon:'▦',  label:'Dashboard' },
-  { id:'penghuni',    icon:'👥', label:'Data Penghuni', badge:true },
-  { id:'kamar',       icon:'🛏',  label:'Kamar' },
-  { id:'pembayaran',  icon:'💳', label:'Pembayaran', badgePending:true },
-  { id:'pengeluaran', icon:'💸', label:'Pengeluaran' },
-  { id:'pengaturan',  icon:'⚙',  label:'Pengaturan' },
+  { id:'dashboard',   icon:'dashboard',    label:'Dashboard' },
+  { id:'penghuni',    icon:'group',        label:'Data Penghuni', badge:true },
+  { id:'kamar',       icon:'bed',          label:'Kamar' },
+  { id:'pembayaran',  icon:'payments',     label:'Pembayaran', badgePending:true },
+  { id:'pengeluaran', icon:'receipt_long', label:'Pengeluaran' },
+  { id:'pengaturan',  icon:'settings',     label:'Pengaturan' },
 ];
 
 function buildSidebar() {
   const items = NAV_MANAGER;
   $('sidebar-nav').innerHTML = items.map(item => `
     <a href="#" class="nav-item" data-page="${item.id}" id="nav-${item.id}">
-      <span class="nav-icon">${item.icon}</span>
+      <span class="nav-icon"><span class="material-symbols-outlined" style="font-size:18px">${item.icon}</span></span>
       <span class="nav-label-text">${item.label}</span>
       <span class="nav-badge" id="badge-${item.id}" style="display:none">0</span>
     </a>`).join('');
@@ -2839,7 +2839,7 @@ function buildSidebar() {
     $('sb-role-badge').className   = 'brand-role';
   }
   if ($('sb-kost-name')) $('sb-kost-name').textContent = 'Kost Manager';
-  if ($('sb-kost-loc'))  $('sb-kost-loc').textContent  = '📍 Portal Multi-Cabang';
+  if ($('sb-kost-loc'))  $('sb-kost-loc').textContent  = 'Portal Multi-Cabang';
   updateSidebarBadges();
 }
 
@@ -2916,7 +2916,7 @@ $('theme-toggle').addEventListener('click', () => {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') === 'dark';
   html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  $('theme-icon').textContent = isDark ? '🌙' : '☀️';
+  $('theme-icon').textContent = isDark ? 'dark_mode' : 'light_mode';
   localStorage.setItem('sk3_theme', isDark ? 'light' : 'dark');
   if ($('page-dashboard').classList.contains('active')) renderCharts();
 });
@@ -3040,8 +3040,8 @@ function renderDashActionCenter() {
 
   const activeBranchName = S.kost?.nama || 'Cabang Aktif';
   const scopeBadgeText = activeActionScope === 'all'
-    ? '🏢 Konsolidasi 5 Cabang'
-    : '🏠 ' + activeBranchName;
+    ? 'Konsolidasi 5 Cabang'
+    : activeBranchName;
 
   const subtitleText = totalActions === 0
     ? 'Semua urusan operasional saat ini terkendali dengan baik'
@@ -3080,10 +3080,10 @@ function renderDashActionCenter() {
         <!-- Toggle Cakupan: 5 Cabang vs Cabang Aktif -->
         <div class="dash-action-tabs" style="background:var(--bg-2);padding:3px;border-radius:8px">
           <button type="button" class="dash-action-tab ${activeActionScope === 'all' ? 'active' : ''}" onclick="switchActionScope('all')" title="Pantau seluruh 5 cabang">
-            🏢 Semua Cabang
+            Semua Cabang
           </button>
           <button type="button" class="dash-action-tab ${activeActionScope === 'active' ? 'active' : ''}" onclick="switchActionScope('active')" title="Hanya cabang aktif saat ini">
-            🏠 Cabang Aktif
+            Cabang Aktif
           </button>
         </div>
 
@@ -3093,13 +3093,13 @@ function renderDashActionCenter() {
             Semua (${totalActions})
           </button>
           <button type="button" class="dash-action-tab ${activeActionFilter === 'kontrak' ? 'active' : ''}" onclick="switchActionFilter('kontrak')">
-            ⏳ Kontrak Habis (${contractItems.length})
+            Kontrak Habis (${contractItems.length})
           </button>
           <button type="button" class="dash-action-tab ${activeActionFilter === 'tagihan' ? 'active' : ''}" onclick="switchActionFilter('tagihan')">
-            ⚠️ Tagihan (${dueItems.length})
+            Tagihan (${dueItems.length})
           </button>
           <button type="button" class="dash-action-tab ${activeActionFilter === 'kamar' ? 'active' : ''}" onclick="switchActionFilter('kamar')">
-            🛏️ Kamar Kosong (${emptyRooms.length})
+            Kamar Kosong (${emptyRooms.length})
           </button>
         </div>
       </div>
@@ -3109,7 +3109,7 @@ function renderDashActionCenter() {
       ${totalActions === 0
         ? emptyStateHtml
         : (displayItems.map(item => {
-            const branchBadge = `<span class="badge badge-accent" style="font-size:0.68rem;font-weight:700">🏢 ${esc(item.branchNama)}</span>`;
+            const branchBadge = `<span class="badge badge-accent" style="font-size:0.68rem;font-weight:700">${esc(item.branchNama)}</span>`;
             if (item.type === 'kontrak') {
               const { p, exp } = item;
               const isExpired = exp.status === 'expired' || exp.status === 'today';
@@ -3237,7 +3237,7 @@ window.kirimWaKontrak = function(pid, branchId = S.activeKostId) {
   } else {
     msg += `akan berakhir pada tanggal *${tglStr}* (${exp?.label || 'segera'}).\n\n`;
   }
-  msg += `Apakah Kakak berencana untuk memperpanjang masa sewa untuk periode berikutnya? Mohon konfirmasinya ya Kak agar kami dapat menyiapkan administrasi perpanjangan kontrak sewa atau persiapan checkout kamar.\n\nTerima kasih banyak atas perhatiannya! 🙏`;
+  msg += `Apakah Kakak berencana untuk memperpanjang masa sewa untuk periode berikutnya? Mohon konfirmasinya ya Kak agar kami dapat menyiapkan administrasi perpanjangan kontrak sewa atau persiapan checkout kamar.\n\nTerima kasih banyak atas perhatiannya!`;
 
   window.open(`https://wa.me/${cleanHp}?text=${encodeURIComponent(msg)}`, '_blank');
   toast(`Membuka WhatsApp konfirmasi kontrak (${kostName})...`);
@@ -3327,7 +3327,7 @@ window.checkoutPenghuni = function(pid, branchId = S.activeKostId) {
 function renderDashboard() {
   const h = new Date().getHours();
   const greet = h < 11 ? 'Selamat pagi' : h < 15 ? 'Selamat siang' : h < 18 ? 'Selamat sore' : 'Selamat malam';
-  $('dash-greeting').textContent = greet + ', ' + (currentUser?.nama?.split(' ')[0] || '') + ' 👋';
+  $('dash-greeting').textContent = greet + ', ' + (currentUser?.nama?.split(' ')[0] || '');
   $('dash-date').textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
   if ($('dash-kost-name-badge')) $('dash-kost-name-badge').textContent = (S.kost?.nama || 'Kost Griya Harmoni') + ' • ' + (S.kost?.totalKamar || S.kamar?.length || 8) + ' Unit';
 
@@ -3467,7 +3467,7 @@ function renderDashboard() {
       alertsHtml += `
         <div class="dash-alert-item warning">
           <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:1.3rem">💳</span>
+            <span class="material-symbols-outlined" style="font-size:1.3rem;color:var(--orange)">payments</span>
             <div><strong>${pendingBayar} Pembayaran Menunggu Verifikasi</strong><div style="font-size:0.75rem;color:var(--text-3)">Ada bukti transfer sewa yang belum disetujui.</div></div>
           </div>
           <button class="btn-primary btn-sm" onclick="navigateTo('pembayaran')">Review Pembayaran →</button>
@@ -3688,9 +3688,9 @@ function renderPenghuni() {
       const av = safeFoto ? `<img class="pg-avatar" src="${safeFoto}" alt="${esc(p.nama)}"/>` : `<div class="pg-avatar-ph">${esc(init(p.nama))}</div>`;
       const exp = p.status === 'aktif' ? getContractExpiryStatus(p) : null;
       const contractBadge = (exp && exp.isUrgent)
-        ? `<span class="badge ${exp.badgeClass}" title="Kontrak berakhir: ${fmtD(p.tglKeluar)}">⏳ ${esc(exp.label)}</span>`
+        ? `<span class="badge ${exp.badgeClass}" title="Kontrak berakhir: ${fmtD(p.tglKeluar)}">${esc(exp.label)}</span>`
         : '';
-      const branchBadge = isKonsolidasi && p.branchNama ? `<span class="badge badge-accent" style="font-size:0.65rem">🏢 ${esc(p.branchNama)}</span>` : '';
+      const branchBadge = isKonsolidasi && p.branchNama ? `<span class="badge badge-accent" style="font-size:0.65rem">${esc(p.branchNama)}</span>` : '';
       return `
         <div class="pg-card ${p.status!=='aktif'?'inactive':''}" onclick="openDetail('${esc(p.id)}')">
           ${av}
@@ -3705,7 +3705,7 @@ function renderPenghuni() {
           <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:10px">${rp(p.sewa)}/bln</div>
           <div class="pg-actions" onclick="event.stopPropagation()">
             <button class="btn-outline btn-sm" onclick="openEdit('${esc(p.id)}')">Edit</button>
-            <button class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${esc(p.id)}')" title="Perpanjang Masa Sewa Kontrak">🔄 Kontrak</button>
+            <button class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${esc(p.id)}')" title="Perpanjang Masa Sewa Kontrak">Perpanjang</button>
             <button class="btn-danger btn-sm" onclick="hapusPenghuni('${esc(p.id)}')">Hapus</button>
           </div>
         </div>`;
@@ -3716,9 +3716,9 @@ function renderPenghuni() {
     $('tbody-penghuni').innerHTML = list.map((p, idx) => {
       const exp = p.status === 'aktif' ? getContractExpiryStatus(p) : null;
       const statusBadge = p.status === 'aktif'
-        ? (exp && exp.isUrgent ? `<span class="badge ${exp.badgeClass}">⏳ ${esc(exp.label)}</span>` : '<span class="badge badge-green">Aktif</span>')
+        ? (exp && exp.isUrgent ? `<span class="badge ${exp.badgeClass}">${esc(exp.label)}</span>` : '<span class="badge badge-green">Aktif</span>')
         : '<span class="badge badge-gray">Keluar</span>';
-      const branchLabel = isKonsolidasi && p.branchNama ? `<span class="badge badge-accent" style="font-size:0.65rem;margin-left:6px">🏢 ${esc(p.branchNama)}</span>` : '';
+      const branchLabel = isKonsolidasi && p.branchNama ? `<span class="badge badge-accent" style="font-size:0.65rem;margin-left:6px">${esc(p.branchNama)}</span>` : '';
       return `
         <tr onclick="openDetail('${esc(p.id)}')" style="cursor:pointer">
           <td>${idx + 1}</td>
@@ -3732,7 +3732,7 @@ function renderPenghuni() {
           <td>${statusBadge}</td>
           <td onclick="event.stopPropagation()" style="display:flex;gap:4px">
             <button class="btn-outline btn-sm" onclick="openEdit('${esc(p.id)}')">Edit</button>
-            <button class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${esc(p.id)}')" title="Perpanjang Kontrak">🔄</button>
+            <button class="btn-outline btn-sm" onclick="openModalPerpanjangKontrak('${esc(p.id)}')" title="Perpanjang Kontrak">Perpanjang</button>
           </td>
         </tr>`;
     }).join('');
@@ -3821,7 +3821,7 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
       : [S.activeKostId];
     selCabangModal.innerHTML = branches.map(bid => {
       const bName = S.propertiesData?.[bid]?.kost?.nama || bid;
-      return `<option value="${bid}" ${bid === S.activeKostId ? 'selected' : ''}>🏢 ${bName}</option>`;
+      return `<option value="${bid}" ${bid === S.activeKostId ? 'selected' : ''}>${bName}</option>`;
     }).join('');
 
     selCabangModal.onchange = function() {
@@ -4020,11 +4020,11 @@ if (btnToggleKamarEl) {
       inp.style.display = 'block';
       sel.style.display = 'none';
       inp.value = sel.value;
-      this.textContent = '📋 Pilih dari List';
+      this.textContent = 'Pilih dari List';
     } else {
       inp.style.display = 'none';
       sel.style.display = 'block';
-      this.textContent = '✏️ Input Manual';
+      this.textContent = 'Input Manual';
     }
   });
 }
@@ -4614,7 +4614,7 @@ async function processKtpOcr(imageSource) {
   }
 
   try {
-    setStatus('⚡ AI OCR: Menyiapkan pemindai KTP...');
+    setStatus('AI OCR: Menyiapkan pemindai KTP...');
 
     if (typeof Tesseract === 'undefined') {
       setStatus('Memuat library OCR dari CDN...', false);
@@ -4631,14 +4631,14 @@ async function processKtpOcr(imageSource) {
       throw new Error('Library Tesseract belum siap.');
     }
 
-    setStatus('🔍 Memindai teks KTP...');
+    setStatus('Memindai teks KTP...');
     const preprocessed = await preprocessImageForOcr(imageSource);
 
     let rawText = '';
     const progressLogger = m => {
       if (m.status === 'recognizing text' && m.progress) {
         const pct = Math.round(m.progress * 100);
-        setStatus(`🔍 Memindai teks KTP... ${pct}%`);
+        setStatus(`Memindai teks KTP... ${pct}%`);
       }
     };
 
@@ -4667,9 +4667,9 @@ async function processKtpOcr(imageSource) {
 
     if (filled > 0) {
       setStatus(`✓ Data KTP (${filled} kolom) berhasil diekstrak dan diisi otomatis!`, true);
-      toast(`Data KTP berhasil diekstrak otomatis (${filled} kolom)! ✨`, 'success');
+      toast(`Data KTP berhasil diekstrak otomatis (${filled} kolom)!`, 'success');
     } else {
-      setStatus('⚠️ Teks terbaca namun format KTP tidak cocok. Silakan isi form manual.', false, true);
+      setStatus('Teks terbaca namun format KTP tidak cocok. Silakan isi form manual.', false, true);
     }
 
     setTimeout(() => {
@@ -4678,7 +4678,7 @@ async function processKtpOcr(imageSource) {
 
   } catch (err) {
     console.warn('OCR notice:', err);
-    setStatus('⚠️ OCR belum dapat membaca otomatis: silakan isi form secara manual', false, true);
+    setStatus('OCR belum dapat membaca otomatis: silakan isi form secara manual', false, true);
     toast('Foto KTP tersimpan. Silakan periksa atau lengkapi data form.', 'info');
   }
 }
@@ -4806,10 +4806,10 @@ $('form-penghuni').addEventListener('submit', async function(e) {
   if (editId) {
     const i = S.penghuni.findIndex(p => p.id === editId);
     if (i !== -1) S.penghuni[i] = d;
-    toast('Data penghuni diperbarui! ✅');
+    toast('Data penghuni diperbarui!', 'success');
   } else {
     S.penghuni.unshift(d);
-    toast('Penghuni berhasil ditambahkan! 🎉');
+    toast('Penghuni berhasil ditambahkan!', 'success');
   }
 
   LS.save();
@@ -4868,35 +4868,35 @@ window.openDetail = function(id) {
     </div>
     <div class="detail-sections">
       <div class="d-section">
-        <h4>🪪 Identitas</h4>
+        <h4>Identitas</h4>
         <div class="d-row"><div class="d-key">NIK (Terproteksi)</div><div class="d-val">${maskNik(p.nik, p.id)}</div></div>
         <div class="d-row"><div class="d-key">Jenis Kelamin</div><div class="d-val">${esc(p.gender||'–')}</div></div>
         <div class="d-row"><div class="d-key">TTL</div><div class="d-val">${p.tempatLahir ? esc(p.tempatLahir) + ', ' : ''}${fmtD(p.tglLahir)}${age?' ('+age+' th)':''}</div></div>
         <div class="d-row"><div class="d-key">Alamat KTP</div><div class="d-val">${esc(p.alamatKtp||'–')}</div></div>
       </div>
       <div class="d-section">
-        <h4>🏠 Hunian &amp; Kontak</h4>
+        <h4>Hunian &amp; Kontak</h4>
         <div class="d-row"><div class="d-key">Kamar / Lantai</div><div class="d-val">Kamar ${esc(p.kamar||'–')} (Lantai ${esc(p.lantai||'1')})</div></div>
         <div class="d-row"><div class="d-key">No. HP / WA</div><div class="d-val">${esc(p.hp||'–')}</div></div>
         <div class="d-row"><div class="d-key">Kontak Darurat</div><div class="d-val">${esc(p.daruratNama||'–')} ${p.daruratHub ? '(' + esc(p.daruratHub) + ')' : ''}</div></div>
         <div class="d-row"><div class="d-key">HP Darurat</div><div class="d-val">${esc(p.daruratHp||'–')}</div></div>
       </div>
       <div class="d-section">
-        <h4>💳 Keuangan &amp; Sewa</h4>
+        <h4>Keuangan &amp; Sewa</h4>
         <div class="d-row"><div class="d-key">Sewa Bulanan</div><div class="d-val">${rp(p.sewa)}</div></div>
         <div class="d-row"><div class="d-key">Jatuh Tempo Sewa</div><div class="d-val">Tanggal ${jt.day} (Sesuai tgl keluar: ${p.tglKeluar ? fmtD(p.tglKeluar) : 'siklus sewa'})</div></div>
         <div class="d-row"><div class="d-key">Masa Kontrak Berakhir</div><div class="d-val"><strong>${p.tglKeluar ? fmtD(p.tglKeluar) + ' (' + exp.label + ')' : 'Belum ditentukan'}</strong></div></div>
         <div class="d-row"><div class="d-key">Uang Jaminan / Deposit</div><div class="d-val" style="color:var(--orange)">${p.deposit ? rp(p.deposit) : 'Rp 0'}</div></div>
-        <div class="d-row"><div class="d-key">Status Bulan Ini</div><div class="d-val">${pb?.status==='lunas'?'✅ Lunas':'❌ Belum Bayar'}</div></div>
+        <div class="d-row"><div class="d-key">Status Bulan Ini</div><div class="d-val">${pb?.status==='lunas'?'Lunas':'Belum Bayar'}</div></div>
       </div>
       <div class="d-section">
-        <h4>🚗 Kendaraan</h4>
+        <h4>Kendaraan</h4>
         <div class="d-row"><div class="d-key">Kepemilikan</div><div class="d-val">${esc(p.kendaraan||'Tidak ada')}</div></div>
         ${p.merk1 ? `<div class="d-row"><div class="d-key">Kendaraan 1</div><div class="d-val">${esc(p.merk1)}${p.plat1 ? ' (' + esc(p.plat1) + ')' : ''}</div></div>` : ''}
         ${p.merk2 ? `<div class="d-row"><div class="d-key">Kendaraan 2</div><div class="d-val">${esc(p.merk2)}${p.plat2 ? ' (' + esc(p.plat2) + ')' : ''}</div></div>` : ''}
       </div>
     </div>
-    ${safeFotoKtp ? `<div class="d-ktp"><h4>📷 Dokumen KTP (Hanya Akses Manager)</h4><img src="${safeFotoKtp}" alt="KTP"/></div>` : ''}
+    ${safeFotoKtp ? `<div class="d-ktp"><h4>Dokumen KTP (Hanya Akses Manager)</h4><img src="${safeFotoKtp}" alt="KTP"/></div>` : ''}
   `;
 
   const btnWa = $('btn-wa-detail');
@@ -4981,7 +4981,7 @@ $('form-perpanjang-kontrak')?.addEventListener('submit', async (e) => {
   if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
   updateSidebarBadges();
 
-  toast(`✅ Kontrak sewa ${p.nama} berhasil diperpanjang hingga ${fmtD(newTgl)}!`);
+  toast(`Kontrak sewa ${p.nama} berhasil diperpanjang hingga ${fmtD(newTgl)}!`, 'success');
   await DB.savePenghuni(p);
 });
 
@@ -5184,16 +5184,16 @@ function renderKamar() {
     if (isTerisi && p) {
       if (isLunas) {
         statusBadge = `<span class="badge badge-green">Lunas</span>`;
-        quickActionBtn = `<button type="button" class="btn-ghost btn-sm" onclick="showKwitansi('${p.id}','${curMonth}')" title="Lihat kwitansi lunas">🧾 Kwitansi</button>`;
+        quickActionBtn = `<button type="button" class="btn-ghost btn-sm" onclick="showKwitansi('${p.id}','${curMonth}')" title="Lihat kwitansi lunas">Kwitansi</button>`;
       } else {
         statusBadge = `<span class="badge badge-red">Belum Lunas</span>`;
         quickActionBtn = `
-          <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${p.id}','${curMonth}')" title="1-Klik Lunas">⚡ 1-Klik Lunas</button>
-          <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${p.id}','${curMonth}')" title="Kirim WA">📱 WA</button>
+          <button type="button" class="btn-primary btn-sm" onclick="quickPayTenant('${p.id}','${curMonth}')" title="1-Klik Lunas">1-Klik Lunas</button>
+          <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${p.id}','${curMonth}')" title="Kirim WA">WA</button>
         `;
       }
     } else {
-      statusBadge = `<span class="badge badge-gray">🟢 Siap Huni</span>`;
+      statusBadge = `<span class="badge badge-gray">Siap Huni</span>`;
       quickActionBtn = `<button type="button" class="btn-primary btn-sm" onclick="openModalPenghuniWithRoom('${k.no}')">+ Masukkan Penghuni</button>`;
     }
 
@@ -5208,7 +5208,7 @@ function renderKamar() {
         <div class="km-card-tenant-box">
           ${isTerisi ? `
             <div class="km-name" style="font-weight:700;color:var(--text)">${pen.map(x=>esc(x.nama)).join(', ')}</div>
-            ${p?.hp ? `<div style="font-size:0.75rem;color:var(--text-3);margin-top:2px">📞 ${esc(p.hp)}</div>` : ''}
+            ${p?.hp ? `<div style="font-size:0.75rem;color:var(--text-3);margin-top:2px">Telp: ${esc(p.hp)}</div>` : ''}
           ` : `
             <div class="km-name" style="color:var(--text-4);font-weight:normal;font-style:italic">Siap Huni</div>
           `}
@@ -5228,7 +5228,7 @@ function renderKamar() {
         </div>
       </div>
     </div>`;
-  }).join('') || `<div class="empty-state"><div class="empty-emoji">🛏</div><p class="empty-title">Belum ada kamar</p><p class="empty-sub">Klik "Tambah Kamar" untuk mengelola kamar.</p></div>`;
+  }).join('') || `<div class="empty-state"><div class="empty-emoji"><span class="material-symbols-outlined" style="font-size:36px;color:var(--text-3)">bed</span></div><p class="empty-title">Belum ada kamar</p><p class="empty-sub">Klik "Tambah Kamar" untuk mengelola kamar.</p></div>`;
 }
 
 window.setFloorFilter = function(fl) {
@@ -5255,16 +5255,16 @@ window.quickPayTenant = async function(pid, bln = thisMonth(), branchId = S.acti
   }
 
   confirm_dlg(
-    'Konfirmasi Pembayaran Cepat ⚡',
+    'Konfirmasi Pembayaran Cepat',
     `Tandai pembayaran sewa bulan <strong>${esc(blnLabel)}</strong> untuk <strong>${esc(p.nama)}</strong> (${esc(targetKost.nama || 'Kost')} - Kamar ${esc(p.kamar || '')}) sebesar <strong>${rp(p.sewa)}</strong> telah <strong>LUNAS</strong>?`,
     async () => {
       await tandaiBayar(pid, safeBln, p.sewa || 0, branchId);
       renderDashboard();
       if ($('page-kamar')?.classList.contains('active')) renderKamar();
       if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
-      toast(`Pembayaran ${p.nama} (${blnLabel}) Lunas! 🧾`, 'ok');
+      toast(`Pembayaran ${p.nama} (${blnLabel}) Lunas!`, 'ok');
     },
-    '⚡ Ya, Lunas Sekarang'
+    'Ya, Lunas Sekarang'
   );
 };
 window.renderKamar = renderKamar;
@@ -5397,7 +5397,7 @@ function renderPembayaran() {
   const pending = payments.filter(pb => pb.status === 'menunggu');
   const belum = Math.max(0, aktif.length - lunas.length);
   const terkumpul = lunas.reduce((s, pb) => s + (Number(pb.jumlah) || 0), 0);
-  const scopeLabel = isKonsolidasi ? '🏢 5 Cabang' : S.kost.nama;
+  const scopeLabel = isKonsolidasi ? '5 Cabang' : S.kost.nama;
 
   $('kpi-bayar').innerHTML = `
     <div class="kpi"><div class="kpi-label">Sudah Bayar</div><div class="kpi-value" style="color:var(--green)">${lunas.length}</div><div class="kpi-sub">${scopeLabel}</div></div>
@@ -5428,7 +5428,7 @@ function renderPembayaran() {
         const p = aktif.find(x => x.id === pb.penghuniId || x.id === pb.penghuni_id);
         const safeBukti = safeUrl(pb.buktiTransfer);
         return `<tr>
-          <td><strong>${esc(p?.nama || '–')}</strong> ${isKonsolidasi ? `<span class="badge badge-accent" style="font-size:0.65rem">🏢 ${esc(p?.branchNama || '')}</span>` : ''}</td>
+          <td><strong>${esc(p?.nama || '–')}</strong> ${isKonsolidasi ? `<span class="badge badge-accent" style="font-size:0.65rem">${esc(p?.branchNama || '')}</span>` : ''}</td>
           <td>Kamar ${esc(p?.kamar || '–')}</td>
           <td>${blnLabel}</td>
           <td><strong style="color:var(--green)">${rp(pb.jumlah)}</strong></td>
@@ -5436,8 +5436,8 @@ function renderPembayaran() {
           <td>${safeBukti ? `<a href="${safeBukti}" target="_blank" rel="noopener noreferrer"><img src="${safeBukti}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border)"/></a>` : '–'}</td>
           <td>
             <div style="display:flex;gap:6px">
-              <button type="button" class="btn-primary btn-sm" onclick="setujuiBayar('${esc(pb.id)}')">✅ Setujui</button>
-              <button type="button" class="btn-danger btn-sm" onclick="tolakBayar('${esc(pb.id)}')">❌ Tolak</button>
+              <button type="button" class="btn-primary btn-sm" onclick="setujuiBayar('${esc(pb.id)}')">Setujui</button>
+              <button type="button" class="btn-danger btn-sm" onclick="tolakBayar('${esc(pb.id)}')">Tolak</button>
             </div>
           </td>
         </tr>`;
@@ -5487,25 +5487,25 @@ function renderPembayaran() {
     if (isLunas) {
       aksiCell = `
         <div style="display:flex;gap:6px;align-items:center">
-          <button type="button" class="btn-ghost btn-sm" onclick="showKwitansi('${p.id}','${bln}','${p.branchId}')">🧾 Kwitansi</button>
+          <button type="button" class="btn-ghost btn-sm" onclick="showKwitansi('${p.id}','${bln}','${p.branchId}')">Kwitansi</button>
           <button type="button" class="btn-outline btn-sm" onclick="batalBayar('${pb?.id || ''}','${p.id}','${bln}','${p.branchId}')" title="Batalkan status lunas">Batalkan</button>
         </div>`;
     } else if (isPending) {
       aksiCell = `
         <div style="display:flex;gap:6px;align-items:center">
           <button class="btn-primary btn-sm" onclick="setujuiBayar('${pb.id}')">Setujui</button>
-          <button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}','${p.branchId}')">📱 WA</button>
+          <button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}','${p.branchId}')">WA</button>
         </div>`;
     } else {
       const sewaClean = cleanNumber(p.sewa);
       aksiCell = `
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="btn-primary btn-sm" onclick="tandaiBayar('${p.id}','${bln}',${sewaClean},'${p.branchId}')">✅ Tandai Lunas</button>
-          <button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}','${p.branchId}')">📱 WA</button>
+          <button class="btn-primary btn-sm" onclick="tandaiBayar('${p.id}','${bln}',${sewaClean},'${p.branchId}')">Tandai Lunas</button>
+          <button class="btn-wa" onclick="kirimWaTagihan('${p.id}','${bln}','${p.branchId}')">WA</button>
         </div>`;
     }
 
-    const branchCol = isKonsolidasi ? `<td><span class="badge badge-accent" style="font-size:0.68rem">🏢 ${esc(p.branchNama)}</span></td>` : '';
+    const branchCol = isKonsolidasi ? `<td><span class="badge badge-accent" style="font-size:0.68rem">${esc(p.branchNama)}</span></td>` : '';
 
     return `<tr>
       ${branchCol}
@@ -5559,7 +5559,7 @@ window.kirimWaTagihan = function(pid, bln, branchId = S.activeKostId) {
   // Sertakan info rekening bank & nomor kamar secara otomatis sesuai cabang
   let rekInfo = '';
   if (targetKost.bankNama && targetKost.bankRekening) {
-    rekInfo = `\n\nPembayaran dapat ditransfer ke:\n🏦 ${targetKost.bankNama}: *${targetKost.bankRekening}*\n👤 a.n ${targetKost.bankAtasNama || targetKost.pemilik}`;
+    rekInfo = `\n\nPembayaran dapat ditransfer ke:\n${targetKost.bankNama}: *${targetKost.bankRekening}*\na.n ${targetKost.bankAtasNama || targetKost.pemilik}`;
   }
 
   const jt = getPenghuniJatuhTempo(p, safeBln);
@@ -5576,7 +5576,7 @@ window.kirimWaTagihan = function(pid, bln, branchId = S.activeKostId) {
       .replace(/{pemilik}/g, targetKost.bankAtasNama || targetKost.pemilik || '')
       .replace(/{tempo}/g, fmtD(jt.dateStr));
     const infoKeluar = p.tglKeluar ? `sesuai tanggal keluar ${fmtD(p.tglKeluar)}` : `siklus sewa ${fmtD(p.tglMasuk)}`;
-    text = `Halo Kak *${p.nama}*,\n\nMengingatkan tagihan sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(p.sewa)}* (Jatuh tempo: ${fmtD(jt.dateStr)}, ${infoKeluar}).${rekInfo}\n\nMohon konfirmasi jika sudah melakukan transfer ya. Terima kasih! 🙏`;
+    text = `Halo Kak *${p.nama}*,\n\nMengingatkan tagihan sewa kamar *${p.kamar || ''}* di *${targetKost.nama || 'Kost'}* untuk bulan *${blnLabel}* sebesar *${rp(p.sewa)}* (Jatuh tempo: ${fmtD(jt.dateStr)}, ${infoKeluar}).${rekInfo}\n\nMohon konfirmasi jika sudah melakukan transfer ya. Terima kasih!`;
   }
 
   const url = `https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`;
@@ -5602,7 +5602,7 @@ window.tandaiBayar = async function(pid, bln, jumlah, branchId = S.activeKostId)
   renderPembayaran();
   if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
   if ($('page-kamar')?.classList.contains('active')) renderKamar();
-  toast('Pembayaran dicatat Lunas! 💰');
+  toast('Pembayaran dicatat Lunas!', 'success');
   await DB.savePembayaran(pb);
   updateSidebarBadges();
 };
@@ -5677,7 +5677,7 @@ window.setujuiBayar = async function(pbId) {
   renderPembayaran();
   if ($('page-dashboard')?.classList.contains('active')) renderDashboard();
   if ($('page-kamar')?.classList.contains('active')) renderKamar();
-  toast('Pembayaran disetujui & lunas! ✅');
+  toast('Pembayaran disetujui & lunas!', 'success');
   await DB.savePembayaran(pb);
   updateSidebarBadges();
 };
@@ -5833,7 +5833,7 @@ $('btn-wa-kwitansi')?.addEventListener('click', () => {
     return;
   }
   const kostName = targetKost?.nama || S.kost.nama || 'Kost';
-  const text = `Halo Kak ${p.nama}, terima kasih! Pembayaran sewa kamar ${p.kamar || ''} di ${kostName} untuk bulan *${blnLabel}* sebesar *${rp(pb.jumlah)}* telah kami terima dan tercatat *LUNAS* pada ${tglBayar}. (No. Bukti: ${invoiceNo}). 🙏`;
+  const text = `Halo Kak ${p.nama}, terima kasih! Pembayaran sewa kamar ${p.kamar || ''} di ${kostName} untuk bulan *${blnLabel}* sebesar *${rp(pb.jumlah)}* telah kami terima dan tercatat *LUNAS* pada ${tglBayar}. (No. Bukti: ${invoiceNo}).`;
   window.open(`https://wa.me/${cleanHp}?text=${encodeURIComponent(text)}`, '_blank');
 });
 
@@ -5912,22 +5912,22 @@ function renderPengeluaran() {
   if (kpiEl) {
     kpiEl.innerHTML = `
       <div class="kpi">
-        <div class="kpi-label">Total Pengeluaran <span style="font-size:1.1rem">💸</span></div>
+        <div class="kpi-label">Total Pengeluaran</div>
         <div class="kpi-value" style="color:var(--red)">${rp(totalFiltered)}</div>
         <div class="kpi-sub">${blnLabel}</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Jumlah Transaksi <span style="font-size:1.1rem">📝</span></div>
+        <div class="kpi-label">Jumlah Transaksi</div>
         <div class="kpi-value">${list.length}</div>
         <div class="kpi-sub">catatan operasional</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Rata-rata Transaksi <span style="font-size:1.1rem">⚖️</span></div>
+        <div class="kpi-label">Rata-rata Transaksi</div>
         <div class="kpi-value">${rp(avg)}</div>
         <div class="kpi-sub">biaya per transaksi</div>
       </div>
       <div class="kpi">
-        <div class="kpi-label">Kategori Terbesar <span style="font-size:1.1rem">📊</span></div>
+        <div class="kpi-label">Kategori Terbesar</div>
         <div class="kpi-value" style="font-size:1.05rem;color:var(--accent-light)">${esc(maxCatName)}</div>
         <div class="kpi-sub">${maxCatVal > 0 ? `${rp(maxCatVal)} (${maxCatPct}%)` : 'belum ada data'}</div>
       </div>
@@ -6132,7 +6132,7 @@ function exportPengeluaranCsv() {
     if (link.parentNode) document.body.removeChild(link);
     URL.revokeObjectURL(link.href);
   }, 500);
-  toast(`Laporan pengeluaran berhasil diunduh (${filename})! 📥`, 'success');
+  toast(`Laporan pengeluaran berhasil diunduh (${filename})!`, 'success');
 }
 window.exportPengeluaranCsv = exportPengeluaranCsv;
 
@@ -6208,7 +6208,7 @@ $('field-pengeluaran-nota')?.addEventListener('change', async function() {
     $('prev-pengeluaran-nota').src = dataUrl;
     $('prev-pengeluaran-nota').style.display = 'block';
     $('btn-hapus-nota').style.display = 'inline-block';
-    toast('Nota siap disimpan! ✅');
+    toast('Nota siap disimpan!', 'success');
   } catch (err) { toast(err.message, 'err'); }
 });
 
@@ -6243,10 +6243,10 @@ $('form-pengeluaran')?.addEventListener('submit', async function(e) {
   const idx = S.pengeluaran.findIndex(x => x.id === id);
   if (idx !== -1) {
     S.pengeluaran[idx] = expData;
-    toast('Catatan pengeluaran berhasil diperbarui! ✅', 'success');
+    toast('Catatan pengeluaran berhasil diperbarui!', 'success');
   } else {
     S.pengeluaran.unshift(expData);
-    toast('Pengeluaran berhasil dicatat! 💸', 'success');
+    toast('Pengeluaran berhasil dicatat!', 'success');
   }
 
   // Jika sedang membuka halaman pengeluaran dengan filter tertentu, sesuaikan pilihan bulan
@@ -6408,9 +6408,9 @@ async function saveAllPengaturan(sourceForm = '') {
 
   // 8. Update UI real-time di seluruh komponen aplikasi
   if ($('sb-kost-name'))     $('sb-kost-name').textContent = 'Kost Manager';
-  if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = '📍 Portal Multi-Cabang';
+  if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = 'Portal Multi-Cabang';
   if ($('topbar-prop-name')) $('topbar-prop-name').textContent = S.kost.nama || 'SiKost';
-  if ($('topbar-prop-loc'))  $('topbar-prop-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
+  if ($('topbar-prop-loc'))  $('topbar-prop-loc').textContent  = S.kost.kota || 'Indonesia';
   if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama || 'SiKost';
   document.title = (S.kost.nama || 'SiKost') + ' – Manajemen Kost Modern';
 
@@ -6430,7 +6430,7 @@ async function saveAllPengaturan(sourceForm = '') {
   }
 
   if (sourceForm && sourceForm !== 'auto' && sourceForm !== 'logout') {
-    toast('Semua pengaturan kost berhasil disimpan permanen! 💾', 'success');
+    toast('Semua pengaturan kost berhasil disimpan permanen!', 'success');
   }
 }
 
@@ -6517,9 +6517,9 @@ if (formEditCabang) {
       S.kost.updatedAt = Date.now();
       localStorage.setItem('sk3_kost_updated_at', S.kost.updatedAt.toString());
       if ($('sb-kost-name'))     $('sb-kost-name').textContent = 'Kost Manager';
-      if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = '📍 Portal Multi-Cabang';
+      if ($('sb-kost-loc'))      $('sb-kost-loc').textContent  = 'Portal Multi-Cabang';
       if ($('topbar-prop-name')) $('topbar-prop-name').textContent = S.kost.nama || 'SiKost';
-      if ($('topbar-prop-loc'))  $('topbar-prop-loc').textContent  = '📍 ' + (S.kost.kota || 'Indonesia');
+      if ($('topbar-prop-loc'))  $('topbar-prop-loc').textContent  = S.kost.kota || 'Indonesia';
       if ($('login-kost-title')) $('login-kost-title').textContent = S.kost.nama || 'SiKost';
       document.title = (S.kost.nama || 'SiKost') + ' – Manajemen Kost Modern';
       renderPengaturan();
@@ -6542,7 +6542,7 @@ if (formEditCabang) {
     closeModal('modal-edit-cabang');
     renderSettingsCabangList();
     updatePropertySwitcherUI();
-    toast(`Cabang "${targetKost.nama}" berhasil diperbarui! 🏢`, 'success');
+    toast(`Cabang "${targetKost.nama}" berhasil diperbarui!`, 'success');
   });
 }
 
@@ -6568,7 +6568,7 @@ async function gantiPassword(lama, baru, confirm, formEl) {
     try {
       const { error } = await sbClient.auth.updateUser({ password: baru });
       if (error) throw error;
-      formEl.reset(); toast('Password Cloud berhasil diperbarui! 🔒');
+      formEl.reset(); toast('Password Cloud berhasil diperbarui!', 'success');
       return;
     } catch (err) {
       toast('Gagal ubah password di Supabase: ' + err.message, 'err');
@@ -6581,7 +6581,7 @@ async function gantiPassword(lama, baru, confirm, formEl) {
   const lamaHash = await hashPw(lama);
   if (lamaHash !== S.akun[akunIdx].pwHash) { toast('Password lama salah!','err'); return; }
   S.akun[akunIdx].pwHash = await hashPw(baru);
-  LS.save(); formEl.reset(); toast('Password berhasil diperbarui! 🔒');
+  LS.save(); formEl.reset(); toast('Password berhasil diperbarui!', 'success');
 }
 
 // Backup & Restore All
@@ -6720,7 +6720,7 @@ function setupSupabaseUI() {
         initSupabase();
         updateCloudStatusUI(true, url);
         closeModal('modal-cloud-config');
-        toast('Berhasil terhubung ke Supabase Cloud! ⚡');
+        toast('Berhasil terhubung ke Supabase Cloud!', 'success');
         if (currentUser) DB.fetchData();
       } else {
         toast('Gagal: ' + res.message, 'err');
@@ -6746,7 +6746,7 @@ function setupSupabaseUI() {
         localStorage.setItem('sk3_supabase_config', JSON.stringify({ url, key }));
         initSupabase();
         updateCloudStatusUI(true, url);
-        toast('Konfigurasi Supabase berhasil disimpan! ⚡');
+        toast('Konfigurasi Supabase berhasil disimpan!', 'success');
         if (currentUser) DB.fetchData();
       } else {
         toast('Gagal: ' + res.message, 'err');
@@ -6764,7 +6764,7 @@ function setupSupabaseUI() {
       btnTest.disabled = true;
       btnTest.textContent = 'Menguji...';
       const res = await testSupabaseConnection(url, key);
-      if (res.success) toast('Koneksi ke Supabase berhasil! 🟢');
+      if (res.success) toast('Koneksi ke Supabase berhasil!', 'success');
       else toast('Koneksi gagal: ' + res.message, 'err');
       btnTest.disabled = false;
       btnTest.textContent = 'Tes Koneksi';
@@ -6789,10 +6789,10 @@ function setupSupabaseUI() {
         } catch {}
       }
       btnVerifyDb.disabled = false;
-      btnVerifyDb.textContent = '⚡ Cek Skrip Database';
+      btnVerifyDb.textContent = 'Cek Skrip Database';
       if (activeCount === tables.length) {
         confirm_dlg(
-          'Skrip Database Supabase Sempurna! 🎉',
+          'Skrip Database Supabase Sempurna!',
           `Semua ${activeCount} dari ${tables.length} tabel database (kost_pengaturan, kamar, penghuni, pembayaran, pengeluaran, profiles) telah AKTIF dan siap digunakan di Supabase Cloud Anda!`,
           () => {},
           'Selesai'
@@ -6837,7 +6837,7 @@ function setupSupabaseUI() {
   $('btn-copy-sql-rls')?.addEventListener('click', () => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(SUPABASE_WEB_STORAGE_SQL).then(() => {
-        toast('📋 Skrip SQL berhasil disalin! Buka Supabase SQL Editor dan jalankan (Run).', 'ok');
+        toast('Skrip SQL berhasil disalin! Buka Supabase SQL Editor dan jalankan (Run).', 'ok');
       }).catch(() => {
         const codeEl = $('code-sql-rls');
         if (codeEl) {
@@ -6847,7 +6847,7 @@ function setupSupabaseUI() {
           sel.removeAllRanges();
           sel.addRange(range);
           document.execCommand('copy');
-          toast('📋 Skrip SQL disalin ke clipboard!', 'ok');
+          toast('Skrip SQL disalin ke clipboard!', 'ok');
         }
       });
     } else {
@@ -6859,7 +6859,7 @@ function setupSupabaseUI() {
         sel.removeAllRanges();
         sel.addRange(range);
         document.execCommand('copy');
-        toast('📋 Skrip SQL disalin ke clipboard!', 'ok');
+        toast('Skrip SQL disalin ke clipboard!', 'ok');
       }
     }
   });
@@ -6990,9 +6990,9 @@ function renderSpotlightResults(q) {
     html += matchedPenghuni.map(p => `
       <div class="spotlight-item" onclick="closeSpotlight();switchKost('${esc(p.branchId)}');openDetail('${esc(p.id)}')">
         <div class="spotlight-item-left">
-          <div class="spotlight-item-icon">👤</div>
+          <div class="spotlight-item-icon"><span class="material-symbols-outlined" style="font-size:18px">person</span></div>
           <div>
-            <div class="spotlight-item-title">${esc(p.nama)} <span class="badge badge-accent" style="font-size:0.62rem">🏢 ${esc(p.branchNama)}</span> ${p.status === 'aktif' ? '<span class="badge badge-green" style="font-size:0.62rem">Aktif</span>' : '<span class="badge badge-gray" style="font-size:0.62rem">Keluar</span>'}</div>
+            <div class="spotlight-item-title">${esc(p.nama)} <span class="badge badge-accent" style="font-size:0.62rem">${esc(p.branchNama)}</span> ${p.status === 'aktif' ? '<span class="badge badge-green" style="font-size:0.62rem">Aktif</span>' : '<span class="badge badge-gray" style="font-size:0.62rem">Keluar</span>'}</div>
             <div class="spotlight-item-sub">Kamar ${esc(p.kamar || '–')} · Telp/WA: ${esc(p.hp || '–')} · Sewa: ${rp(p.sewa || 0)}</div>
           </div>
         </div>
@@ -7006,9 +7006,9 @@ function renderSpotlightResults(q) {
     html += matchedKamar.map(k => `
       <div class="spotlight-item" onclick="closeSpotlight();switchKost('${esc(k.branchId)}');navigateTo('kamar')">
         <div class="spotlight-item-left">
-          <div class="spotlight-item-icon">🛏️</div>
+          <div class="spotlight-item-icon"><span class="material-symbols-outlined" style="font-size:18px">bed</span></div>
           <div>
-            <div class="spotlight-item-title">Kamar ${esc(k.no)} (${esc(k.tipe || 'Standar')}) <span class="badge badge-accent" style="font-size:0.62rem">🏢 ${esc(k.branchNama)}</span></div>
+            <div class="spotlight-item-title">Kamar ${esc(k.no)} (${esc(k.tipe || 'Standar')}) <span class="badge badge-accent" style="font-size:0.62rem">${esc(k.branchNama)}</span></div>
             <div class="spotlight-item-sub">Lantai ${esc(k.lantai || '1')} · ${rp(k.harga || 0)}/bln · ${esc(k.fasilitas || 'Standar')}</div>
           </div>
         </div>
@@ -7022,9 +7022,9 @@ function renderSpotlightResults(q) {
     html += matchedExp.map(x => `
       <div class="spotlight-item" onclick="closeSpotlight();switchKost('${esc(x.branchId)}');navigateTo('pengeluaran')">
         <div class="spotlight-item-left">
-          <div class="spotlight-item-icon">💸</div>
+          <div class="spotlight-item-icon"><span class="material-symbols-outlined" style="font-size:18px">receipt_long</span></div>
           <div>
-            <div class="spotlight-item-title">${esc(x.keterangan || x.kategori)} <strong style="color:var(--red)">(${rp(x.jumlah)})</strong> <span class="badge badge-accent" style="font-size:0.62rem">🏢 ${esc(x.branchNama)}</span></div>
+            <div class="spotlight-item-title">${esc(x.keterangan || x.kategori)} <strong style="color:var(--red)">(${rp(x.jumlah)})</strong> <span class="badge badge-accent" style="font-size:0.62rem">${esc(x.branchNama)}</span></div>
             <div class="spotlight-item-sub">${fmtD(x.tanggal)} · ${esc(x.kategori)}</div>
           </div>
         </div>
@@ -7191,7 +7191,7 @@ function setupNewFeatureEvents() {
       if (typeof window.switchKost === 'function') {
         window.switchKost(branchId);
         const branchName = S.propertiesData?.[branchId]?.kost?.nama || ('Cabang ' + e.key);
-        toast(`🏢 Beralih ke [Alt+${e.key}]: ${branchName}`, 'ok');
+        toast(`Beralih ke [Alt+${e.key}]: ${branchName}`, 'ok');
       }
       return;
     }
@@ -7271,7 +7271,7 @@ if ('serviceWorker' in navigator) {
   // Dark Mode default
   const t = localStorage.getItem('sk3_theme') || 'dark';
   document.documentElement.setAttribute('data-theme', t);
-  $('theme-icon').textContent = t === 'dark' ? '☀️' : '🌙';
+  $('theme-icon').textContent = t === 'dark' ? 'dark_mode' : 'light_mode';
 
   // Coba inisialisasi Supabase
   const hasSb = initSupabase();

@@ -2291,6 +2291,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   background: none;
   cursor: pointer;
   padding: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
   transition: color var(--t);
 }
 .pw-eye:hover {

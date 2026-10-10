@@ -102,10 +102,10 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-top">
       <div class="brand">
-        <span class="brand-mark">🏠</span>
+        <span class="brand-mark"><span class="material-symbols-outlined" style="font-size:20px">apartment</span></span>
         <div class="brand-text">
           <span class="brand-name" id="sb-kost-name">Kost Manager</span>
-          <span class="brand-loc" id="sb-kost-loc">📍 Portal Multi-Cabang</span>
+          <span class="brand-loc" id="sb-kost-loc">Portal Multi-Cabang</span>
           <span class="brand-role" id="sb-role-badge">Manager</span>
         </div>
       </div>
@@ -142,17 +142,17 @@
         <!-- Property Switcher (Multi-Kost 5 Cabang) -->
         <div class="topbar-property-selector" id="topbar-property-selector">
           <button type="button" class="btn-property-switch" id="btn-property-switch" title="Ganti Cabang Kost" aria-haspopup="true" aria-expanded="false">
-            <span class="prop-icon-badge">🏢</span>
+            <span class="prop-icon-badge"><span class="material-symbols-outlined" style="font-size:18px">apartment</span></span>
             <div class="prop-text-col">
               <span class="prop-label-kost" id="topbar-prop-name">Kost Griya Harmoni Sleman</span>
-              <span class="prop-label-loc" id="topbar-prop-loc">📍 Sleman, Yogyakarta</span>
+              <span class="prop-label-loc" id="topbar-prop-loc">Sleman, Yogyakarta</span>
             </div>
             <svg class="prop-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
           </button>
           
           <div class="property-dropdown-menu" id="property-dropdown-menu" style="display:none">
             <div class="prop-dd-header">
-              <span class="prop-dd-title">🏢 5 Cabang Kost Anda</span>
+              <span class="prop-dd-title">5 Cabang Kost Anda</span>
               <span class="badge" style="background:var(--accent-bg);color:var(--accent-light);border:1px solid var(--accent-border);font-size:0.7rem;font-weight:700">Multi-Kost</span>
             </div>
             <div class="prop-dd-list" id="prop-dd-list">
@@ -172,7 +172,7 @@
           <span id="topbar-cloud-text">Supabase</span>
         </button>
         <button class="icon-btn" id="theme-toggle" title="Ganti tema" aria-label="Toggle theme">
-          <span id="theme-icon">🌙</span>
+          <span id="theme-icon" class="material-symbols-outlined" style="font-size:18px">dark_mode</span>
         </button>
         <button class="btn-primary" id="btn-tambah-penghuni" style="display:none">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -192,7 +192,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
             <div>
               <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-                <h1 id="dash-greeting" style="margin:0">Selamat datang 👋</h1>
+                <h1 id="dash-greeting" style="margin:0">Selamat datang</h1>
                 <span class="badge" style="background:var(--surface-container);color:var(--accent-light);border:1px solid var(--border-2);font-weight:600;padding:4px 10px;border-radius:var(--radius-xs);font-size:0.75rem;display:inline-flex;align-items:center;gap:6px">
                   <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block"></span>
                   <span id="dash-kost-name-badge">Kost Griya Harmoni Sleman</span>
@@ -220,7 +220,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
             <div>
               <div style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:1.25rem">🏢</span>
+                <span class="material-symbols-outlined" style="font-size:1.35rem;color:var(--accent-light)">domain</span>
                 <h3 style="margin:0;font-size:1.05rem;font-weight:700">Portofolio Multi-Kost (5 Cabang Aktif)</h3>
               </div>
               <p style="margin:3px 0 0;font-size:0.8rem;color:var(--text-3)">Seluruh data kamar, nama penghuni, dan pembukuan terisolasi 100% mandiri pada setiap cabang lokasi</p>
@@ -267,7 +267,7 @@
         <div class="panel" style="margin-top:20px">
           <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
             <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:1.15rem">💸</span>
+              <span class="material-symbols-outlined" style="font-size:1.25rem;color:var(--text-2)">receipt_long</span>
               <div>
                 <span class="panel-title" style="display:block">Pengeluaran Operasional Terbaru</span>
                 <span style="font-size:0.75rem;color:var(--text-3)">Catatan biaya listrik, air, wifi, pemeliharaan & operasional kost</span>
@@ -315,13 +315,13 @@
             </div>
             <select class="sel" id="filter-cabang-penghuni" title="Pilih Cabang atau Konsolidasi Semua Cabang">
               <option value="active">Cabang Aktif</option>
-              <option value="all">🏢 Semua 5 Cabang</option>
+              <option value="all">Semua 5 Cabang</option>
             </select>
             <select class="sel" id="filter-status">
               <option value="">Semua Status</option>
               <option value="aktif">Aktif</option>
               <option value="tidak aktif">Tidak Aktif</option>
-              <option value="kontrak_habis">⏳ Kontrak Kritis (≤ 14 Hari)</option>
+              <option value="kontrak_habis">Kontrak Kritis (≤ 14 Hari)</option>
             </select>
             <select class="sel" id="filter-kendaraan">
               <option value="">Semua Kendaraan</option>
@@ -350,7 +350,7 @@
           </div>
         </div>
         <div class="empty-state" id="empty-penghuni" style="display:none">
-          <div class="empty-emoji">👥</div>
+          <div class="empty-emoji"><span class="material-symbols-outlined" style="font-size:36px;color:var(--text-3)">group</span></div>
           <p class="empty-title">Belum ada penghuni</p>
           <p class="empty-sub">Klik "Tambah Penghuni" untuk menambahkan data.</p>
         </div>
@@ -383,7 +383,7 @@
         <!-- Box Verifikasi Bukti Transfer Menunggu Review -->
         <div class="panel" id="panel-verifikasi-bayar" style="display:none;margin-bottom:20px;border-color:var(--orange-b)">
           <div class="panel-header" style="background:var(--orange-bg)">
-            <span class="panel-title" style="color:var(--orange)">⚠️ Konfirmasi Pembayaran Menunggu Verifikasi</span>
+            <span class="panel-title" style="color:var(--orange)">Konfirmasi Pembayaran Menunggu Verifikasi</span>
             <span class="badge badge-orange" id="badge-count-pending-bayar">0 Menunggu</span>
           </div>
           <div class="tbl-wrap">
@@ -400,7 +400,7 @@
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
               <select class="sel" id="filter-cabang-bayar" title="Pilih Cabang atau Konsolidasi Semua Cabang">
                 <option value="active">Cabang Aktif</option>
-                <option value="all">🏢 Semua 5 Cabang (Konsolidasi)</option>
+                <option value="all">Semua 5 Cabang (Konsolidasi)</option>
               </select>
               <select class="sel" id="filter-status-bayar">
                 <option value="">Semua Status</option>
@@ -427,14 +427,14 @@
         <div class="two-col" style="margin-bottom:20px">
           <div class="panel">
             <div class="panel-header">
-              <span class="panel-title">📊 Komposisi Biaya per Kategori</span>
+              <span class="panel-title">Komposisi Biaya per Kategori</span>
             </div>
             <div class="chart-area chart-sm"><canvas id="chart-pengeluaran-kategori"></canvas></div>
             <div class="legend-list" id="pengeluaran-kategori-legend" style="margin-top:10px"></div>
           </div>
           <div class="panel">
             <div class="panel-header">
-              <span class="panel-title">📈 Tren Pengeluaran Bulanan</span>
+              <span class="panel-title">Tren Pengeluaran Bulanan</span>
             </div>
             <div class="chart-area chart-sm"><canvas id="chart-pengeluaran-tren"></canvas></div>
             <div class="legend-list" id="pengeluaran-tren-legend" style="margin-top:10px"></div>
@@ -450,18 +450,18 @@
             <select class="sel" id="filter-bulan-pengeluaran"></select>
             <select class="sel" id="filter-kategori-pengeluaran">
               <option value="">Semua Kategori</option>
-              <option value="Listrik/PLN">⚡ Listrik / PLN</option>
-              <option value="Air/PDAM">💧 Air / PDAM</option>
-              <option value="WiFi/Internet">📶 WiFi &amp; Internet</option>
-              <option value="Kebersihan/Sampah">🧹 Kebersihan &amp; Sampah</option>
-              <option value="Perbaikan/Maintenance">🛠️ Maintenance &amp; Perbaikan</option>
-              <option value="Gaji/Operasional">👥 Gaji / Petugas</option>
-              <option value="Lainnya">📦 Lain-lain</option>
+              <option value="Listrik/PLN">Listrik / PLN</option>
+              <option value="Air/PDAM">Air / PDAM</option>
+              <option value="WiFi/Internet">WiFi &amp; Internet</option>
+              <option value="Kebersihan/Sampah">Kebersihan &amp; Sampah</option>
+              <option value="Perbaikan/Maintenance">Maintenance &amp; Perbaikan</option>
+              <option value="Gaji/Operasional">Gaji / Petugas</option>
+              <option value="Lainnya">Lain-lain</option>
             </select>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button type="button" class="btn-ghost btn-sm" id="btn-cetak-laporan-keuangan" title="Cetak Rekap Laporan Keuangan Bulanan (Laba Bersih & Arus Kas)">
-              🖨️ Cetak Laporan Keuangan
+              Cetak Laporan Keuangan
             </button>
             <button type="button" class="btn-outline btn-sm" id="btn-export-pengeluaran-csv" title="Unduh catatan pengeluaran format CSV">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -488,19 +488,19 @@
       <section class="page" id="page-pengaturan">
         <div class="settings-layout">
           <div class="settings-sidebar">
-            <button class="settings-tab active" data-stab="profil">🏠 Profil Kost</button>
-            <button class="settings-tab" data-stab="cabang">🏢 5 Cabang Kost</button>
-            <button class="settings-tab" data-stab="cloud">⚡ Cloud Supabase</button>
-            <button class="settings-tab" data-stab="data">🗂️ Data</button>
+            <button class="settings-tab active" data-stab="profil">Profil Kost</button>
+            <button class="settings-tab" data-stab="cabang">5 Cabang Kost</button>
+            <button class="settings-tab" data-stab="cloud">Cloud Supabase</button>
+            <button class="settings-tab" data-stab="data">Data</button>
           </div>
           <div class="settings-body">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px">
               <div>
-                <h2 style="font-size:1.15rem;font-weight:800;margin:0">⚙️ Pengaturan SiKost</h2>
+                <h2 style="font-size:1.15rem;font-weight:800;margin:0">Pengaturan SiKost</h2>
                 <div style="font-size:0.75rem;color:var(--text-3);margin-top:2px">Pengaturan tersimpan permanen dan otomatis sinkron saat logout maupun reload.</div>
               </div>
               <button type="button" class="btn-primary" id="btn-save-all-settings" style="display:inline-flex;align-items:center;gap:6px;box-shadow:var(--shadow-md)">
-                💾 Simpan Semua Pengaturan
+                Simpan Semua Pengaturan
               </button>
             </div>
 
@@ -512,7 +512,7 @@
                 <div class="fg"><label>Jumlah Total Kamar</label><input type="number" id="set-total-kamar" class="fc" min="1" placeholder="10" /></div>
                 <div class="fg"><label>Alamat Kost</label><textarea id="set-alamat" class="fc" rows="2" placeholder="Alamat lengkap kost"></textarea></div>
                 <div style="display:flex;gap:10px;margin-top:10px">
-                  <button type="submit" class="btn-primary" id="btn-submit-kost">💾 Simpan Profil Kost</button>
+                  <button type="submit" class="btn-primary" id="btn-submit-kost">Simpan Profil Kost</button>
                 </div>
               </form>
             </div>
@@ -521,7 +521,7 @@
             <div class="stab-content" id="stab-cabang">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
                 <div>
-                  <h2 class="settings-title" style="margin-bottom:4px">🏢 Kelola 5 Cabang Kost Anda</h2>
+                  <h2 class="settings-title" style="margin-bottom:4px">Kelola 5 Cabang Kost Anda</h2>
                   <p class="text-muted" style="margin:0">Setiap cabang memiliki data kamar, daftar penghuni, dan pembukuan keuangan yang terpisah 100%.</p>
                 </div>
               </div>
@@ -537,7 +537,7 @@
               <p class="text-muted">Hubungkan database PostgreSQL dan autentikasi Cloud Supabase agar data tersimpan aman di cloud dan dapat diakses dari mana saja.</p>
 
               <div class="cloud-banner" style="margin-top:14px">
-                <span class="cloud-banner-icon">⚡</span>
+                <span class="cloud-banner-icon material-symbols-outlined" style="font-size:24px">cloud_sync</span>
                 <div>
                   <strong>Status Koneksi: </strong><span id="settings-cloud-status-text">Memeriksa koneksi...</span>
                   <div style="font-size:0.75rem;margin-top:4px;color:var(--text-3)" id="settings-cloud-endpoint">–</div>
@@ -554,14 +554,14 @@
                   <label>Supabase Anon Key (Public Key)</label>
                   <div class="pw-wrap">
                     <input type="password" id="cloud-key-input" class="fc" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
-                    <button type="button" class="pw-eye" data-target="cloud-key-input">👁</button>
+                    <button type="button" class="pw-eye" data-target="cloud-key-input"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button>
                   </div>
                   <small style="color:var(--text-3);font-size:0.72rem">Ditemukan di: Supabase Dashboard &gt; Settings &gt; API &gt; Project API keys &gt; anon public</small>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
                   <button type="submit" class="btn-primary" id="btn-save-cloud">Simpan &amp; Hubungkan</button>
                   <button type="button" class="btn-outline" id="btn-test-cloud">Tes Koneksi</button>
-                  <button type="button" class="btn-outline" id="btn-verify-supabase-db" title="Cek apakah 7 tabel skrip database Supabase sudah aktif">⚡ Cek Skrip Database</button>
+                  <button type="button" class="btn-outline" id="btn-verify-supabase-db" title="Cek apakah 7 tabel skrip database Supabase sudah aktif">Cek Skrip Database</button>
                   <button type="button" class="btn-ghost" id="btn-disconnect-cloud">Putuskan Koneksi</button>
                 </div>
               </form>
@@ -571,7 +571,7 @@
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
                   <div>
                     <div style="font-weight:700;color:var(--primary);font-size:0.92rem;display:flex;align-items:center;gap:6px">
-                      <span>🌐</span> <span>Penyimpanan Web Cloud (Database Langsung)</span>
+                      <span>Penyimpanan Web Cloud (Database Langsung)</span>
                     </div>
                     <div style="font-size:0.78rem;color:var(--text-2);margin-top:4px;line-height:1.4">
                       Aplikasi diatur untuk menyimpan seluruh penambahan data (penghuni, kamar, pembayaran, pengeluaran) langsung ke database web Supabase, bukan hanya di local storage.
@@ -579,10 +579,10 @@
                   </div>
                   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
                     <button type="button" class="btn-primary btn-sm" id="btn-open-sql-guide">
-                      📋 Aktifkan Akses Web (SQL 1-Klik)
+                      Aktifkan Akses Web (SQL 1-Klik)
                     </button>
                     <button type="button" class="btn-outline btn-sm" id="btn-check-web-storage">
-                      🧪 Uji Izin Simpan Web
+                      Uji Izin Simpan Web
                     </button>
                   </div>
                 </div>
@@ -594,7 +594,7 @@
               <h3 style="font-size:0.88rem;font-weight:700;margin-bottom:8px">Migrasi Data Lokal ke Supabase Cloud</h3>
               <p class="text-muted" style="font-size:0.78rem;margin-bottom:14px">Upload seluruh data kamar, penghuni, pembayaran, pengeluaran, dan profil kost yang ada di browser ini ke Supabase Cloud sekaligus.</p>
               <button type="button" class="btn-primary" id="btn-migrate-local-cloud" style="background:var(--purple);border-color:var(--purple)">
-                ☁️ Upload Seluruh Data ke Supabase Cloud
+                Upload Seluruh Data ke Supabase Cloud
               </button>
             </div>
 
@@ -632,13 +632,13 @@
               <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:12px">Ganti Password</h3>
               <form id="form-profil-pw" class="settings-form">
                 <div class="fg"><label>Password Lama</label>
-                  <div class="pw-wrap"><input type="password" id="profil-pw-lama" class="fc" placeholder="Password saat ini" /><button type="button" class="pw-eye" data-target="profil-pw-lama">👁</button></div>
+                  <div class="pw-wrap"><input type="password" id="profil-pw-lama" class="fc" placeholder="Password saat ini" /><button type="button" class="pw-eye" data-target="profil-pw-lama"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button></div>
                 </div>
                 <div class="fg"><label>Password Baru</label>
-                  <div class="pw-wrap"><input type="password" id="profil-pw-baru" class="fc" placeholder="Min. 6 karakter" /><button type="button" class="pw-eye" data-target="profil-pw-baru">👁</button></div>
+                  <div class="pw-wrap"><input type="password" id="profil-pw-baru" class="fc" placeholder="Min. 6 karakter" /><button type="button" class="pw-eye" data-target="profil-pw-baru"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button></div>
                 </div>
                 <div class="fg"><label>Konfirmasi</label>
-                  <div class="pw-wrap"><input type="password" id="profil-pw-confirm" class="fc" placeholder="Ulangi password baru" /><button type="button" class="pw-eye" data-target="profil-pw-confirm">👁</button></div>
+                  <div class="pw-wrap"><input type="password" id="profil-pw-confirm" class="fc" placeholder="Ulangi password baru" /><button type="button" class="pw-eye" data-target="profil-pw-confirm"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button></div>
                 </div>
                 <button type="submit" class="btn-primary">Simpan Password</button>
               </form>
@@ -675,7 +675,7 @@
             <div class="ktp-preview-wrap" id="pb-ktp" onclick="$('field-ktp').click()" title="Klik untuk upload atau ganti foto KTP">
               <img id="prev-ktp" src="" alt="Foto KTP" style="display:none" />
               <div class="photo-ph" id="ph-ktp">
-                <span style="font-size:2.4rem">🪪</span>
+                <span class="material-symbols-outlined" style="font-size:2.8rem;color:var(--accent-light)">badge</span>
                 <strong style="font-size:0.88rem;color:var(--text);margin-top:4px">Upload / Foto KTP</strong>
                 <small style="color:var(--text-3);font-size:0.75rem">Klik di sini untuk upload & auto-fill otomatis</small>
               </div>
@@ -698,7 +698,7 @@
             <div class="fg"><label>Jenis Kelamin</label><select id="field-gender" class="fc"><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select></div>
             <div class="fg"><label>Tempat Lahir</label><input type="text" id="field-tempat-lahir" class="fc" placeholder="Jakarta" /></div>
             <div class="fg">
-              <label>📅 Tanggal Lahir</label>
+              <label>Tanggal Lahir</label>
               <div class="date-input-wrap">
                 <input type="date" id="field-tgl-lahir" class="fc date-fc" />
                 <span class="date-picker-icon" onclick="$('field-tgl-lahir').showPicker ? $('field-tgl-lahir').showPicker() : $('field-tgl-lahir').focus()" title="Pilih Tanggal Lahir">
@@ -715,13 +715,13 @@
         <div class="ftab-content" id="ftab-hunian">
           <div class="fg-grid">
             <div class="fg col2">
-              <label>🏢 Cabang Kost Sasaran</label>
+              <label>Cabang Kost Sasaran</label>
               <select id="field-cabang-penghuni-modal" class="fc"></select>
             </div>
             <div class="fg">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                 <label style="margin-bottom:0">Pilih Kamar Kosong <em>*</em></label>
-                <button type="button" id="btn-toggle-manual-kamar" class="text-btn" style="font-size:0.75rem;color:var(--accent-light)">✏️ Input Manual</button>
+                <button type="button" id="btn-toggle-manual-kamar" class="text-btn" style="font-size:0.75rem;color:var(--accent-light)">Input Manual</button>
               </div>
               <select id="field-kamar-select" class="fc">
                 <option value="">-- Pilih Kamar Kosong --</option>
@@ -731,7 +731,7 @@
             </div>
             <div class="fg"><label>Lantai</label><input type="text" id="field-lantai" class="fc" placeholder="1" /></div>
             <div class="fg">
-              <label>📅 Tanggal Masuk <em>*</em></label>
+              <label>Tanggal Masuk <em>*</em></label>
               <div class="date-input-wrap">
                 <input type="date" id="field-tgl-masuk" class="fc date-fc" required />
                 <span class="date-picker-icon" onclick="$('field-tgl-masuk').showPicker ? $('field-tgl-masuk').showPicker() : $('field-tgl-masuk').focus()" title="Pilih Tanggal Masuk">
@@ -740,7 +740,7 @@
               </div>
             </div>
             <div class="fg">
-              <label>📅 Est. Tanggal Keluar</label>
+              <label>Est. Tanggal Keluar</label>
               <div class="date-input-wrap">
                 <input type="date" id="field-tgl-keluar" class="fc date-fc" />
                 <span class="date-picker-icon" onclick="$('field-tgl-keluar').showPicker ? $('field-tgl-keluar').showPicker() : $('field-tgl-keluar').focus()" title="Pilih Tanggal Keluar">
@@ -809,10 +809,10 @@
     <div class="modal-body" id="detail-body"></div>
     <div class="modal-foot modal-foot-split">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <button type="button" class="btn-primary" id="btn-renew-detail" style="font-size:0.8rem">🔄 Perpanjang Kontrak</button>
-        <button class="btn-ghost" id="btn-print-detail">🖨️ Cetak Kartu</button>
-        <button class="btn-outline" id="btn-print-spk">📄 Surat Kontrak</button>
-        <a href="#" target="_blank" rel="noopener noreferrer" class="btn-wa" id="btn-wa-detail" style="display:none">💬 Chat WA</a>
+        <button type="button" class="btn-primary" id="btn-renew-detail" style="font-size:0.8rem">Perpanjang Kontrak</button>
+        <button class="btn-ghost" id="btn-print-detail">Cetak Kartu</button>
+        <button class="btn-outline" id="btn-print-spk">Surat Kontrak</button>
+        <a href="#" target="_blank" rel="noopener noreferrer" class="btn-wa" id="btn-wa-detail" style="display:none">Chat WhatsApp</a>
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn-outline" id="btn-edit-detail">Edit</button>
@@ -860,7 +860,7 @@
         <input type="hidden" id="field-pengeluaran-id" />
         <div class="fg-grid">
           <div class="fg">
-            <label for="field-pengeluaran-tgl">📅 Tanggal Pengeluaran <em>*</em></label>
+            <label for="field-pengeluaran-tgl">Tanggal Pengeluaran <em>*</em></label>
             <div class="date-input-wrap">
               <input type="date" id="field-pengeluaran-tgl" class="fc date-fc" required />
               <span class="date-picker-icon" onclick="$('field-pengeluaran-tgl').showPicker ? $('field-pengeluaran-tgl').showPicker() : $('field-pengeluaran-tgl').focus()" title="Pilih Tanggal Pengeluaran">
@@ -870,13 +870,13 @@
           </div>
           <div class="fg"><label for="field-pengeluaran-kategori">Kategori <em>*</em></label>
             <select id="field-pengeluaran-kategori" class="fc" required>
-              <option value="Listrik/PLN">⚡ Listrik / PLN</option>
-              <option value="Air/PDAM">💧 Air / PDAM</option>
-              <option value="WiFi/Internet">📶 WiFi &amp; Internet</option>
-              <option value="Kebersihan/Sampah">🧹 Kebersihan &amp; Sampah</option>
-              <option value="Perbaikan/Maintenance">🛠️ Maintenance &amp; Perbaikan</option>
-              <option value="Gaji/Operasional">👥 Gaji / Petugas</option>
-              <option value="Lainnya">📦 Lain-lain</option>
+              <option value="Listrik/PLN">Listrik / PLN</option>
+              <option value="Air/PDAM">Air / PDAM</option>
+              <option value="WiFi/Internet">WiFi &amp; Internet</option>
+              <option value="Kebersihan/Sampah">Kebersihan &amp; Sampah</option>
+              <option value="Perbaikan/Maintenance">Maintenance &amp; Perbaikan</option>
+              <option value="Gaji/Operasional">Gaji / Petugas</option>
+              <option value="Lainnya">Lain-lain</option>
             </select>
           </div>
           <div class="fg col2">
@@ -888,7 +888,7 @@
           <div class="fg col2">
             <label>Foto Nota / Kwitansi (Opsional)</label>
             <div style="display:flex;gap:12px;align-items:center">
-              <label class="btn-outline btn-sm" for="field-pengeluaran-nota" style="cursor:pointer">📷 Unggah Nota</label>
+              <label class="btn-outline btn-sm" for="field-pengeluaran-nota" style="cursor:pointer">Unggah Nota</label>
               <input type="file" id="field-pengeluaran-nota" accept="image/*" style="display:none" />
               <img id="prev-pengeluaran-nota" src="" alt="Nota" style="display:none;width:50px;height:50px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" />
               <button type="button" id="btn-hapus-nota" class="text-btn" style="display:none;color:var(--red);font-size:0.75rem">Hapus</button>
@@ -908,13 +908,13 @@
 <div class="modal-overlay" id="modal-kwitansi">
   <div class="modal" style="max-width:640px">
     <div class="modal-head">
-      <h2 class="modal-title">🧾 Kwitansi Pembayaran Resmi</h2>
+      <h2 class="modal-title">Kwitansi Pembayaran Resmi</h2>
       <button class="modal-x" id="modal-kwitansi-close">✕</button>
     </div>
     <div class="modal-body" id="modal-kwitansi-body"></div>
     <div class="modal-foot modal-foot-split">
-      <button type="button" class="btn-ghost" id="btn-print-kwitansi">🖨️ Cetak / Unduh PDF</button>
-      <button type="button" class="btn-wa" id="btn-wa-kwitansi">📱 Kirim Kwitansi via WA</button>
+      <button type="button" class="btn-ghost" id="btn-print-kwitansi">Cetak / Unduh PDF</button>
+      <button type="button" class="btn-wa" id="btn-wa-kwitansi">Kirim Kwitansi via WA</button>
     </div>
   </div>
 </div>
@@ -935,7 +935,7 @@
 <div class="modal-overlay" id="modal-cloud-config">
   <div class="modal" style="max-width:480px">
     <div class="modal-head">
-      <h2 class="modal-title">⚡ Hubungkan Supabase Cloud</h2>
+      <h2 class="modal-title">Hubungkan Supabase Cloud</h2>
       <button class="modal-x" id="modal-cloud-close">✕</button>
     </div>
     <div class="modal-body">
@@ -951,7 +951,7 @@
           <label>Anon Key (Public)</label>
           <div class="pw-wrap">
             <input type="password" id="modal-cloud-key" class="fc" placeholder="eyJhbGciOi..." required />
-            <button type="button" class="pw-eye" data-target="modal-cloud-key">👁</button>
+            <button type="button" class="pw-eye" data-target="modal-cloud-key"><span class="material-symbols-outlined" style="font-size:18px">visibility</span></button>
           </div>
         </div>
         <div class="fg" style="margin-bottom:18px">
@@ -1000,7 +1000,7 @@
       <!-- Input Akun Google Kustom -->
       <div style="margin-top:16px;border-top:1px dashed var(--border);padding-top:14px">
         <button type="button" id="btn-toggle-custom-google" class="btn-ghost" style="width:100%;justify-content:center;font-size:0.85rem;padding:9px;border:1px dashed var(--border)">
-          ➕ Masuk dengan Akun Google Saya Sendiri
+          Masuk dengan Akun Google
         </button>
 
         <form id="form-custom-google" style="display:none;margin-top:12px;background:var(--surface-2);padding:14px;border-radius:12px;border:1px solid var(--border)">
@@ -1013,7 +1013,7 @@
             <input type="text" id="custom-google-nama" class="fc" placeholder="Nama Anda" />
           </div>
           <button type="submit" class="btn-primary" style="width:100%;justify-content:center;padding:10px">
-            🚀 Masuk Langsung (1-Klik)
+            Masuk Langsung
           </button>
         </form>
       </div>
@@ -1021,10 +1021,10 @@
       <!-- Tombol Live OAuth jika Supabase Cloud aktif -->
       <div id="google-live-oauth-box" style="display:none;margin-top:14px;text-align:center">
         <button type="button" id="btn-trigger-live-oauth" class="btn-ghost" style="font-size:0.78rem;color:var(--accent-light);text-decoration:underline">
-          🌐 Coba Masuk via Google Live OAuth (Supabase)
+          Masuk via Google Live OAuth (Supabase)
         </button>
         <div style="margin-top:6px">
-          <a href="#" id="link-google-setup-from-modal" style="font-size:0.72rem;color:var(--text-3);text-decoration:none">⚙️ Panduan Hubungkan Google ke Supabase</a>
+          <a href="#" id="link-google-setup-from-modal" style="font-size:0.72rem;color:var(--text-3);text-decoration:none">Panduan Hubungkan Google ke Supabase</a>
         </div>
       </div>
     </div>
@@ -1036,7 +1036,7 @@
   <div class="modal" style="max-width:520px;padding:0;overflow:hidden">
     <div style="background:var(--surface-2);padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:1.5rem">🔑</span>
+        <span class="material-symbols-outlined" style="font-size:1.6rem;color:var(--accent-light)">vpn_key</span>
         <div>
           <h3 style="font-size:1.1rem;font-weight:700;margin:0">Aktivasi Google Login di Supabase</h3>
           <p style="font-size:0.78rem;color:var(--text-3);margin:2px 0 0">Hubungkan Google Cloud Console ke Supabase Cloud</p>
@@ -1053,7 +1053,7 @@
         <div style="font-weight:600;font-size:0.8rem;color:var(--accent-light);margin-bottom:4px">1. Redirect URL (Callback Supabase):</div>
         <div style="display:flex;gap:8px;align-items:center">
           <input type="text" id="google-callback-url" class="fc" style="font-size:0.78rem;font-family:monospace;padding:6px 10px" readonly value="https://tzplpnqtwcfchhmodphz.supabase.co/auth/v1/callback" />
-          <button type="button" class="btn-ghost" id="btn-copy-callback" style="padding:6px 12px;font-size:0.78rem">📋 Salin</button>
+          <button type="button" class="btn-ghost" id="btn-copy-callback" style="padding:6px 12px;font-size:0.78rem">Salin</button>
         </div>
       </div>
 
@@ -1065,7 +1065,7 @@
 
       <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:space-between;align-items:center">
         <a href="https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/auth/providers" target="_blank" rel="noopener noreferrer" class="btn-primary" style="text-decoration:none;padding:8px 16px;font-size:0.82rem">
-          🚀 Buka Supabase Providers ↗
+          Buka Supabase Providers ↗
         </a>
         <button type="button" class="btn-ghost" id="btn-google-setup-done" style="font-size:0.82rem">
           Tutup &amp; Coba Lagi
@@ -1080,7 +1080,7 @@
   <div class="modal" style="max-width:500px;padding:0;overflow:hidden">
     <div style="background:var(--surface-2);padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:1.5rem">🌐</span>
+        <span class="material-symbols-outlined" style="font-size:1.6rem;color:var(--accent-light)">public</span>
         <div>
           <h3 style="font-size:1.1rem;font-weight:700;margin:0">Buka via Server Web (Localhost / Vercel)</h3>
           <p style="font-size:0.78rem;color:var(--text-3);margin:2px 0 0">Google OAuth melarang pengalihan ke URL file://</p>
@@ -1132,7 +1132,7 @@
 <div class="modal-overlay" id="modal-laporan-bulanan">
   <div class="modal" style="max-width:680px;padding:0;overflow:hidden">
     <div class="modal-head" style="padding:16px 20px;border-bottom:1px solid var(--border)">
-      <h2 class="modal-title">📊 Rekap Laporan Keuangan Bulanan</h2>
+      <h2 class="modal-title">Rekap Laporan Keuangan Bulanan</h2>
       <button type="button" class="modal-x" id="modal-laporan-close">✕</button>
     </div>
     <div class="modal-body" id="modal-laporan-body" style="padding:20px;max-height:75vh;overflow-y:auto">
@@ -1140,7 +1140,7 @@
     </div>
     <div class="modal-foot" style="padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between">
       <button type="button" class="btn-ghost" id="btn-tutup-laporan">Tutup</button>
-      <button type="button" class="btn-primary" id="btn-print-laporan" onclick="window.print()">🖨️ Cetak / Unduh PDF</button>
+      <button type="button" class="btn-primary" id="btn-print-laporan" onclick="window.print()">Cetak / Unduh PDF</button>
     </div>
   </div>
 </div>
@@ -1149,7 +1149,7 @@
 <div class="modal-overlay" id="modal-edit-cabang">
   <div class="modal" style="max-width:520px;padding:0;overflow:hidden">
     <div class="modal-head" style="padding:16px 20px;border-bottom:1px solid var(--border)">
-      <h2 class="modal-title" id="modal-edit-cabang-title">🏢 Edit Informasi Cabang Kost</h2>
+      <h2 class="modal-title" id="modal-edit-cabang-title">Edit Informasi Cabang Kost</h2>
       <button type="button" class="modal-x" id="modal-edit-cabang-close">✕</button>
     </div>
     <form id="form-edit-cabang" style="padding:20px">
@@ -1182,7 +1182,7 @@
       </div>
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
         <button type="button" class="btn-ghost" id="btn-cancel-edit-cabang">Batal</button>
-        <button type="submit" class="btn-primary">💾 Simpan Perubahan Cabang</button>
+        <button type="submit" class="btn-primary">Simpan Perubahan Cabang</button>
       </div>
     </form>
   </div>
@@ -1192,7 +1192,7 @@
 <div class="modal-overlay" id="modal-perpanjang-kontrak">
   <div class="modal" style="max-width:540px;padding:0;overflow:hidden">
     <div class="modal-head" style="padding:16px 20px;border-bottom:1px solid var(--border)">
-      <h2 class="modal-title" id="modal-perpanjang-title">🔄 Perpanjang Masa Sewa Kontrak</h2>
+      <h2 class="modal-title" id="modal-perpanjang-title">Perpanjang Masa Sewa Kontrak</h2>
       <button type="button" class="modal-x" id="modal-perpanjang-close">✕</button>
     </div>
     <form id="form-perpanjang-kontrak" style="padding:20px">
@@ -1222,7 +1222,7 @@
 
       <div class="fg-grid" style="margin-bottom:14px">
         <div class="fg">
-          <label>📅 Tanggal Berakhir Baru <em>*</em></label>
+          <label>Tanggal Berakhir Baru <em>*</em></label>
           <div class="date-input-wrap">
             <input type="date" id="renew-tgl-keluar" class="fc date-fc" required />
             <span class="date-picker-icon" onclick="$('renew-tgl-keluar').showPicker ? $('renew-tgl-keluar').showPicker() : $('renew-tgl-keluar').focus()" title="Pilih Tanggal Berakhir">
@@ -1243,7 +1243,7 @@
 
       <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:16px">
         <button type="button" class="btn-ghost" id="btn-batal-perpanjang">Batal</button>
-        <button type="submit" class="btn-primary">💾 Simpan &amp; Perpanjang Masa Sewa</button>
+        <button type="submit" class="btn-primary">Simpan &amp; Perpanjang Masa Sewa</button>
       </div>
     </form>
   </div>
@@ -1254,12 +1254,12 @@
 <div class="modal-overlay" id="modal-supabase-rls">
   <div class="modal" style="max-width:620px;padding:0;overflow:hidden">
     <div class="modal-head" style="padding:16px 20px;border-bottom:1px solid var(--border)">
-      <h2 class="modal-title">🌐 Aktifkan Penyimpanan Web Supabase (Cloud Storage)</h2>
+      <h2 class="modal-title">Aktifkan Penyimpanan Web Supabase (Cloud Storage)</h2>
       <button type="button" class="modal-x" id="modal-supabase-rls-close">✕</button>
     </div>
     <div style="padding:20px;max-height:80vh;overflow-y:auto">
       <div style="background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px">
-        <div style="font-weight:700;color:var(--primary);margin-bottom:4px">💡 Mengapa data belum tersimpan langsung ke web?</div>
+        <div style="font-weight:700;color:var(--primary);margin-bottom:4px">Mengapa data belum tersimpan langsung ke web?</div>
         <div style="font-size:0.83rem;color:var(--text-2);line-height:1.45">
           Supabase secara default mengaktifkan <em>Row Level Security (RLS)</em> yang menolak penyimpanan data dari web browser. Jalankan skrip di bawah ini <strong>sekali saja</strong> di SQL Editor Supabase Anda agar semua data penghuni, kamar, pembayaran &amp; pengeluaran otomatis tersimpan langsung ke web!
         </div>
@@ -1267,7 +1267,7 @@
 
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <label style="font-size:0.82rem;font-weight:700">Skrip SQL Izin Web Supabase:</label>
-        <button type="button" class="btn-primary btn-sm" id="btn-copy-sql-rls">📋 Salin Skrip SQL</button>
+        <button type="button" class="btn-primary btn-sm" id="btn-copy-sql-rls">Salin Skrip SQL</button>
       </div>
 
       <pre id="code-sql-rls" style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.75rem;max-height:180px;overflow:auto;color:#cbd5e1;font-family:monospace;white-space:pre-wrap;user-select:all"></pre>
@@ -1275,19 +1275,19 @@
       <div style="margin-top:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px">
         <div style="font-weight:700;font-size:0.85rem;margin-bottom:8px">Langkah Cepat (1 Menit):</div>
         <ol style="margin:0;padding-left:20px;font-size:0.82rem;color:var(--text-2);line-height:1.6">
-          <li>Klik tombol <strong>"📋 Salin Skrip SQL"</strong> di atas.</li>
+          <li>Klik tombol <strong>"Salin Skrip SQL"</strong> di atas.</li>
           <li>Buka <strong>Supabase SQL Editor</strong> di tab baru dengan tombol di bawah.</li>
           <li>Tempelkan skrip (Ctrl+V) dan klik tombol hijau <strong>"RUN"</strong> (Ctrl+Enter).</li>
-          <li>Kembali ke sini dan klik <strong>"🧪 Uji Izin Simpan Web"</strong>. Selesai!</li>
+          <li>Kembali ke sini dan klik <strong>"Uji Izin Simpan Web"</strong>. Selesai!</li>
         </ol>
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;border-top:1px solid var(--border);padding-top:16px;flex-wrap:wrap;gap:8px">
         <a href="https://supabase.com/dashboard/project/tzplpnqtwcfchhmodphz/sql/new" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none">
-          🚀 Buka Supabase SQL Editor
+          Buka Supabase SQL Editor
         </a>
         <div style="display:flex;gap:8px">
-          <button type="button" class="btn-outline" id="btn-modal-test-web">🧪 Uji Izin Simpan Web</button>
+          <button type="button" class="btn-outline" id="btn-modal-test-web">Uji Izin Simpan Web</button>
           <button type="button" class="btn-ghost" id="btn-modal-close-rls">Tutup</button>
         </div>
       </div>
