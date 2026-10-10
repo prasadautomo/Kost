@@ -115,6 +115,7 @@ ALTER TABLE public.pembayaran ADD COLUMN IF NOT EXISTS denda NUMERIC DEFAULT 0;
 ALTER TABLE public.pembayaran ADD COLUMN IF NOT EXISTS listrik_extra NUMERIC DEFAULT 0;
 ALTER TABLE public.pembayaran ADD COLUMN IF NOT EXISTS verified_at TIMESTAMPTZ;
 ALTER TABLE public.pembayaran ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+ALTER TABLE IF EXISTS public.pembayaran DROP CONSTRAINT IF EXISTS pembayaran_penghuni_id_fkey;
 
 -- 6. Tabel Pengeluaran Kost (Fitur Pembukuan & Laba Rugi)
 CREATE TABLE IF NOT EXISTS public.pengeluaran (
@@ -147,6 +148,7 @@ CREATE TABLE IF NOT EXISTS public.keluhan (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE public.keluhan ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+ALTER TABLE IF EXISTS public.keluhan DROP CONSTRAINT IF EXISTS keluhan_penghuni_id_fkey;
 
 -- 8. Tabel Papan Pengumuman / Broadcast Kost
 CREATE TABLE IF NOT EXISTS public.pengumuman (

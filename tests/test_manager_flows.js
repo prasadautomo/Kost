@@ -197,25 +197,19 @@ const S = win.S;
 console.log('--- TESTING MANAGER FLOWS ---');
 
 const errors = [];
+let testQueue = Promise.resolve();
 const testPromises = [];
 function test(name, fn) {
-  try {
-    const res = fn();
-    if (res && typeof res.then === 'function') {
-      const p = res.then(() => {
-        console.log(`✅ PASS: ${name}`);
-      }).catch(err => {
-        console.error(`❌ FAIL: ${name} ->`, err.message);
-        errors.push({ name, err });
-      });
-      testPromises.push(p);
-      return;
+  testQueue = testQueue.then(async () => {
+    try {
+      await fn();
+      console.log(`✅ PASS: ${name}`);
+    } catch (err) {
+      console.error(`❌ FAIL: ${name} ->`, err.message);
+      errors.push({ name, err });
     }
-    console.log(`✅ PASS: ${name}`);
-  } catch (err) {
-    console.error(`❌ FAIL: ${name} ->`, err.message);
-    errors.push({ name, err });
-  }
+  });
+  testPromises.push(testQueue);
 }
 
 // 1. Seed demo data
@@ -661,6 +655,105 @@ test('DB.safeUpsert gracefully drops kost_id and succeeds without error toast wh
     if (lastReceivedPayload.kost_id) throw new Error('Second payload still contained kost_id despite cache!');
   } finally {
     global.window.sbClient = oldSbClient;
+  }
+});
+
+test('DB.savePembayaran handles foreign key constraints gracefully and syncs tenant proactively', async () => {
+  const oldSbClient = global.window.sbClient;
+  const toastErrors = [];
+  const oldToast = global.window.toast;
+  global.window.toast = (msg, type) => {
+    if (type === 'err') toastErrors.push(msg);
+  };
+
+  try {
+    const savedPenghuni = [];
+    const savedPembayaran = [];
+    let simulateFkErrorOnce = true;
+
+    // Mock sbClient simulating Postgres DB with foreign key constraint
+    global.window.sbClient = {
+      from(table) {
+        return {
+          upsert: async (payload) => {
+            if (table === 'penghuni') {
+              savedPenghuni.push({ ...payload });
+              return { data: payload, error: null };
+            }
+            if (table === 'pembayaran') {
+              // Check if tenant exists in savedPenghuni
+              const pExists = savedPenghuni.some(p => p.id === payload.penghuni_id);
+              if (!pExists && simulateFkErrorOnce) {
+                simulateFkErrorOnce = false;
+                return {
+                  data: null,
+                  error: {
+                    code: '23503',
+                    message: 'insert or update on table "pembayaran" violates foreign key constraint "pembayaran_penghuni_id_fkey"'
+                  }
+                };
+              }
+              savedPembayaran.push({ ...payload });
+              return { data: payload, error: null };
+            }
+            return { data: payload, error: null };
+          }
+        };
+      }
+    };
+
+    // Prepare tenant in branch kost_4
+    global.window.S.propertiesData = global.window.S.propertiesData || {};
+    global.window.S.propertiesData['kost_4'] = global.window.S.propertiesData['kost_4'] || {};
+    global.window.S.propertiesData['kost_4'].penghuni = [
+      { id: 'p_sby_nadia', nama: 'Nadia Zahrani', kamar: 'U-02', hp: '081234567899', sewa: 1800000, branchId: 'kost_4' }
+    ];
+
+    const pb = {
+      id: 'pb_nadia_okt',
+      penghuniId: 'p_sby_nadia',
+      bulan: '2026-10',
+      jumlah: 1800000,
+      status: 'lunas',
+      branchId: 'kost_4',
+      kostId: 'kost_4'
+    };
+
+    const res = await global.window.DB.savePembayaran(pb);
+    if (!res.ok) throw new Error('savePembayaran failed!');
+    if (!savedPenghuni.some(p => p.id === 'p_sby_nadia')) {
+      throw new Error('Tenant was not proactively saved to Supabase before/during savePembayaran!');
+    }
+    if (!savedPembayaran.some(p => p.id === 'pb_nadia_okt')) {
+      throw new Error('Payment was not saved to Supabase!');
+    }
+    if (toastErrors.length > 0) {
+      throw new Error(`Unexpected error toasts shown: ${toastErrors.join(', ')}`);
+    }
+
+    // Test tenant missing completely from local memory -> stub creation test
+    simulateFkErrorOnce = true;
+    const pbUnknown = {
+      id: 'pb_orphan_1',
+      penghuniId: 'p_unknown_orphan',
+      penghuniNama: 'Anak Kost Baru',
+      kamar: 'U-99',
+      bulan: '2026-10',
+      jumlah: 1500000,
+      branchId: 'kost_4'
+    };
+
+    const resOrphan = await global.window.DB.savePembayaran(pbUnknown);
+    if (!resOrphan.ok) throw new Error('savePembayaran orphan failed!');
+    if (!savedPenghuni.some(p => p.id === 'p_unknown_orphan')) {
+      throw new Error('Tenant stub was not created to satisfy foreign key constraint!');
+    }
+    if (toastErrors.length > 0) {
+      throw new Error(`Unexpected error toasts shown on orphan payment: ${toastErrors.join(', ')}`);
+    }
+  } finally {
+    global.window.sbClient = oldSbClient;
+    global.window.toast = oldToast;
   }
 });
 
