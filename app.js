@@ -1472,6 +1472,7 @@ const LS = {
   },
   clearSession() { localStorage.removeItem('sk3_session'); }
 };
+window.LS = LS;
 
 // Segera muat state saat app.js dievaluasi agar tidak tertimpa
 try { LS.load(); } catch (e) { console.warn('Early LS.load warning:', e); }
@@ -2275,6 +2276,7 @@ const DB = {
         DB.handleSupabaseError(res.error, 'Pembayaran');
       } else {
         console.warn('Foreign key pembayaran_penghuni_id_fkey ditangani secara adaptif (data pembayaran tersimpan lokal):', res.error);
+        return { ok: true, fallback: 'local', warning: res.error };
       }
     }
 
