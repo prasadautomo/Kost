@@ -345,9 +345,9 @@ test('Contract Expiry calculation and Extension modal', async () => {
     throw new Error(`Harga sewa baru should be formatted with 'Rp', got: ${sewaInput.value}`);
   }
 
-  const summaryEl = elementsById['renew-summary-preview'];
-  if (!summaryEl.innerHTML.includes('Hingga')) {
-    throw new Error('Live summary preview is not generated in renewal modal');
+  const tglInput = elementsById['renew-tgl-keluar'];
+  if (!tglInput || !tglInput.value) {
+    throw new Error('Tanggal berakhir baru input is empty');
   }
 
   // Test form submission
