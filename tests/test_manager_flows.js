@@ -330,7 +330,7 @@ test('Add new operational expense via form', () => {
 });
 
 // 11. Test Lease Expiry and Contract Extension
-test('Contract Expiry calculation and Extension modal', () => {
+test('Contract Expiry calculation and Extension modal', async () => {
   const p = S.penghuni[0];
   if (!p) throw new Error('No tenant found');
   const expStatus = win.getContractExpiryStatus(p);
@@ -339,6 +339,25 @@ test('Contract Expiry calculation and Extension modal', () => {
   win.openModalPerpanjangKontrak(p.id);
   const modal = elementsById['modal-perpanjang-kontrak'];
   if (!modal.classList.contains('open')) throw new Error('Modal perpanjang kontrak not open');
+
+  const sewaInput = elementsById['renew-sewa'];
+  if (!sewaInput.value.startsWith('Rp')) {
+    throw new Error(`Harga sewa baru should be formatted with 'Rp', got: ${sewaInput.value}`);
+  }
+
+  const summaryEl = elementsById['renew-summary-preview'];
+  if (!summaryEl.innerHTML.includes('Hingga')) {
+    throw new Error('Live summary preview is not generated in renewal modal');
+  }
+
+  // Test form submission
+  const oldTglKeluar = p.tglKeluar;
+  const formRenew = elementsById['form-perpanjang-kontrak'];
+  if (formRenew && formRenew.onsubmit) {
+    const mockEvent = { preventDefault: () => {} };
+    await formRenew.onsubmit(mockEvent);
+    if (modal.classList.contains('open')) throw new Error('Modal did not close on renewal submit');
+  }
 });
 
 // 12. Test Settings (Pengaturan)

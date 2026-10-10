@@ -3350,17 +3350,76 @@ window.kirimWaKontrak = function(pid, branchId = S.activeKostId) {
   toast(`Membuka WhatsApp konfirmasi kontrak (${kostName})...`);
 };
 
+function updateRenewSummary() {
+  const tglInput = $('renew-tgl-keluar');
+  const sewaInput = $('renew-sewa');
+  const summaryEl = $('renew-summary-preview');
+  if (!tglInput || !summaryEl) return;
+  const newDate = tglInput.value;
+  if (!newDate) {
+    summaryEl.innerHTML = '';
+    summaryEl.style.display = 'none';
+    return;
+  }
+  const pid = $('renew-penghuni-id')?.value;
+  let p = S.penghuni.find(x => x.id === pid);
+  if (!p && S.propertiesData) {
+    for (const bid of Object.keys(S.propertiesData)) {
+      const found = (S.propertiesData[bid]?.penghuni || []).find(x => x.id === pid);
+      if (found) { p = found; break; }
+    }
+  }
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const baseDate = (p?.tglKeluar && p.tglKeluar >= todayStr) ? p.tglKeluar : todayStr;
+
+  const d1 = new Date(baseDate);
+  const d2 = new Date(newDate);
+  const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)));
+  const approxMonths = Math.max(1, Math.round(diffDays / 30));
+  const rentPerMonth = cleanNumber(sewaInput?.value) || (p?.sewa || 0);
+  const totalEst = approxMonths * rentPerMonth;
+
+  summaryEl.style.display = 'block';
+  summaryEl.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:0.75rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Durasi Tambahan Kontrak</div>
+        <div style="font-size:0.92rem;font-weight:700;color:var(--text);margin-top:2px;display:flex;align-items:center;gap:6px">
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--primary)">calendar_add_on</span>
+          <span>Hingga <strong>${fmtD(newDate)}</strong> <span style="font-size:0.8rem;color:var(--primary);font-weight:600">(+${approxMonths} Bulan / ${diffDays} Hari)</span></span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:0.75rem;color:var(--text-3)">Estimasi Total Sewa (+${approxMonths} Bln)</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--primary)">${rp(totalEst)}</div>
+      </div>
+    </div>
+  `;
+}
+window.updateRenewSummary = updateRenewSummary;
+
 window.openModalPerpanjangKontrak = function(pid, branchId = S.activeKostId) {
   if (branchId && branchId !== S.activeKostId && typeof switchKost === 'function') {
     switchKost(branchId);
   }
-  const p = S.penghuni.find(x => x.id === pid);
+  let p = S.penghuni.find(x => x.id === pid);
+  if (!p && S.propertiesData) {
+    for (const bid of Object.keys(S.propertiesData)) {
+      const found = (S.propertiesData[bid]?.penghuni || []).find(x => x.id === pid);
+      if (found) {
+        p = found;
+        if (typeof switchKost === 'function') switchKost(bid);
+        break;
+      }
+    }
+  }
   if (!p) return;
 
   const idEl = $('renew-penghuni-id');
   const namaEl = $('renew-penghuni-nama');
   const metaEl = $('renew-penghuni-meta');
   const badgeEl = $('renew-status-badge');
+  const dateValEl = $('renew-current-date-val');
   const dateInfoEl = $('renew-current-date-info');
   const tglInput = $('renew-tgl-keluar');
   const sewaInput = $('renew-sewa');
@@ -3376,18 +3435,19 @@ window.openModalPerpanjangKontrak = function(pid, branchId = S.activeKostId) {
     badgeEl.textContent = exp.label;
   }
 
-  if (dateInfoEl) {
-    dateInfoEl.innerHTML = `Masa sewa saat ini berakhir pada: <strong>${p.tglKeluar ? fmtD(p.tglKeluar) : 'Belum ditentukan'}</strong> (${exp.label})`;
+  if (dateValEl) {
+    dateValEl.textContent = p.tglKeluar ? fmtD(p.tglKeluar) : 'Belum ditentukan';
+  } else if (dateInfoEl) {
+    dateInfoEl.innerHTML = `Masa sewa saat ini berakhir pada: <strong>${p.tglKeluar ? fmtD(p.tglKeluar) : 'Belum ditentukan'}</strong>`;
   }
 
-  if (sewaInput) sewaInput.value = p.sewa || '';
+  if (sewaInput) {
+    sewaInput.value = p.sewa ? formatRupiahLive(p.sewa) : '';
+  }
   if (catatanInput) catatanInput.value = '';
 
   const todayStr = new Date().toISOString().slice(0, 10);
-  let baseForNew = p.tglKeluar;
-  if (!baseForNew || baseForNew < todayStr) {
-    baseForNew = todayStr;
-  }
+  let baseForNew = (p.tglKeluar && p.tglKeluar >= todayStr) ? p.tglKeluar : todayStr;
 
   const durBtns = document.querySelectorAll('.quick-dur-btn');
   durBtns.forEach(btn => {
@@ -3398,6 +3458,7 @@ window.openModalPerpanjangKontrak = function(pid, branchId = S.activeKostId) {
     tglInput.value = addMonthsYMD(3, baseForNew);
   }
 
+  updateRenewSummary();
   openModal('modal-perpanjang-kontrak');
 };
 
@@ -5102,26 +5163,69 @@ document.addEventListener('click', (e) => {
 
   const months = parseInt(btn.getAttribute('data-months'), 10) || 1;
   const pid = $('renew-penghuni-id')?.value;
-  const p = S.penghuni.find(x => x.id === pid);
+  let p = S.penghuni.find(x => x.id === pid);
+  if (!p && S.propertiesData) {
+    for (const bid of Object.keys(S.propertiesData)) {
+      const found = (S.propertiesData[bid]?.penghuni || []).find(x => x.id === pid);
+      if (found) { p = found; break; }
+    }
+  }
   const todayStr = new Date().toISOString().slice(0, 10);
-  let baseDate = p?.tglKeluar || todayStr;
-  if (baseDate < todayStr) baseDate = todayStr;
+  let baseDate = (p?.tglKeluar && p.tglKeluar >= todayStr) ? p.tglKeluar : todayStr;
 
   const tglInput = $('renew-tgl-keluar');
   if (tglInput) {
     tglInput.value = addMonthsYMD(months, baseDate);
+    if (typeof updateRenewSummary === 'function') updateRenewSummary();
   }
+});
+
+// Listener perubahan tanggal manual dan harga sewa untuk live preview summary
+$('renew-tgl-keluar')?.addEventListener('input', () => {
+  const tglVal = $('renew-tgl-keluar')?.value;
+  const pid = $('renew-penghuni-id')?.value;
+  let p = S.penghuni.find(x => x.id === pid);
+  if (!p && S.propertiesData) {
+    for (const bid of Object.keys(S.propertiesData)) {
+      const found = (S.propertiesData[bid]?.penghuni || []).find(x => x.id === pid);
+      if (found) { p = found; break; }
+    }
+  }
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const baseDate = (p?.tglKeluar && p.tglKeluar >= todayStr) ? p.tglKeluar : todayStr;
+
+  const durBtns = document.querySelectorAll('.quick-dur-btn');
+  durBtns.forEach(btn => {
+    const m = parseInt(btn.getAttribute('data-months'), 10) || 1;
+    btn.classList.toggle('active', addMonthsYMD(m, baseDate) === tglVal);
+  });
+  if (typeof updateRenewSummary === 'function') updateRenewSummary();
+});
+
+$('renew-sewa')?.addEventListener('input', () => {
+  if (typeof updateRenewSummary === 'function') updateRenewSummary();
 });
 
 $('form-perpanjang-kontrak')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const pid = $('renew-penghuni-id')?.value;
-  const p = S.penghuni.find(x => x.id === pid);
+  let targetBranchId = S.activeKostId;
+  let p = S.penghuni.find(x => x.id === pid);
+  if (!p && S.propertiesData) {
+    for (const bid of Object.keys(S.propertiesData)) {
+      const found = (S.propertiesData[bid]?.penghuni || []).find(x => x.id === pid);
+      if (found) {
+        p = found;
+        targetBranchId = bid;
+        break;
+      }
+    }
+  }
   if (!p) return;
 
   const newTgl = $('renew-tgl-keluar')?.value;
   if (!newTgl) {
-    toast('Harap tentukan tanggal berakhir kontrak baru!', true);
+    toast('Harap tentukan tanggal berakhir kontrak baru!', 'err');
     return;
   }
   const newSewa = cleanNumber($('renew-sewa')?.value) || p.sewa;
@@ -5129,10 +5233,19 @@ $('form-perpanjang-kontrak')?.addEventListener('submit', async (e) => {
 
   p.tglKeluar = newTgl;
   p.sewa = newSewa;
-  if (catatan) {
-    p.catatan = (p.catatan ? p.catatan + ' | ' : '') + `Perpanjang s.d ${fmtD(newTgl)} (${catatan})`;
-  }
+  const noteText = catatan ? `Perpanjang s.d ${fmtD(newTgl)} (${catatan})` : `Perpanjang s.d ${fmtD(newTgl)}`;
+  p.catatan = (p.catatan ? p.catatan + ' | ' : '') + noteText;
 
+  // Simpan ke branch data spesifik & database cabang terisolasi
+  if (S.propertiesData && S.propertiesData[targetBranchId]) {
+    const bList = S.propertiesData[targetBranchId].penghuni = S.propertiesData[targetBranchId].penghuni || [];
+    const idx = bList.findIndex(x => x.id === p.id);
+    if (idx !== -1) bList[idx] = p;
+    else bList.push(p);
+    if (typeof BranchDB !== 'undefined') {
+      BranchDB.savePenghuni(targetBranchId, bList);
+    }
+  }
   if (typeof BranchDB !== 'undefined') {
     BranchDB.savePenghuni(S.activeKostId, S.penghuni);
   }
@@ -5144,7 +5257,7 @@ $('form-perpanjang-kontrak')?.addEventListener('submit', async (e) => {
   if ($('page-pembayaran')?.classList.contains('active')) renderPembayaran();
   updateSidebarBadges();
 
-  toast(`Kontrak sewa ${p.nama} berhasil diperpanjang hingga ${fmtD(newTgl)}!`, 'success');
+  toast(`Masa sewa ${p.nama} berhasil diperpanjang hingga ${fmtD(newTgl)}!`, 'success');
   await DB.savePenghuni(p);
 });
 
