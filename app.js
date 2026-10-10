@@ -121,15 +121,18 @@ function initSupabase() {
           detectSessionInUrl: true
         }
       });
+      window.sbClient = sbClient;
       setupRealtime();
       return true;
     } catch (err) {
       console.warn('Inisialisasi Supabase gagal:', err);
       sbClient = null;
+      window.sbClient = null;
       return false;
     }
   }
   sbClient = null;
+  window.sbClient = null;
   return false;
 }
 
@@ -1873,6 +1876,11 @@ const SUPABASE_WEB_STORAGE_SQL = `-- SIKOST: AKTIFKAN PENYIMPANAN WEB CLOUD (SUP
 -- 2. Salin dan tempel (Paste) seluruh teks SQL di bawah ini
 -- 3. Klik tombol hijau "RUN" (atau tekan Ctrl+Enter)
 
+ALTER TABLE IF EXISTS public.penghuni ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+ALTER TABLE IF EXISTS public.kamar ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+ALTER TABLE IF EXISTS public.pembayaran ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+ALTER TABLE IF EXISTS public.pengeluaran ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+
 ALTER TABLE IF EXISTS public.penghuni DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.kamar DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.pembayaran DISABLE ROW LEVEL SECURITY;
@@ -1957,10 +1965,21 @@ window.checkSupabaseWritePermission = checkSupabaseWritePermission;
 
 // ── DB CLOUD SYNC LAYER ──────────────────────────────────────
 const DB = {
+  _unsupportedColumns: {},
+
+  getClient() {
+    return (typeof window !== 'undefined' && window.sbClient) || sbClient;
+  },
+
   handleSupabaseError(error, entityName) {
     if (!error) return;
+    const errStr = (typeof error === 'string') ? error : [error.message, error.details, error.hint, error.code].filter(Boolean).join(' ');
+    if (errStr.includes('kost_id') || error.code === 'PGRST204' || error.code === '42703') {
+      console.warn(`Skema Supabase untuk ${entityName} belum memiliki kolom kost_id (ditangani secara adaptif).`);
+      return;
+    }
     console.error(`Gagal menyimpan ${entityName} ke Supabase:`, error);
-    if (error.code === '42501' || error.message?.includes('row-level security')) {
+    if (error.code === '42501' || errStr.includes('row-level security')) {
       toast(`Belum tersimpan di Web: Izin RLS Supabase membatasi penulisan. Silakan klik "Aktifkan Akses Web (SQL 1-Klik)" di Pengaturan!`, 'err');
       showSupabaseRlsModal();
     } else {
@@ -2111,21 +2130,47 @@ const DB = {
     }
   },
 
-  async savePenghuni(d) {
-    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
+  async safeUpsert(table, payload, entityName) {
+    const client = this.getClient();
+    if (!client) return { ok: false, error: 'Database web belum terhubung' };
     try {
-      const payload = mapPenghuniToDb(d);
-      payload.kost_id = d.kostId || d.branchId || S.activeKostId || 'kost_1';
-      const { data, error } = await sbClient.from('penghuni').upsert(payload);
-      if (error) {
-        DB.handleSupabaseError(error, 'Penghuni');
-        return { ok: false, error };
+      const workingPayload = { ...payload };
+      if (this._unsupportedColumns && this._unsupportedColumns[table + '.kost_id']) {
+        delete workingPayload.kost_id;
       }
-      return { ok: true, data };
+      let res = await client.from(table).upsert(workingPayload);
+      const errStr = res.error ? [res.error.message, res.error.details, res.error.hint, res.error.code].filter(Boolean).join(' ') : '';
+      if (res.error && (errStr.includes('kost_id') || res.error.code === 'PGRST204' || res.error.code === '42703')) {
+        this._unsupportedColumns = this._unsupportedColumns || {};
+        this._unsupportedColumns[table + '.kost_id'] = true;
+        delete workingPayload.kost_id;
+        res = await client.from(table).upsert(workingPayload);
+      }
+      if (res.error) {
+        this.handleSupabaseError(res.error, entityName);
+        return { ok: false, error: res.error };
+      }
+      return { ok: true, data: res.data };
     } catch (e) {
-      DB.handleSupabaseError(e, 'Penghuni');
+      const errStr = (e && typeof e === 'object') ? [e.message, e.details, e.code].filter(Boolean).join(' ') : String(e || '');
+      if (errStr.includes('kost_id') || e?.code === 'PGRST204' || e?.code === '42703') {
+        this._unsupportedColumns = this._unsupportedColumns || {};
+        this._unsupportedColumns[table + '.kost_id'] = true;
+        try {
+          const retryPayload = { ...payload };
+          delete retryPayload.kost_id;
+          const retryRes = await client.from(table).upsert(retryPayload);
+          if (!retryRes.error) return { ok: true, data: retryRes.data };
+        } catch (_) {}
+      }
+      this.handleSupabaseError(e, entityName);
       return { ok: false, error: e };
     }
+  },
+
+  async savePenghuni(d) {
+    const payload = mapPenghuniToDb(d);
+    return await DB.safeUpsert('penghuni', payload, 'Penghuni');
   },
 
   async deletePenghuni(id) {
@@ -2144,27 +2189,16 @@ const DB = {
   },
 
   async saveKamar(k) {
-    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
-    try {
-      const payload = {
-        id: k.id,
-        no: k.no,
-        lantai: k.lantai || '1',
-        tipe: k.tipe || 'Standar',
-        harga: Number(k.harga) || 0,
-        fasilitas: k.fasilitas || '',
-        kost_id: k.kostId || k.branchId || S.activeKostId || 'kost_1'
-      };
-      const { data, error } = await sbClient.from('kamar').upsert(payload);
-      if (error) {
-        DB.handleSupabaseError(error, 'Kamar');
-        return { ok: false, error };
-      }
-      return { ok: true, data };
-    } catch (e) {
-      DB.handleSupabaseError(e, 'Kamar');
-      return { ok: false, error: e };
-    }
+    const payload = {
+      id: k.id,
+      no: k.no,
+      lantai: k.lantai || '1',
+      tipe: k.tipe || 'Standar',
+      harga: Number(k.harga) || 0,
+      fasilitas: k.fasilitas || '',
+      kost_id: k.kostId || k.branchId || S.activeKostId || 'kost_1'
+    };
+    return await DB.safeUpsert('kamar', payload, 'Kamar');
   },
 
   async deleteKamar(id) {
@@ -2183,20 +2217,8 @@ const DB = {
   },
 
   async savePembayaran(pb) {
-    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
-    try {
-      const payload = mapBayarToDb(pb);
-      payload.kost_id = pb.kostId || pb.branchId || S.activeKostId || 'kost_1';
-      const { data, error } = await sbClient.from('pembayaran').upsert(payload);
-      if (error) {
-        DB.handleSupabaseError(error, 'Pembayaran');
-        return { ok: false, error };
-      }
-      return { ok: true, data };
-    } catch (e) {
-      DB.handleSupabaseError(e, 'Pembayaran');
-      return { ok: false, error: e };
-    }
+    const payload = mapBayarToDb(pb);
+    return await DB.safeUpsert('pembayaran', payload, 'Pembayaran');
   },
 
   async deletePembayaran(penghuniId, bulan) {
@@ -2230,28 +2252,17 @@ const DB = {
   },
 
   async savePengeluaran(exp) {
-    if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
-    try {
-      const payload = {
-        id: exp.id,
-        tanggal: exp.tanggal,
-        kategori: exp.kategori,
-        jumlah: Number(exp.jumlah) || 0,
-        keterangan: exp.keterangan || '',
-        bukti_nota: exp.buktiNota || null,
-        created_by: exp.createdBy || currentUser?.nama,
-        kost_id: exp.kostId || exp.branchId || S.activeKostId || 'kost_1'
-      };
-      const { data, error } = await sbClient.from('pengeluaran').upsert(payload);
-      if (error) {
-        DB.handleSupabaseError(error, 'Pengeluaran');
-        return { ok: false, error };
-      }
-      return { ok: true, data };
-    } catch (e) {
-      DB.handleSupabaseError(e, 'Pengeluaran');
-      return { ok: false, error: e };
-    }
+    const payload = {
+      id: exp.id,
+      tanggal: exp.tanggal,
+      kategori: exp.kategori,
+      jumlah: Number(exp.jumlah) || 0,
+      keterangan: exp.keterangan || '',
+      bukti_nota: exp.buktiNota || null,
+      created_by: exp.createdBy || currentUser?.nama,
+      kost_id: exp.kostId || exp.branchId || S.activeKostId || 'kost_1'
+    };
+    return await DB.safeUpsert('pengeluaran', payload, 'Pengeluaran');
   },
 
   async deletePengeluaran(id) {
@@ -2273,7 +2284,7 @@ const DB = {
     if (!sbClient) return { ok: false, error: 'Database web belum terhubung' };
     try {
       const payload = {
-        id: S.activeKostId || 'default',
+        id: 'default',
         nama: S.kost.nama,
         pemilik: S.kost.pemilik,
         alamat: S.kost.alamat,
@@ -2285,12 +2296,7 @@ const DB = {
         qris_url: S.kost.qrisUrl || '',
         updated_at: new Date().toISOString()
       };
-      const { data, error } = await sbClient.from('kost_pengaturan').upsert(payload);
-      if (error) {
-        DB.handleSupabaseError(error, 'Pengaturan Kost');
-        return { ok: false, error };
-      }
-      return { ok: true, data };
+      return await DB.safeUpsert('kost_pengaturan', payload, 'Pengaturan Kost');
     } catch (e) {
       DB.handleSupabaseError(e, 'Pengaturan Kost');
       return { ok: false, error: e };
@@ -2319,6 +2325,7 @@ const DB = {
     }
   }
 };
+window.DB = DB;
 
 // ── PROFIL USER SUPABASE ──────────────────────────────────────
 async function fetchOrCreateProfile(user, fallbackNama = '', fallbackRole = 'manager') {

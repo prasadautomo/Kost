@@ -7,6 +7,13 @@
 -- 3. Klik tombol hijau "RUN" (atau tekan Ctrl+Enter)
 -- ============================================================
 
+-- METODE 0: Tambahkan kolom kost_id untuk isolasi data multi-cabang (jika belum ada)
+ALTER TABLE IF EXISTS public.penghuni ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+ALTER TABLE IF EXISTS public.kamar ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+ALTER TABLE IF EXISTS public.pembayaran ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+ALTER TABLE IF EXISTS public.pengeluaran ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+ALTER TABLE IF EXISTS public.keluhan ADD COLUMN IF NOT EXISTS kost_id TEXT DEFAULT 'kost_1';
+
 -- METODE 1: Nonaktifkan Row Level Security (RLS) agar Web Client langsung memiliki akses simpan penuh
 ALTER TABLE IF EXISTS public.penghuni DISABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.kamar DISABLE ROW LEVEL SECURITY;

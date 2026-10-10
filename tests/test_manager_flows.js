@@ -197,9 +197,20 @@ const S = win.S;
 console.log('--- TESTING MANAGER FLOWS ---');
 
 const errors = [];
+const testPromises = [];
 function test(name, fn) {
   try {
-    fn();
+    const res = fn();
+    if (res && typeof res.then === 'function') {
+      const p = res.then(() => {
+        console.log(`✅ PASS: ${name}`);
+      }).catch(err => {
+        console.error(`❌ FAIL: ${name} ->`, err.message);
+        errors.push({ name, err });
+      });
+      testPromises.push(p);
+      return;
+    }
     console.log(`✅ PASS: ${name}`);
   } catch (err) {
     console.error(`❌ FAIL: ${name} ->`, err.message);
@@ -573,9 +584,73 @@ test('Multi-branch filters seamlessly toggle between active branch and consolida
   }
 });
 
-console.log('\n--- SIMULATION SUMMARY ---');
-console.log(`Total errors: ${errors.length}`);
-if (errors.length > 0) {
-  console.log(errors);
-}
+// 21. Verify DB.safeUpsert gracefully falls back when Supabase schema lacks kost_id
+test('DB.safeUpsert gracefully drops kost_id and succeeds without error toast when column is missing in Supabase', async () => {
+  let callCount = 0;
+  let lastReceivedPayload = null;
+  const mockSbClient = {
+    from(table) {
+      return {
+        async upsert(payload) {
+          callCount++;
+          lastReceivedPayload = { ...payload };
+          if (payload.kost_id) {
+            return {
+              error: {
+                code: 'PGRST204',
+                message: "Could not find the 'kost_id' column of 'penghuni' in the schema cache"
+              }
+            };
+          }
+          return { data: [{ id: payload.id }], error: null };
+        }
+      };
+    }
+  };
+
+  const oldSbClient = global.window.sbClient;
+  global.window.sbClient = mockSbClient;
+  // Clear any existing cache for this test
+  if (global.window.DB) {
+    global.window.DB._unsupportedColumns = {};
+  }
+
+  try {
+    const res = await global.window.DB.safeUpsert('penghuni', {
+      id: 'p-test-compat',
+      nama: 'Testing Supabase Schema Tolerance',
+      kost_id: 'kost_1'
+    }, 'Penghuni');
+
+    if (!res.ok) throw new Error('safeUpsert failed instead of retrying gracefully!');
+    if (callCount !== 2) throw new Error(`Expected 2 upsert attempts, got ${callCount}`);
+    if (lastReceivedPayload.kost_id) throw new Error('Retried payload still contained kost_id!');
+    if (!global.window.DB._unsupportedColumns['penghuni.kost_id']) {
+      throw new Error('Missing column not cached in DB._unsupportedColumns!');
+    }
+
+    // Second call should omit kost_id proactively in 1 call
+    callCount = 0;
+    const res2 = await global.window.DB.safeUpsert('penghuni', {
+      id: 'p-test-compat-2',
+      nama: 'Second Test Proactive Omission',
+      kost_id: 'kost_1'
+    }, 'Penghuni');
+
+    if (!res2.ok) throw new Error('Second safeUpsert failed!');
+    if (callCount !== 1) throw new Error(`Expected 1 upsert call on second attempt due to cache, got ${callCount}`);
+    if (lastReceivedPayload.kost_id) throw new Error('Second payload still contained kost_id despite cache!');
+  } finally {
+    global.window.sbClient = oldSbClient;
+  }
+});
+
+Promise.all(testPromises).then(() => {
+  console.log('\n--- SIMULATION SUMMARY ---');
+  console.log(`Total errors: ${errors.length}`);
+  if (errors.length > 0) {
+    console.log(errors);
+    process.exit(1);
+  }
+});
 
