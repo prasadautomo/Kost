@@ -237,12 +237,17 @@ test('Render Dashboard and Financial KPIs', () => {
   }
 });
 
-// 4. Action Center Resilient Empty State
-test('Action Center Resilient Empty State', () => {
+// 4. Action Center Layout and Resilient State
+test('Action Center Layout and Resilient State', () => {
   win.renderActionCenter();
   const ac = elementsById['dash-action-center'];
   if (!ac || ac.style.display === 'none') {
     throw new Error('Action Center is hidden instead of resilient empty state!');
+  }
+  if (ac.innerHTML.includes('action-card')) {
+    if (!ac.innerHTML.includes('action-card-header') || !ac.innerHTML.includes('action-card-body') || !ac.innerHTML.includes('action-card-info')) {
+      throw new Error('Action card missing structured header, body, or info container!');
+    }
   }
 });
 

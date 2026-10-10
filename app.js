@@ -2955,16 +2955,16 @@ function renderDashActionCenter() {
         let statusLabel = '';
         let badgeClass = 'badge-orange';
         if (diff < 0) {
-          statusLabel = `Terlambat ${Math.abs(diff)} hari (${fmtD(jt.dateStr)})`;
+          statusLabel = `Terlambat ${Math.abs(diff)} hari`;
           badgeClass = 'badge-red';
         } else if (diff === 0) {
-          statusLabel = `Jatuh Tempo Hari Ini (${fmtD(jt.dateStr)})`;
+          statusLabel = `Jatuh Tempo Hari Ini`;
           badgeClass = 'badge-orange';
         } else if (diff <= 3) {
-          statusLabel = `H-${diff} Tempo (${fmtD(jt.dateStr)})`;
+          statusLabel = `H-${diff} Tempo`;
           badgeClass = 'badge-orange';
         } else {
-          statusLabel = `Tempo ${fmtD(jt.dateStr)}`;
+          statusLabel = `Tempo H-${diff}`;
           badgeClass = 'badge-blue';
         }
         dueItems.push({ 
@@ -3090,22 +3090,23 @@ function renderDashActionCenter() {
       ${totalActions === 0
         ? emptyStateHtml
         : (displayItems.map(item => {
-            const branchBadge = `<span class="badge badge-accent" style="font-size:0.65rem;font-weight:700">🏢 ${esc(item.branchNama)}</span>`;
+            const branchBadge = `<span class="badge badge-accent" style="font-size:0.68rem;font-weight:700">🏢 ${esc(item.branchNama)}</span>`;
             if (item.type === 'kontrak') {
               const { p, exp } = item;
               const isExpired = exp.status === 'expired' || exp.status === 'today';
               return `
                 <div class="action-card">
-                  <div class="action-card-top">
-                    <div class="action-card-main">
-                      <div class="action-room-badge ${isExpired ? 'danger' : 'orange'}">${esc(p.kamar || '–')}</div>
-                      <div style="min-width:0">
-                        <div style="margin-bottom:2px">${branchBadge}</div>
-                        <div class="action-card-title">${esc(p.nama)}</div>
-                        <div class="action-card-sub">Berakhir: <strong>${fmtD(p.tglKeluar)}</strong> · ${rp(p.sewa)}/bln</div>
-                      </div>
-                    </div>
+                  <div class="action-card-header">
+                    <div class="action-card-branch">${branchBadge}</div>
                     <span class="badge ${exp.badgeClass}">${esc(exp.label)}</span>
+                  </div>
+                  <div class="action-card-body">
+                    <div class="action-room-badge ${isExpired ? 'danger' : 'orange'}">${esc(p.kamar || '–')}</div>
+                    <div class="action-card-info">
+                      <div class="action-card-title">${esc(p.nama)}</div>
+                      <div class="action-card-meta">Sewa: <strong style="color:var(--text);font-family:var(--font-mono)">${rp(p.sewa)}/bln</strong></div>
+                      <div class="action-card-sub">Berakhir: <strong>${fmtD(p.tglKeluar)}</strong></div>
+                    </div>
                   </div>
                   <div class="action-card-actions">
                     <button type="button" class="btn-wa btn-sm" onclick="kirimWaKontrak('${esc(p.id)}', '${esc(item.branchId)}')" title="Kirim WA Konfirmasi Kontrak">
@@ -3125,16 +3126,17 @@ function renderDashActionCenter() {
               const isLate = badgeClass === 'badge-red';
               return `
                 <div class="action-card">
-                  <div class="action-card-top">
-                    <div class="action-card-main">
-                      <div class="action-room-badge ${isLate ? 'danger' : 'warning'}">${esc(p.kamar || '–')}</div>
-                      <div style="min-width:0">
-                        <div style="margin-bottom:2px">${branchBadge}</div>
-                        <div class="action-card-title">${esc(p.nama)}</div>
-                        <div class="action-card-sub">Tagihan: <strong style="color:var(--text)">${rp(p.sewa)}</strong> · Periode: <strong>${fmtD(p.tglMasuk)}</strong> s/d <strong>${p.tglKeluar ? fmtD(p.tglKeluar) : 'selesai'}</strong></div>
-                      </div>
-                    </div>
+                  <div class="action-card-header">
+                    <div class="action-card-branch">${branchBadge}</div>
                     <span class="badge ${badgeClass}">${esc(statusLabel)}</span>
+                  </div>
+                  <div class="action-card-body">
+                    <div class="action-room-badge ${isLate ? 'danger' : 'warning'}">${esc(p.kamar || '–')}</div>
+                    <div class="action-card-info">
+                      <div class="action-card-title">${esc(p.nama)}</div>
+                      <div class="action-card-meta">Tagihan: <strong style="color:var(--text);font-family:var(--font-mono)">${rp(p.sewa)}</strong></div>
+                      <div class="action-card-sub">Jatuh Tempo: <strong>${fmtD(item.dueDateStr)}</strong></div>
+                    </div>
                   </div>
                   <div class="action-card-actions">
                     <button type="button" class="btn-wa btn-sm" onclick="kirimWaTagihan('${esc(p.id)}', '${esc(curMonth)}', '${esc(item.branchId)}')" title="Kirim WA Pengingat dengan rekening cabang ini">
@@ -3150,16 +3152,17 @@ function renderDashActionCenter() {
               const { k } = item;
               return `
                 <div class="action-card">
-                  <div class="action-card-top">
-                    <div class="action-card-main">
-                      <div class="action-room-badge primary">${esc(k.no)}</div>
-                      <div style="min-width:0">
-                        <div style="margin-bottom:2px">${branchBadge}</div>
-                        <div class="action-card-title">Kamar ${esc(k.no)} (${esc(k.tipe || 'Standar')})</div>
-                        <div class="action-card-sub">Lt. ${esc(k.lantai || '1')} · <strong style="color:var(--accent-light)">${rp(k.harga || 0)}/bln</strong></div>
-                      </div>
-                    </div>
+                  <div class="action-card-header">
+                    <div class="action-card-branch">${branchBadge}</div>
                     <span class="badge badge-gray">Siap Huni</span>
+                  </div>
+                  <div class="action-card-body">
+                    <div class="action-room-badge primary">${esc(k.no)}</div>
+                    <div class="action-card-info">
+                      <div class="action-card-title">Kamar ${esc(k.no)} (${esc(k.tipe || 'Standar')})</div>
+                      <div class="action-card-meta">Lantai ${esc(k.lantai || '1')} · Kamar Kosong</div>
+                      <div class="action-card-sub">Tarif: <strong style="color:var(--accent-light);font-family:var(--font-mono)">${rp(k.harga || 0)}/bln</strong></div>
+                    </div>
                   </div>
                   <div class="action-card-actions">
                     <button type="button" class="btn-primary btn-sm" onclick="quickTambahPenghuni('${esc(item.branchId)}', '${esc(k.no)}')">

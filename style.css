@@ -1503,16 +1503,17 @@ em {
 
 /* Action Center Unit Room Badges (Stitch Frame 2) */
 .action-room-badge {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   flex-shrink: 0;
   letter-spacing: -0.02em;
+  align-self: flex-start;
 }
 .action-room-badge.primary {
   background: var(--accent-bg);
@@ -3180,8 +3181,9 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 .dash-action-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
   gap: 14px;
+  align-items: stretch;
 }
 .action-card {
   background: var(--surface);
@@ -3194,12 +3196,76 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   gap: 12px;
   transition: all var(--t);
   position: relative;
+  min-height: 165px;
 }
 .action-card:hover {
   border-color: var(--border-2);
   background: var(--surface-container-high);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow);
+}
+.action-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.action-card-branch {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.action-card-body {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-width: 0;
+  flex: 1;
+}
+.action-card-info {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.action-card-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.action-card-meta {
+  font-size: 0.8rem;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.action-card-sub {
+  font-size: 0.76rem;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.action-card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
 }
 .action-card-top {
   display: flex;
@@ -3210,41 +3276,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .action-card-main {
   display: flex;
   gap: 12px;
-  align-items: center;
+  align-items: flex-start;
   min-width: 0;
-}
-.action-card-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--surface-container-high);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.action-card-title {
-  font-weight: 700;
-  font-size: 0.88rem;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.action-card-sub {
-  font-size: 0.76rem;
-  color: var(--text-3);
-  margin-top: 2px;
-}
-.action-card-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-end;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
 }
 
 /* Floor Filter Tabs on Kamar Page (Stitch Frame 3) */
