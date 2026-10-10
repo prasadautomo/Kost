@@ -337,6 +337,83 @@ test('Navigate to page-pengaturan and test branch settings', () => {
   if (!cabangList || !cabangList.innerHTML) throw new Error('Cabang list empty in settings');
 });
 
+// 13. Test KTP OCR Gender Extraction (Perempuan vs Laki-laki & BERLAKU bug prevention)
+test('KTP OCR Gender Extraction and Dukcapil NIK standard', () => {
+  // Test case A: KTP Wanita with word 'BERLAKU' (must NOT be tricked into Laki-laki)
+  const ocrFemale = `
+    PROVINSI JAWA BARAT
+    NIK : 3273015502990002
+    Nama : SITI AMINAH
+    Tempat/Tgl Lahir : BANDUNG, 15-02-1999
+    Jenis Kelamin : PEREMPUAN
+    Alamat : JL. DAGO NO. 10
+    BERLAKU HINGGA : SEUMUR HIDUP
+  `;
+  const parsedFemale = win.parseKtpText(ocrFemale);
+  if (parsedFemale.gender !== 'Perempuan') {
+    throw new Error(`Expected gender 'Perempuan', but got '${parsedFemale.gender}' (BERLAKU false-positive bug)!`);
+  }
+
+  // Test case B: KTP Pria
+  const ocrMale = `
+    PROVINSI DKI JAKARTA
+    NIK : 3171011502900001
+    Nama : BUDI PRASETYO
+    Tempat/Tgl Lahir : JAKARTA, 15-02-1990
+    Jenis Kelamin : LAKI-LAKI
+    BERLAKU HINGGA : SEUMUR HIDUP
+  `;
+  const parsedMale = win.parseKtpText(ocrMale);
+  if (parsedMale.gender !== 'Laki-laki') {
+    throw new Error(`Expected gender 'Laki-laki', but got '${parsedMale.gender}'!`);
+  }
+
+  // Test case C: NIK with DD > 40 (female birthdate: 15 + 40 = 55)
+  const ocrNikFemaleOnly = `
+    NIK : 3201015508950003
+    Nama : RATNA SARI
+    BERLAKU HINGGA : SEUMUR HIDUP
+  `;
+  const parsedNikFemale = win.parseKtpText(ocrNikFemaleOnly);
+  if (parsedNikFemale.gender !== 'Perempuan') {
+    throw new Error(`Expected gender 'Perempuan' from NIK 55, but got '${parsedNikFemale.gender}'!`);
+  }
+});
+
+// 14. Test Indonesian Mobile Phone Format starting with 08
+test('Phone validation strictly requiring real 08... prefix', () => {
+  if (!win.isValidIndoPhone('081234567890')) {
+    throw new Error('081234567890 should be valid!');
+  }
+  if (!win.isValidIndoPhone('0896123456789')) {
+    throw new Error('0896123456789 should be valid!');
+  }
+  // Normalization of 628 into 08
+  if (win.normalizeIndoPhone('+6281234567890') !== '081234567890') {
+    throw new Error('+6281234567890 should normalize to 081234567890');
+  }
+  if (win.normalizeIndoPhone('6285712345678') !== '085712345678') {
+    throw new Error('6285712345678 should normalize to 085712345678');
+  }
+  // Invalid phone numbers
+  if (win.isValidIndoPhone('0211234567')) {
+    throw new Error('Landline 021 should NOT be accepted as real mobile 08!');
+  }
+  if (win.isValidIndoPhone('08123')) {
+    throw new Error('Too short phone should NOT be accepted!');
+  }
+  if (win.isValidIndoPhone('071234567890')) {
+    throw new Error('Non-08 prefix should NOT be accepted!');
+  }
+});
+
+// 15. Zero Dead-Code: Verify Email field removed completely from tenant form DOM
+test('Zero Dead-Code: Email field completely removed from tenant form', () => {
+  if (elementsById['field-email']) {
+    throw new Error('field-email element still exists in DOM! Must be completely removed per Zero Dead-Code Policy.');
+  }
+});
+
 console.log('\n--- SIMULATION SUMMARY ---');
 console.log(`Total errors: ${errors.length}`);
 if (errors.length > 0) {

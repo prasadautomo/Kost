@@ -1452,7 +1452,7 @@ const cleanNumber = n => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
-// Normalizer nomor HP internasional WhatsApp (08... / 8... / +62...)
+// Normalizer nomor HP internasional WhatsApp (628...)
 function cleanPhone(raw) {
   if (!raw) return '';
   let clean = String(raw).replace(/\D/g, '');
@@ -1461,6 +1461,25 @@ function cleanPhone(raw) {
   return clean;
 }
 window.cleanPhone = cleanPhone;
+
+// Normalizer nomor HP lokal Indonesia resmi (Wajib mulai dari 08...)
+function normalizeIndoPhone(raw) {
+  if (!raw) return '';
+  let str = String(raw).trim().replace(/[^\d+]/g, '');
+  if (str.startsWith('+62')) str = str.slice(3);
+  else if (str.startsWith('62')) str = str.slice(2);
+  let clean = str.replace(/\D/g, '');
+  if (clean.startsWith('8')) clean = '0' + clean;
+  return clean;
+}
+window.normalizeIndoPhone = normalizeIndoPhone;
+
+function isValidIndoPhone(raw) {
+  const clean = normalizeIndoPhone(raw);
+  // Harus nomor seluler Indonesia nyata (awalan 08 diikuti digit 1-9, total 10-14 digit)
+  return /^08[1-9]\d{7,11}$/.test(clean);
+}
+window.isValidIndoPhone = isValidIndoPhone;
 window.cleanNumber = cleanNumber;
 
 // Live currency formatter & auto-masker Rp X.XXX.XXX
@@ -3826,7 +3845,6 @@ function openModalPenghuni(id = null, preselectedKamar = null) {
     $('field-tgl-lahir').value    = p.tglLahir || '';
     $('field-alamat-ktp').value   = p.alamatKtp || '';
     $('field-hp').value           = p.hp || '';
-    $('field-email').value        = p.email || '';
     $('field-pekerjaan').value    = p.pekerjaan || '';
     $('field-kamar').value        = p.kamar || '';
     populateKamarSelect(p.kamar || '');
@@ -4007,6 +4025,56 @@ if (btnToggleKamarEl) {
       inp.style.display = 'none';
       sel.style.display = 'block';
       this.textContent = '✏️ Input Manual';
+    }
+  });
+}
+
+// Live listener NIK: Auto-detect Jenis Kelamin (Dukcapil: >40 Perempuan, <=31 Laki-laki) & Tanggal Lahir
+const fieldNikEl = $('field-nik');
+if (fieldNikEl) {
+  fieldNikEl.addEventListener('input', function() {
+    const val = this.value.replace(/\D/g, '').slice(0, 16);
+    this.value = val;
+    if (val.length === 16) {
+      const dd = parseInt(val.slice(6, 8), 10);
+      const mm = parseInt(val.slice(8, 10), 10);
+      const yy = parseInt(val.slice(10, 12), 10);
+      if (!isNaN(dd) && dd > 0) {
+        const genderEl = $('field-gender');
+        if (genderEl) {
+          const newGender = (dd > 40 && dd <= 71) ? 'Perempuan' : 'Laki-laki';
+          genderEl.value = newGender;
+          genderEl.classList.add('ocr-field-highlight');
+          setTimeout(() => genderEl.classList.remove('ocr-field-highlight'), 2000);
+        }
+        const tglEl = $('field-tgl-lahir');
+        if (tglEl && !tglEl.value && mm >= 1 && mm <= 12) {
+          const realDay = dd > 40 ? dd - 40 : dd;
+          if (realDay >= 1 && realDay <= 31) {
+            const currentYearShort = new Date().getFullYear() % 100;
+            const fullYear = yy > currentYearShort ? 1900 + yy : 2000 + yy;
+            tglEl.value = `${fullYear}-${String(mm).padStart(2, '0')}-${String(realDay).padStart(2, '0')}`;
+            tglEl.classList.add('ocr-field-highlight');
+            setTimeout(() => tglEl.classList.remove('ocr-field-highlight'), 2000);
+          }
+        }
+      }
+    }
+  });
+}
+
+// Live listener No. HP: Wajib nomor real Indonesia diawali 08...
+const fieldHpEl = $('field-hp');
+if (fieldHpEl) {
+  fieldHpEl.addEventListener('input', function() {
+    let val = this.value.trim();
+    if (val.startsWith('+62')) val = '0' + val.slice(3);
+    else if (val.startsWith('62')) val = '0' + val.slice(2);
+    this.value = val.replace(/[^\d]/g, '').slice(0, 14);
+  });
+  fieldHpEl.addEventListener('blur', function() {
+    if (this.value) {
+      this.value = normalizeIndoPhone(this.value);
     }
   });
 }
@@ -4229,11 +4297,28 @@ function parseKtpText(text) {
     }
   }
 
-  // 4. Jenis Kelamin
-  if (/(?:LAKI|LAK|PRIA)/i.test(text)) {
-    res.gender = 'Laki-laki';
-  } else if (/(?:PEREMP|PERENP|WANITA)/i.test(text)) {
-    res.gender = 'Perempuan';
+  // 4. Jenis Kelamin (Gender)
+  let detectedGender = '';
+  // A. Baris eksplisit "Jenis Kelamin"
+  for (const line of lines) {
+    if (/(?:Jenis\s*Kelamin|Jns\s*Kelamin|Kelamin|Gender)/i.test(line)) {
+      if (/(?:PEREMP|PERENP|WANITA|PEMPUAN)/i.test(line)) {
+        detectedGender = 'Perempuan';
+        break;
+      } else if (/(?:LAKI|PRIA)/i.test(line)) {
+        detectedGender = 'Laki-laki';
+        break;
+      }
+    }
+  }
+
+  // B. Kata kunci utuh di seluruh teks (hindari substring 'LAK' yang salah cocok dengan 'BERLAKU')
+  if (!detectedGender) {
+    if (/\b(?:PEREMPUAN|PERENPUAN|WANITA)\b/i.test(text)) {
+      detectedGender = 'Perempuan';
+    } else if (/\b(?:LAKI[- ]*LAKI|PRIA)\b/i.test(text)) {
+      detectedGender = 'Laki-laki';
+    }
   }
 
   // 4b. Filter & Prioritas NIK berdasarkan Tanggal Lahir (jika ada kandidat)
@@ -4254,7 +4339,7 @@ function parseKtpText(text) {
     res.nik = nikCandidates[0];
   }
 
-  // Fallback Jenis Kelamin & Tanggal Lahir dari NIK jika belum terisi
+  // Fallback Jenis Kelamin & Tanggal Lahir dari NIK jika belum terisi / verifikasi Dukcapil
   if (res.nik && res.nik.length === 16) {
     const rawDd = parseInt(res.nik.slice(6, 8), 10);
     const rawMm = parseInt(res.nik.slice(8, 10), 10);
@@ -4263,8 +4348,11 @@ function parseKtpText(text) {
     const isFemale = rawDd > 40;
     const realDay = isFemale ? rawDd - 40 : rawDd;
 
-    if (!res.gender && rawDd > 0) {
-      res.gender = isFemale ? 'Perempuan' : 'Laki-laki';
+    // Aturan resmi Dukcapil: Wanita memiliki hari lahir + 40 (rentang 41-71)
+    if (rawDd > 40 && rawDd <= 71) {
+      detectedGender = 'Perempuan';
+    } else if (rawDd >= 1 && rawDd <= 31 && !detectedGender) {
+      detectedGender = 'Laki-laki';
     }
 
     if (!res.tglLahir && realDay >= 1 && realDay <= 31 && rawMm >= 1 && rawMm <= 12) {
@@ -4273,6 +4361,8 @@ function parseKtpText(text) {
       res.tglLahir = `${fullYear}-${String(rawMm).padStart(2, '0')}-${String(realDay).padStart(2, '0')}`;
     }
   }
+
+  res.gender = detectedGender || 'Laki-laki';
 
   // 5. Fallback Tempat Lahir dari Header KTP (Kabupaten/Kota)
   if (!res.tempatLahir) {
@@ -4656,12 +4746,26 @@ document.querySelectorAll('input[type="date"]').forEach(inp => {
 $('form-penghuni').addEventListener('submit', async function(e) {
   e.preventDefault();
   const nama     = $('field-nama').value.trim();
-  const hp       = $('field-hp').value.trim();
+  const rawHp    = $('field-hp').value.trim();
   const kamar    = $('field-kamar').value.trim();
   const tglMasuk = $('field-tgl-masuk').value;
 
   if (!nama)     { toast('Nama wajib diisi!','err'); switchFTab('identitas'); return; }
-  if (!hp)       { toast('No. HP wajib diisi!','err'); switchFTab('identitas'); return; }
+  if (!rawHp)    { toast('No. HP wajib diisi!','err'); switchFTab('identitas'); return; }
+
+  const hp = normalizeIndoPhone(rawHp);
+  if (!hp.startsWith('08')) {
+    toast('Nomor telepon harus nomor real yang mulai dari 08 (contoh: 081234567890)', 'err');
+    switchFTab('identitas');
+    $('field-hp').focus();
+    return;
+  }
+  if (!isValidIndoPhone(hp)) {
+    toast('Nomor telepon tidak valid! Harus 10-14 digit mulai dari 08 (contoh: 081234567890)', 'err');
+    switchFTab('identitas');
+    $('field-hp').focus();
+    return;
+  }
   if (!kamar)    { toast('Nomor kamar wajib diisi!','err'); switchFTab('hunian'); return; }
   if (!tglMasuk) { toast('Tanggal masuk wajib diisi!','err'); switchFTab('hunian'); return; }
 
@@ -4676,7 +4780,6 @@ $('form-penghuni').addEventListener('submit', async function(e) {
     tempatLahir: $('field-tempat-lahir').value.trim(),
     tglLahir: $('field-tgl-lahir').value,
     alamatKtp: $('field-alamat-ktp').value.trim(),
-    email: $('field-email').value.trim(),
     pekerjaan: $('field-pekerjaan').value.trim(),
     lantai: $('field-lantai').value.trim(),
     tglKeluar: $('field-tgl-keluar').value,
@@ -4770,7 +4873,6 @@ window.openDetail = function(id) {
         <div class="d-row"><div class="d-key">Jenis Kelamin</div><div class="d-val">${esc(p.gender||'–')}</div></div>
         <div class="d-row"><div class="d-key">TTL</div><div class="d-val">${p.tempatLahir ? esc(p.tempatLahir) + ', ' : ''}${fmtD(p.tglLahir)}${age?' ('+age+' th)':''}</div></div>
         <div class="d-row"><div class="d-key">Alamat KTP</div><div class="d-val">${esc(p.alamatKtp||'–')}</div></div>
-        <div class="d-row"><div class="d-key">Email</div><div class="d-val">${esc(p.email||'–')}</div></div>
       </div>
       <div class="d-section">
         <h4>🏠 Hunian &amp; Kontak</h4>
@@ -4999,7 +5101,6 @@ td:first-child{font-weight:700;width:150px;background:#f5f5f5}
 <tr><td>Pekerjaan</td><td>${p.pekerjaan||'–'}</td></tr>
 <tr><td colspan="2" class="sh">Kontak</td></tr>
 <tr><td>HP / WA</td><td>${p.hp||'–'}</td></tr>
-<tr><td>Email</td><td>${p.email||'–'}</td></tr>
 <tr><td colspan="2" class="sh">Hunian & Sewa</td></tr>
 <tr><td>Kamar</td><td>${p.kamar||'–'} ${p.lantai?'(Lantai '+p.lantai+')':''}</td></tr>
 <tr><td>Tanggal Masuk</td><td>${fmtD(p.tglMasuk)}</td></tr>
@@ -6796,9 +6897,9 @@ $('confirm-cancel').addEventListener('click', () => {
 // ── EXPORT CSV ────────────────────────────────────────────────
 $('btn-export-csv').addEventListener('click', () => {
   const list = getPenghuniFiltered();
-  const hdr  = ['Nama','NIK','Gender','TTL','HP','Email','Pekerjaan','Kamar','Lantai','Tgl Masuk','Tgl Keluar','Status','Kendaraan','Plat 1','Plat 2','Sewa','Deposit','Darurat','HP Darurat'];
+  const hdr  = ['Nama','NIK','Gender','TTL','HP','Pekerjaan','Kamar','Lantai','Tgl Masuk','Tgl Keluar','Status','Kendaraan','Plat 1','Plat 2','Sewa','Deposit','Darurat','HP Darurat'];
   const rows = list.map(p => [
-    p.nama, p.nik, p.gender, (p.tempatLahir ? p.tempatLahir + ' ' : '') + p.tglLahir, p.hp, p.email, p.pekerjaan, p.kamar, p.lantai, p.tglMasuk, p.tglKeluar, p.status, p.kendaraan, p.plat1, p.plat2, p.sewa, p.deposit, (p.daruratNama || '') + (p.daruratHub ? ' (' + p.daruratHub + ')' : ''), p.daruratHp
+    p.nama, p.nik, p.gender, (p.tempatLahir ? p.tempatLahir + ' ' : '') + p.tglLahir, p.hp, p.pekerjaan, p.kamar, p.lantai, p.tglMasuk, p.tglKeluar, p.status, p.kendaraan, p.plat1, p.plat2, p.sewa, p.deposit, (p.daruratNama || '') + (p.daruratHub ? ' (' + p.daruratHub + ')' : ''), p.daruratHp
   ].map(v => sanitizeCsvCell(v)));
   const csv = [hdr.join(','), ...rows.map(r => r.join(','))].join('\n');
   const b = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
